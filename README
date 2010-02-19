@@ -1,0 +1,19 @@
+Joy1
+====
+
+This is a distribution of Joy1. As the Joy homepage,
+<http://www.latrobe.edu.au/philosophy/phimvt/joy.html> is rather chaotic, I
+decided to create a distribution of Joy1 that people can just download and use.
+
+Changes
+-------
+
+I needed to do some minor changes to the original sources. You can find the
+complete history in the Git repository. Most changes were related to updating
+the garbage collector to a version that actually builds. Plus, I added some
+documentation.
+
+Installation
+------------
+
+Please see the INSTALL file.

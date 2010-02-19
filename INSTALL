@@ -1,0 +1,30 @@
+Joy1 installation manual
+========================
+
+To install Joy1, you first need to build it. For this, you have two choices:
+you can go for Joy1 with the Boehm GC or you can just as well build it without
+garbage collector. The latter version is easier, since it the source code is
+self-contained.
+
+Joy1 without GC
+---------------
+
+To build Joy1 without GC, all you need to do is call ``make'' which detects the
+absence of the GC and builds the GC-less variant (NOBDW) of Joy1. You can find it as statically built ``joy'' binary in the root folder.
+
+Joy1 with GC
+------------
+
+To build Joy1 with the GC, you need to download the Boehm-Demers-Weiser garbage
+collector from <http://www.hpl.hp.com/personal/Hans_Boehm/gc/>. The original
+Joy1 source code used gc6.0 but that doesn't seem to build properly these days.
+So version 6.8 (i.e. latest version of the 6.x branch) is advised.
+
+Download the GC tarball into the Joy1 directory and unpack it. If you're not
+using version 6.8, update the 'gc' symlink, so make can find your desired
+garbage collector.
+
+After that, you only need to call ``make''. It will detect your garbage
+collector, configure it and build it locally. After that it will build Joy1 and
+link it together with the GC. This results in the statically build ``joy''
+binary (BDW) in the root folder.
