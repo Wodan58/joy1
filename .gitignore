@@ -2,3 +2,6 @@
 *.tar.gz
 joy
 gc6.8/
+gc.fail
+gc.succ
+*.o
