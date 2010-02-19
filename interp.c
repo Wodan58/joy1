@@ -7,7 +7,7 @@
 #include <math.h>
 #include "globals.h"
 # ifdef GC_BDW
-#    include "gc/gc.h"
+#    include "gc/include/gc.h"
 #    define malloc GC_malloc_atomic
 #    define realloc GC_realloc
 #    define free(X)

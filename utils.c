@@ -3,7 +3,7 @@
 #include <string.h>
 #include "globals.h"
 # ifdef GC_BDW
-#    include "gc/gc.h"
+#    include "gc/include/gc.h"
 # endif
 
 # ifndef GC_BDW
