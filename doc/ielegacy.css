@@ -1,0 +1,42 @@
+/* IE (6 and below) specific styles, hacks v2 & v3 */          
+/* Last edit: November 24, 2008 */
+
+
+/* Position Relative */
+.menu-a dd, .menu-b dd, #mainNavigation, #inner, .entryPoints, .ad-panel-outer, #quickLinks, .linkList, .linkList .columnone, .linkList .columntwo, #site-menu, .supplementaryInfo, #content-main, #content-main-inner {position:relative;}
+
+#logoContainer a {height:106px;}
+dl.featureEvent, dl.featureEventBot {height:75px;}
+div#bulletin {height:90px;}
+
+/* templates V3 */
+/*#wrapper {width:expression(document.body.clientWidth < 772? "770px" :document.body.clientWidth > 1262? "1260px" :"auto");}*/
+
+ul, ol {margin:0 0 0.6em 0;}
+ul ul, ol ul {padding:0.6em 0 0 1.2em;}
+ol ol, ul ol {padding:0.6em 0 0 1.6em;}
+
+#splash-image {position:relative;}
+#splash-links {position:relative; height:150px; overflow:visible!important;}
+
+.linkList li, .featureParagraph, .vcard {height:1%;}
+
+#content-main fieldset li {padding-bottom:0;}
+#right-column #news img {margin-left:11px; margin-right:11px;}
+ 
+/* templates V2 */
+.entry-point ul {margin:0 0 0 81px;}
+/*#splash-image {height:1%;}*/
+.feature {display:inline-table;}
+
+/* Hides from IE/Mac \*/
+* html .feature {height:1%;}
+.feature {display:block;}
+/* End hide from IE/Mac */
+
+/* misc- to delete */
+legend {margin-left:-8px;}
+.radiobox dd {margin-top:-2px;}
+
+/* Forms */
+#content-main fieldset {width:98%;}

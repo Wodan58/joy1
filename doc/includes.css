@@ -1,0 +1,39 @@
+/* Global Stylsheet for La Trobe global includes */          
+/* Last edit: July 12, 2007 */
+
+/* utilityNav styles */
+#utilityNav { margin: 0; padding: 0.3em; text-align: right; background-color: #fff; }
+#utilityNav form, #utilityNav ul, #utilityNav div { display: inline; }
+#utilityNav ul { margin: 0; padding: 0; line-height: 1.5em; list-style-type: none; font-family: Arial, Helvetica, sans-serif; }
+#utilityNav ul li { display: inline; }
+#utilityNav a, #utilityLinks a:visited { color: #000; text-decoration: none; padding: 0 0.7em; }
+#utilityNav a:hover { color: #DB0000; }
+
+/* search styles */
+div#search { margin: 0 0.3em 0 1.3em; }
+#search label { position: absolute; left: -5000px; width: 4000px; overflow: hidden; }
+#search input { font-size: 80%; font-family: Verdana, Arial, Helvetica, sans-serif; }
+.fieldcellInput { background: url(../images/devices/search-icon.gif) left no-repeat; padding: 0.1em 0.1em 0.1em 19px; border: 1px solid; border-color: #999 #ccc #ccc #999; }
+.button { color: #102132; border: 1px #ccc solid; padding: 0 4px; }
+.fieldcellInput, .button { color: #666; background-color: #F2F2F2; }
+input:focus { background: #ffc; } /* style form elements on focus */
+
+/* globalNav styles */
+#globalNav { padding: 0; margin: 0; overflow: hidden; width: 100%; background-color: #000; text-align: left; }
+#globalNav ul { padding: 0; margin: 0; line-height: 1.5em; list-style-type: none; font-family: Arial, Helvetica, sans-serif; border-left: 215px solid #000; white-space: nowrap; }
+#globalNav ul li { display: inline; }
+#globalNav ul li a, #globalNav ul li a:link { padding: 0.2em 0.8em; background-color: #000; color: #efefef; text-decoration: none; float: left; border-right: 1px solid #999;}
+#globalNav ul li a:hover { background-color: #433b3d; color: #fff; } 
+
+#utilityNav p, #globalNav p { float: left; text-align: left; padding: 0; margin: 0; text-indent: -9999px; width: 0px; /* used to make it work in safari */ } 
+
+/* globalFooter styles */
+#globalFooter { font-size: 85%; clear: both; }
+ul#policies { margin: 0; padding: 0.6em 10px 0.7em 10px; background: #CCC; }
+ul#policies li { list-style-type: none; display: inline; padding-right: 2em; }
+ul#policies li a { padding: 0; color: #000; }
+ul#policies li a:link { color: #000; }
+ul#policies li a:hover { color: #666; }
+
+ul#copyright { margin: 0; padding: 0.6em 10px 0.7em 10px; background: #fff; }
+ul#copyright li { list-style-type: none; display: inline; padding-right: 2em; color: #000; }

@@ -1,0 +1,6 @@
+/* Global Stylsheet for La Trobe global includes */          
+/* Last edit: April 29, 2008 */
+
+#globalNav ul {height:24px;}
+#globalNav p {position:absolute;}
+#content-main fieldset li {padding-bottom:0;}
