@@ -1,9 +1,9 @@
 Joy1
-====
+----
 
-This is a distribution of Joy1. As the Joy homepage,
-<http://www.latrobe.edu.au/philosophy/phimvt/joy.html> is rather chaotic, I
-decided to create a distribution of Joy1 that people can just download and use.
+This is a distribution of Joy1. As the Joy homepage was rather chaotic and
+ceased to exist by now, I decided to create a distribution of Joy1 that people
+can just download and use.
 
 Changes
 -------
