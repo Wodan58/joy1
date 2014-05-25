@@ -1,7 +1,7 @@
 *.swp
 *.tar.gz
 joy
-gc6.8/
+gc*.*/
 gc.fail
 gc.succ
 *.o
