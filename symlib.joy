@@ -192,7 +192,7 @@ Note that operator classes u b b1 b2 b3 need to be user defined as lists:
 IN
 
 (* Ideally the following should be inside the HIDE. But since currently
-   HIDE definitions cannot be mutually recursive, the are placed here.	*)
+   HIDE definitions cannot be mutually recursive, they are placed here.	*)
 
     M12T ==
 	M22T
@@ -285,6 +285,24 @@ IN
     Min2Inf == Min2Cam Cam2Inf				(*  2   passes	*)
 
 END; (* HIDE, end of 21 translators *)
+
+# "Floy" - a flat concatenative version of Joy, see jp-flatjoy.html
+# These are the two Joy-to-Floy translators:
+HIDE
+    j2f-f ==
+        [ list ]
+        [ [[[]] concat] dip [j2f-f] step [[] cons concat] concat ]
+        [ [] cons [concat] cons concat ]
+        ifte;
+    j2f-r ==
+        [ list ]
+        [ [[swons] swoncat] dip [j2f-r] step [] swons ]
+        [ [] cons [swoncat] cons swoncat ]
+        ifte
+IN
+    j2f-forwards == [[]] swap [j2f-f] step;
+    j2f-reverse == [] swap [j2f-r] step [] swons
+END; # Floy translators
 
 (* other stuff to go here *)
 

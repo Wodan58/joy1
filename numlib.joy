@@ -66,6 +66,19 @@ LIBRA
 		ifte ]
 	ifte;
 
+    (* a simpler version, FEB 05 : *)
+
+    quadratic-formula  ==                          # a b c => [root1 root2 ]
+        [ [ [ pop pop 2 * ]                        # divisor
+            [ pop 0 swap - ]                       # minusb
+            [ swap dup * rollup * 4 * - sqrt ] ]   # radical
+          [i] map ]
+        ternary i
+        [ [ [ + swap / ]                           # root1
+            [ - swap / ] ]                         # root2
+          [i] map ]
+        ternary;
+
 (* combinators *)
 
     deriv == [unary2 swap - 0.001 /] cons  [dup 0.001 +] swoncat;

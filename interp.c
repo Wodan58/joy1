@@ -1,11 +1,41 @@
 /* FILE: interp.c */
 
+/*
+07-May-03 condnestrec
+17-Mar-03 modules
+04-Dec-02 argc, argv
+04-Nov-02 undefs
+03-Apr-02 # comments
+01-Feb-02 opcase
+
+30-Oct-01 Fixed Bugs in file interp.c :
+
+   1. division (/) by zero when one or both operands are floats
+   2. fremove and frename gave wrong truth value
+      (now success  => true)
+   3. nullary, unary, binary, ternary had two bugs:
+      a. coredump when there was nothing to push
+	 e.g.   11 22 [pop pop] nullary
+      b. produced circular ("infinite") list when no
+	 new node had been created
+	 e.g.   11 22 [pop] nullary
+   4. app4 combinator was wrong.
+      Also renamed:  app2 -> unary2,  app3 -> unary3, app4 -> unary4
+      the old names can still be used, but are declared obsolete.
+   5. Small additions to (raw) Joy:
+      a)  putchars - previously defined in library file inilib.joy
+      b) fputchars (analogous, for specified file)
+	 fputstring (== fputchars for Heiko Kuhrt's program)
+*/
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
 #include "globals.h"
+#ifdef CORRECT_INTERN_LOOKUP
+#include <ctype.h>
+#endif
 # ifdef GC_BDW
 #    include "gc/include/gc.h"
 #    define malloc GC_malloc_atomic
@@ -35,12 +65,21 @@ PRIVATE void manual_list_aux_();
 	    || stk->next->next == NULL				\
 	    || stk->next->next->next == NULL)			\
 	execerror("four parameters",NAME)
+#ifdef CORRECT_FIVE_PARAMS
+#define FIVEPARAMS(NAME)					\
+    if (stk == NULL || stk->next == NULL			\
+	    || stk->next->next == NULL				\
+	    || stk->next->next->next == NULL			\
+	    || stk->next->next->next->next == NULL)		\
+	execerror("five parameters",NAME)
+#else
 #define FIVEPARAMS(NAME)					\
     if (stk == NULL || stk->next == NULL			\
 	    || stk->next->next == NULL				\
 	    || stk->next->next->next == NULL			\
 	    || stk->next->next->next->next == NULL)		\
 	execerror("four parameters",NAME)
+#endif
 #define ONEQUOTE(NAME)						\
     if (stk->op != LIST_)					\
 	execerror("quotation as top parameter",NAME)		
@@ -243,8 +282,22 @@ PRIVATE void intern_()
 {   char *p;
     ONEPARAM("intern");
     STRING("intern");
+#ifdef CORRECT_INTERN_STRCPY
+    strncpy(id, stk->u.str, ALEN);
+    id[ALEN-1] = 0;
+#else
     strcpy(id, stk->u.str);
+#endif
     hashvalue = 0;
+#ifdef CORRECT_INTERN_LOOKUP
+    p = 0;
+    if (id[0] == '-' || !strchr("(#)[]{}.;'\"0123456789", id[0]))
+	for (p = id; *p; p++)
+	    if (!isalnum((int)*p) && !strchr("=_-", *p))
+		break;
+    if (!p || *p)
+	execerror("valid name", id);
+#endif
     for (p = id; *p; p++) hashvalue += *p;
     hashvalue %= HASHSIZE;
     lookup();
@@ -395,6 +448,15 @@ PRIVATE void sign_()
 PRIVATE void neg_()
 {
     ONEPARAM("neg");
+#ifdef CORRECT_NEG_INTEGER
+/* start new */
+    FLOAT("neg");
+    if (stk->op == INTEGER_)
+      { long i = stk->u.num;
+	if (i == 0) return;
+	else { UNARY(INTEGER_NEWNODE, -stk->u.num); return; } }
+/* end new */
+#endif
     FLOAT_U(-);
     INTEGER("neg");
     UNARY(INTEGER_NEWNODE, -stk->u.num);
@@ -419,8 +481,13 @@ PRIVATE void mul_()
 }
 PRIVATE void divide_()
 {   TWOPARAMS("/");
+#ifdef NO_COMPILER_WARNINGS
+    if ((stk->op == FLOAT_   && stk->u.dbl == 0.0) ||
+	(stk->op == INTEGER_ && stk->u.num == 0))
+#else
     if (stk->op == FLOAT_   && stk->u.dbl == 0.0  ||
 	stk->op == INTEGER_ && stk->u.num == 0)
+#endif
       execerror("non-zero divisor","/");
     FLOAT_I(/);
     INTEGERS2("/");
@@ -450,7 +517,11 @@ PRIVATE void strtol_()
     INTEGER("strtol");
     POP(stk);
     STRING("strtol");
+#ifdef BIT_32
     UNARY(INTEGER_NEWNODE, strtol(SAVED2->u.str, NULL, SAVED1->u.num));
+#else
+    UNARY(INTEGER_NEWNODE, strtoll(SAVED2->u.str, NULL, SAVED1->u.num));
+#endif
     POP(dump); }
 
 PRIVATE void strtod_()
@@ -463,6 +534,9 @@ PRIVATE void format_()
     char spec;
     char format[7];
     char *result;
+#ifdef USE_SNPRINTF
+    int leng;
+#endif
     FOURPARAMS("format");
     INTEGER("format");
     INTEGER2("format");
@@ -477,9 +551,18 @@ PRIVATE void format_()
 	execerror("one of: d i o x X", "format");
     strcpy(format, "%*.*ld");
     format[5] = spec;
+#ifdef USE_SNPRINTF
+    leng = snprintf(0, 0, format, width, prec, stk->u.num);
+    result = malloc(leng + 1);
+#else
     result = malloc(INPLINEMAX);			/* should be sufficient */
+#endif
     NUMERICTYPE("format");
+#ifdef USE_SNPRINTF
+    snprintf(result, leng, format, width, prec, stk->u.num);
+#else
     sprintf(result, format, width, prec, stk->u.num);
+#endif
     UNARY(STRING_NEWNODE, result);
     return; }
 
@@ -488,6 +571,9 @@ PRIVATE void formatf_()
     char spec;
     char format[7];
     char *result;
+#ifdef USE_SNPRINTF
+    int leng;
+#endif
     FOURPARAMS("format");
     INTEGER("format");
     INTEGER2("format");
@@ -502,9 +588,22 @@ PRIVATE void formatf_()
 	execerror("one of: e E f g G", "format");
     strcpy(format, "%*.*lg");
     format[5] = spec;
+#ifdef USE_SNPRINTF
+    leng = snprintf(0, 0, format, width, prec, stk->u.num);
+    result = malloc(leng + 1);
+#else
+#ifdef CORRECT_FLOAT_BUFFER
+    result = malloc(FLOAT_BUFFER);		/* should be sufficient */
+#else
     result = malloc(INPLINEMAX);			/* should be sufficient */
+#endif
+#endif
     FLOAT("formatf");
+#ifdef USE_SNPRINTF
+    snprintf(result, leng, format, width, prec, stk->u.dbl);
+#else
     sprintf(result, format, width, prec, stk->u.dbl);
+#endif
     UNARY(STRING_NEWNODE, result);
     return; }
 
@@ -583,7 +682,11 @@ PRIVATE void strftime_()
     POP(stk);
     LIST("strftime");
     decode_time(&t);
+#ifdef CORRECT_STRFTIME_BUF
+    length = INPLINEMAX;
+#else
     length = strlen(fmt) * 3 + 1;		/* should be sufficient */
+#endif
     result = malloc(length);
     strftime(result, length, fmt, &t);
     UNARY(STRING_NEWNODE, result);
@@ -632,8 +735,13 @@ PRIVATE void frexp_()
 
 PRIVATE void modf_()
 {   double exp;
+#ifdef CORRECT_MODF_CHECK
+    ONEPARAM("modf");
+    FLOAT("modf");
+#else
     ONEPARAM("frexp");
     FLOAT("frexp");
+#endif
     UNARY(FLOAT_NEWNODE, modf(FLOATVAL, &exp));
     NULLARY(FLOAT_NEWNODE, exp);
     return; }
@@ -699,6 +807,211 @@ PRIVATE void PROCEDURE()					\
 MAXMIN(max_,"max",<)
 MAXMIN(min_,"min",>)
 
+#if defined(CORRECT_INHAS_COMPARE) || defined(CORRECT_TYPE_COMPARE)
+PRIVATE double Compare(Node *first, Node *second, int *error)
+{
+    *error = 0;
+    switch (first->op) {
+    case USR_	      :
+	switch (second->op) {
+	case USR_     : return strcmp(first->u.ent->name, second->u.ent->name);
+	case ANON_FUNCT_ :
+	case BOOLEAN_ :
+	case CHAR_    :
+	case INTEGER_ :
+	case SET_     : break;
+	case STRING_  : return strcmp(first->u.ent->name, second->u.str);
+	case LIST_    :
+	case FLOAT_   :
+	case FILE_    : break;
+	default       : return strcmp(first->u.ent->name, opername(second->op));
+	}
+	break;
+    case ANON_FUNCT_  :
+	switch (second->op) {
+	case USR_     : break;
+	case ANON_FUNCT_ :
+			return (size_t)first->u.proc - (size_t)second->u.proc;
+	case BOOLEAN_ :
+	case CHAR_    :
+	case INTEGER_ :
+	case SET_     :
+	case STRING_  :
+	case LIST_    :
+	case FLOAT_   :
+	case FILE_    :
+	default       : break;
+	}
+	break;
+    case BOOLEAN_     :
+	switch (second->op) {
+	case USR_     :
+	case ANON_FUNCT_ :
+			break;
+	case BOOLEAN_ :
+	case CHAR_    :
+	case INTEGER_ : return first->u.num - second->u.num;
+	case SET_     :
+	case STRING_  :
+	case LIST_    : break;
+	case FLOAT_   : return first->u.num - second->u.dbl;
+	case FILE_    :
+	default       : break;
+	}
+	break;
+    case CHAR_	:
+	switch (second->op) {
+	case USR_     :
+	case ANON_FUNCT_ :
+			break;
+	case BOOLEAN_ :
+	case CHAR_    :
+	case INTEGER_ : return first->u.num - second->u.num;
+	case SET_     :
+	case STRING_  :
+	case LIST_    : break;
+	case FLOAT_   : return first->u.num - second->u.dbl;
+	case FILE_    :
+	default       : break;
+	}
+	break;
+    case INTEGER_     :
+	switch (second->op) {
+	case USR_     :
+	case ANON_FUNCT_ :
+			break;
+	case BOOLEAN_ :
+	case CHAR_    :
+	case INTEGER_ : return first->u.num - second->u.num;
+	case SET_     :
+	case STRING_  :
+	case LIST_    : break;
+	case FLOAT_   : return first->u.num - second->u.dbl;
+	case FILE_    :
+	default       : break;
+	}
+	break;
+    case SET_	 :
+	switch (second->op) {
+	case USR_     :
+	case ANON_FUNCT_ :
+	case BOOLEAN_ :
+	case CHAR_    :
+	case INTEGER_ : break;
+	case SET_     : return first->u.set - second->u.set;
+	case STRING_  :
+	case LIST_    :
+	case FLOAT_   :
+	case FILE_    :
+	default       : break;
+	}
+	break;
+    case STRING_      :
+	switch (second->op) {
+	case USR_     : return strcmp(first->u.str, second->u.ent->name);
+	case ANON_FUNCT_ :
+	case BOOLEAN_ :
+	case CHAR_    :
+	case INTEGER_ :
+	case SET_     : break;
+	case STRING_  : return strcmp(first->u.str, second->u.str);
+	case LIST_    :
+	case FLOAT_   :
+	case FILE_    : break;
+	default       : return strcmp(first->u.str, opername(second->op));
+	}
+	break;
+    case LIST_	      :
+	switch (second->op) {
+	case USR_     :
+	case ANON_FUNCT_ :
+	case BOOLEAN_ :
+	case CHAR_    :
+	case INTEGER_ :
+	case SET_     :
+	case STRING_  :
+	case LIST_    :
+	case FLOAT_   :
+	case FILE_    :
+	default       : break;
+	}
+	break;
+    case FLOAT_       :
+	switch (second->op) {
+	case USR_     :
+	case ANON_FUNCT_ :
+			break;
+	case BOOLEAN_ :
+	case CHAR_    :
+	case INTEGER_ : return first->u.dbl - second->u.num;
+	case SET_     :
+	case STRING_  :
+	case LIST_    : break;
+	case FLOAT_   : return first->u.dbl - second->u.dbl;
+	case FILE_    :
+	default       : break;
+	}
+	break;
+    case FILE_	      :
+	switch (second->op) {
+	case USR_     :
+	case ANON_FUNCT_ :
+	case BOOLEAN_ :
+	case CHAR_    :
+	case INTEGER_ :
+	case SET_     :
+	case STRING_  :
+	case LIST_    :
+	case FLOAT_   : break;
+	case FILE_    : return first->u.fil - second->u.fil;
+	default       : break;
+	}
+	break;
+    default	      :
+	switch (second->op) {
+	case USR_     : return strcmp(opername(first->op), second->u.ent->name);
+	case ANON_FUNCT_ :
+	case BOOLEAN_ :
+	case CHAR_    :
+	case INTEGER_ :
+	case SET_     : break;
+	case STRING_  : return strcmp(opername(first->op), second->u.str);
+	case LIST_    :
+	case FLOAT_   :
+	case FILE_    : break;
+	default       : return strcmp(opername(first->op),opername(second->op));
+	}
+	break;
+    }
+    *error = 1;
+    return 0;
+}
+#endif
+
+#ifdef CORRECT_TYPE_COMPARE
+#define COMPREL(PROCEDURE,NAME,CONSTRUCTOR,OPR,SETCMP)		\
+PRIVATE void PROCEDURE()					\
+  { double cmp;							\
+    int comp = 0, error, i, j;					\
+    TWOPARAMS(NAME);						\
+    if (stk->op == SET_) {					\
+	i = stk->next->u.num;					\
+	j = stk->u.num;						\
+	comp = SETCMP;						\
+    } else {							\
+	cmp = Compare(stk->next, stk, &error);			\
+	if (error)						\
+	    BADDATA(NAME);					\
+	else {							\
+	    comp = cmp OPR 0;					\
+	    if (comp < 0)					\
+		comp = -1;					\
+	    else if (comp > 0)					\
+		comp = 1;					\
+	}							\
+    }								\
+    stk = CONSTRUCTOR(comp, stk->next->next); }
+#else
 #define COMPREL(PROCEDURE,NAME,CONSTRUCTOR,OPR)				\
 PRIVATE void PROCEDURE()					\
   { long comp = 0;						\
@@ -736,6 +1049,17 @@ PRIVATE void PROCEDURE()					\
 	    break; }						\
     stk = CONSTRUCTOR(comp, stk->next->next); }
 
+#endif
+
+#ifdef CORRECT_TYPE_COMPARE
+COMPREL(eql_,"=",BOOLEAN_NEWNODE,==,i==j)
+COMPREL(neql_,"!=",BOOLEAN_NEWNODE,!=,i!=j)
+COMPREL(less_,"<",BOOLEAN_NEWNODE,<,i!=j&&!(i&~j))
+COMPREL(leql_,"<=",BOOLEAN_NEWNODE,<=,!(i&~j))
+COMPREL(greater_,">",BOOLEAN_NEWNODE,>,i!=j&&!(j&~i))
+COMPREL(geql_,">=",BOOLEAN_NEWNODE,>=,!(j&~i))
+COMPREL(compare_,"compare",INTEGER_NEWNODE,+,i-j<0?-1:i-j>0)
+#else
 COMPREL(eql_,"=",BOOLEAN_NEWNODE,==)
 COMPREL(neql_,"!=",BOOLEAN_NEWNODE,!=)
 COMPREL(less_,"<",BOOLEAN_NEWNODE,<)
@@ -743,7 +1067,15 @@ COMPREL(leql_,"<=",BOOLEAN_NEWNODE,<=)
 COMPREL(greater_,">",BOOLEAN_NEWNODE,>)
 COMPREL(geql_,">=",BOOLEAN_NEWNODE,>=)
 COMPREL(compare_,"compare",INTEGER_NEWNODE,+)
+#endif
 
+#ifdef SAMETYPE_BUILTIN
+PRIVATE void sametype_()
+{
+    TWOPARAMS("sametype");
+    BINARY(BOOLEAN_NEWNODE, stk->op == stk->next->op);
+}
+#endif
 
 /* - - -   FILES AND STREAMS   - - - */
 
@@ -793,6 +1125,13 @@ FILEGET(ferror_,"ferror",BOOLEAN_NEWNODE,(long)ferror(stk->u.fil))
 FILEGET(fgetch_,"fgetch",CHAR_NEWNODE,(long)getc(stk->u.fil))
 FILEGET(ftell_,"ftell",INTEGER_NEWNODE,ftell(stk->u.fil))
 
+#ifdef GETCH_AS_BUILTIN
+PRIVATE void getch_()
+{
+    NULLARY(CHAR_NEWNODE,(long)getchar());
+}
+#endif
+
 PRIVATE void fgets_()
 {   int length = 0;
     int size = INPLINEMAX;
@@ -819,6 +1158,18 @@ PRIVATE void fput_()
     POP(stk);
     return; }
 
+#ifdef FGET_FROM_FILE
+PRIVATE void fget_()
+{   FILE *stm = NULL;
+    ONEPARAM("fget");
+    if (stk->op != FILE_ || (stm = stk->u.fil) == NULL)
+	execerror("file", "fget");
+    redirect(stm);
+    getsym();
+    readfactor();
+}
+#endif
+
 PRIVATE void fputch_()
 {   int ch;
     TWOPARAMS("fputch");
@@ -834,7 +1185,11 @@ PRIVATE void fputchars_() /* suggested by Heiko Kuhrt, as "fputstring_" */
     TWOPARAMS("fputchars");
     if (stk->next->op != FILE_ || (stm = stk->next->u.fil) == NULL)
         execerror("file", "fputchars");
+#ifdef SECURE_PUTCHARS
+    fprintf(stm,"%s",stk->u.str);
+#else
     fprintf(stm,stk->u.str);
+#endif
     POP(stk);
     return; }
 
@@ -852,7 +1207,11 @@ PRIVATE void fread_()
 	     count >= 0; count--)
 	DMP1 = INTEGER_NEWNODE((long)buf[count], DMP1);
     free(buf);
+#ifdef CORRECT_FREAD_PARAM
+    NULLARY(LIST_NEWNODE, DMP1);
+#else
     UNARY(LIST_NEWNODE, DMP1);
+#endif
     POP(dump1);
     return; }
 
@@ -987,10 +1346,18 @@ PRIVATE void unswons_()
 	default:
 	    BADAGGREGATE("unswons"); }
 }
+#ifdef USE_NEW_FUNCTION_SYNTAX
+PRIVATE long equal_aux(Node *n1,Node *n2); /* forward */
+#else
 PRIVATE long equal_aux(); /* forward */
+#endif
 
+#ifdef USE_NEW_FUNCTION_SYNTAX
+PRIVATE int equal_list_aux(Node *n1,Node *n2)
+#else
 PRIVATE int equal_list_aux(n1,n2)
 Node *n1, *n2;
+#endif
 {
     if (n1 == NULL && n2 == NULL) return 1;
     if (n1 == NULL || n2 == NULL) return 0;
@@ -998,11 +1365,23 @@ Node *n1, *n2;
 	return equal_list_aux(n1->next,n2->next);
     else return 0;
 }
+#ifdef USE_NEW_FUNCTION_SYNTAX
+PRIVATE long equal_aux(Node *n1,Node *n2)
+#else
 PRIVATE long equal_aux(n1,n2)
 Node *n1, *n2;
+#endif
 {
+#ifdef CORRECT_TYPE_COMPARE
+    int error;
+#endif
     if (n1 == NULL && n2 == NULL) return 1;
     if (n1 == NULL || n2 == NULL) return 0;
+#ifdef CORRECT_TYPE_COMPARE
+    if (n1->op == LIST_ && n2->op == LIST_)
+	return equal_list_aux(n1->u.lis,n2->u.lis);
+    return !Compare(n1, n2, &error) && !error;
+#else
     switch (n1->op)
       { case BOOLEAN_: case CHAR_: case INTEGER_:
 	    if (n2->op != BOOLEAN_ && n2->op != CHAR_ &&
@@ -1017,12 +1396,40 @@ Node *n1, *n2;
 	    return equal_list_aux(n1->u.lis,n2->u.lis);
 	default:
 	    return strcmp(GETSTRING(n1),GETSTRING(n2)) == 0; }
+#endif
 }
 PRIVATE void equal_()
 {
     TWOPARAMS("equal");
     BINARY(BOOLEAN_NEWNODE,equal_aux(stk,stk->next));
 }
+#ifdef CORRECT_INHAS_COMPARE
+#define INHAS(PROCEDURE,NAME,AGGR,ELEM)				\
+PRIVATE void PROCEDURE()					\
+{   int found = 0, error;					\
+    TWOPARAMS(NAME);						\
+    switch (AGGR->op)						\
+      { case SET_:						\
+	    found = ((AGGR->u.set) & (1 << ELEM->u.num)) > 0;	\
+	    break;						\
+	case STRING_:						\
+	  { char *s;						\
+	    for (s = AGGR->u.str;				\
+		 *s != '\0' && *s != ELEM->u.num;		\
+		 s++);						\
+	    found = *s != '\0';					\
+	    break; }						\
+	case LIST_:						\
+	  { Node *n = AGGR->u.lis;				\
+	    while (n != NULL && (Compare(n, ELEM, &error) || error)) \
+		n = n->next;					\
+	    found = n != NULL;					\
+	    break; }						\
+	default:						\
+	    BADAGGREGATE(NAME); }				\
+    BINARY(BOOLEAN_NEWNODE,(long)found);			\
+}
+#else
 #define INHAS(PROCEDURE,NAME,AGGR,ELEM)				\
 PRIVATE void PROCEDURE()					\
 {   int found = 0;						\
@@ -1048,6 +1455,7 @@ PRIVATE void PROCEDURE()					\
 	    BADAGGREGATE(NAME); }				\
     BINARY(BOOLEAN_NEWNODE,(long)found);					\
 }
+#endif
 INHAS(in_,"in",stk,stk->next)
 INHAS(has_,"has",stk->next,stk)
 
@@ -1068,7 +1476,7 @@ PRIVATE void PROCEDURE()					\
 	    INDEXTOOLARGE(NAME);				\
 	    return; }						\
 	case STRING_:						\
-	    if (strlen(AGGR->u.str) < INDEX->u.num)		\
+	    if (strlen(AGGR->u.str) < (size_t)INDEX->u.num)	\
 		INDEXTOOLARGE(NAME);				\
 	    BINARY(CHAR_NEWNODE,(long)AGGR->u.str[INDEX->u.num]);		\
 	    return;						\
@@ -1099,13 +1507,21 @@ PRIVATE void choice_()
 PRIVATE void case_()
 {
     Node *n;
+#ifdef CORRECT_CASE_COMPARE
+    int error;
+#endif
     TWOPARAMS("case");
     LIST("case");
     n = stk->u.lis;
     CHECKEMPTYLIST(n,"case");
     while ( n->next != NULL &&
-	    n->u.lis->u.num != stk->next->u.num )
+	    n->u.lis->u.num != stk->next->u.num ) {
+#ifdef CORRECT_CASE_COMPARE
+	if (!Compare(n->u.lis, stk->next, &error) && !error)
+	    break;
+#endif
 	n = n->next;
+    }
 /*
     printf("case : now execute : ");
     writefactor(n->u.lis, stdout); printf("\n");
@@ -1205,9 +1621,18 @@ PRIVATE void take_()
 	    POP(stk);
 	    /* do not swap the order of the next two statements ! ! ! */
 	    if (i < 0) i = 0;
+#ifdef NO_COMPILER_WARNINGS
+	    if ((size_t)i > strlen(old))  return; /* the old string unchanged */
+#else
 	    if (i > strlen(old))  return; /* the old string unchanged */
+#endif
+#ifdef CORRECT_TAKE_STRING
+	    p = result = (char *) malloc(i + 1);
+	    while (i-- > 0) *p++ = *old++; *p = 0;
+#else
 	    p = result = (char *) malloc(strlen(old) - i + 1);
 	    while (i-- > 0)  *p++ = *old++;
+#endif
 	    UNARY(STRING_NEWNODE,result);
 	    return; }
 	case LIST_:
@@ -1294,8 +1719,22 @@ PRIVATE void null_()
 	case FILE_:
 	    UNARY(BOOLEAN_NEWNODE, (long)(stk->u.fil == NULL));
 	    break;
+#ifdef CORRECT_NULL_CASES
+	case LIST_:
+	    UNARY(BOOLEAN_NEWNODE, (long)(! stk->u.lis));
+	    break;
+	case SET_:
+	    UNARY(BOOLEAN_NEWNODE, (long)(! stk->u.set));
+	    break;
+	case BOOLEAN_: case CHAR_: case INTEGER_:
+	    UNARY(BOOLEAN_NEWNODE, (long)(! stk->u.num));
+	    break;
+	default:
+	    BADDATA("null"); }
+#else
 	default:
 	    UNARY(BOOLEAN_NEWNODE, (long)(! stk->u.num)); }
+#endif
 }
 PRIVATE void not_()
 {
@@ -1307,9 +1746,24 @@ PRIVATE void not_()
 	case STRING_:
 	    UNARY(BOOLEAN_NEWNODE,(long)(*(stk->u.str) != '\0'));
 	    break;
+#ifdef CORRECT_NOT_FOR_LIST
+	case LIST_:
+	    UNARY(BOOLEAN_NEWNODE, (long)(! stk->u.lis));
+	    break;
+	case BOOLEAN_: case CHAR_: case INTEGER_:
+#else
 	case BOOLEAN_: case CHAR_: case INTEGER_: case LIST_:
+#endif
 	    UNARY(BOOLEAN_NEWNODE, (long)(! stk->u.num));
 	    break;
+#ifdef NOT_ALSO_FOR_FLOAT
+	case FLOAT_:
+	    UNARY(BOOLEAN_NEWNODE, (long)(! stk->u.dbl));
+#endif
+#ifdef NOT_ALSO_FOR_FILE
+	case FILE_:
+	    UNARY(BOOLEAN_NEWNODE, (long)(stk->u.fil != NULL));
+#endif
 	default:
 	    BADDATA("not"); }
 }
@@ -1379,7 +1833,11 @@ TYPE(user_,"user",==,USR_)
     { ONEPARAM(NAME); TYPE(NAME); BODY; POP(stk); }
 USETOP( put_,"put",ONEPARAM, writefactor(stk, stdout);printf(" "))
 USETOP( putch_,"putch",NUMERICTYPE, printf("%c", (char) stk->u.num) )
+#ifdef SECURE_PUTCHARS
+USETOP( putchars_,"putchars",STRING, printf("%s", stk->u.str) )
+#else
 USETOP( putchars_,"putchars",STRING, printf(stk->u.str) )
+#endif
 USETOP( setecho_,"setecho",NUMERICTYPE, echoflag = stk->u.num )
 USETOP( setautoput_,"setautoput",NUMERICTYPE, autoput = stk->u.num )
 USETOP( setundeferror_, "setundeferror", NUMERICTYPE, undeferror = stk->u.num )
@@ -1412,6 +1870,9 @@ PRIVATE void argv_()
 
 PRIVATE void get_()
 {
+#ifdef GET_FROM_STDIN
+    redirect(stdin);
+#endif
     getsym();
     readfactor();
 }
@@ -1670,6 +2131,10 @@ PRIVATE void map_()
 			      DMP1->u,SAVED3);
 		exeterm(SAVED1->u.lis);
 D(		printf("map: "); writefactor(stk, stdout); printf("\n"); )
+#ifdef CHECK_EMPTY_STACK
+		if (stk == NULL)
+		    execerror("non-empty stack", "map");
+#endif
 		if (DMP2 == NULL)			/* first */
 		  { DMP2 =
 			newnode(stk->op,stk->u,NULL);
@@ -1968,10 +2433,17 @@ PRIVATE void primrec_()
     stk = stk->next->next->next;
     switch (SAVED3->op)
       { case LIST_:
+#ifdef CORRECT_PRIMREC
+	  { dump1 = newnode(LIST_,SAVED3->u,dump1);
+	    while (DMP1 != NULL)
+	      { stk = newnode(DMP1->op,DMP1->u,stk);
+		DMP1 = DMP1->next;
+#else
 	  { Node *current = SAVED3->u.lis;
 	    while (current != NULL)
 	      { stk = newnode(current->op,current->u,stk);
 		current = current->next;
+#endif
 		n++; }
 	    break; }
 	case STRING_:
@@ -2015,6 +2487,9 @@ PRIVATE void tailrecaux()
 PRIVATE void tailrec_()
 {
     THREEPARAMS("tailrec");
+#ifdef TAILREC_CHECK_QUOTES
+    THREEQUOTES("tailrec");
+#endif
     SAVESTACK;
     stk = SAVED4;
     tailrecaux();
@@ -2240,13 +2715,25 @@ D(	printf("treerecaux: stack = "); )
 D(	writeterm(stk, stdout); printf("\n"); )
 	exeterm(stk->u.lis->u.lis->next); }
     else
+#ifdef CORRECT_TREEREC_AUX
+      { dump1 = newnode(LIST_,stk->u,dump1);
+#else
       { Node *n = stk;
+#endif
 	POP(stk);
+#ifdef CORRECT_TREEREC_AUX
+	exeterm(DMP1->u.lis->u.lis);
+	POP(dump1); }
+#else
 	exeterm(n->u.lis->u.lis); }
+#endif
 }
 PRIVATE void treerec_()
 {
     THREEPARAMS("treerec");
+#ifdef TREEREC_CHECK_QUOTES
+    TWOQUOTES("treerec");
+#endif
     cons_();
 D(  printf("deep: stack = "); writeterm(stk, stdout); printf("\n"); )
     treerecaux();
@@ -2292,13 +2779,25 @@ D(  writeterm(stk, stdout); printf("\n"); )
 	cons_();
 	exeterm(stk->u.lis->u.lis->next->next); } /*	[C]	*/
     else
+#ifdef CORRECT_TREEGENREC_AUX
+      { dump1 = newnode(LIST_,stk->u,dump1);
+#else
       { Node *n = stk;
+#endif
 	POP(stk);
+#ifdef CORRECT_TREEGENREC_AUX
+	exeterm(DMP1->u.lis->u.lis);
+	POP(dump1); }
+#else
 	exeterm(n->u.lis->u.lis); }		/*	[O1]	*/
+#endif
 }
 PRIVATE void treegenrec_()
 {					/* T [O1] [O2] [C]	*/
     FOURPARAMS("treegenrec");
+#ifdef TREEGENREC_CHECK_QUOTES
+    THREEQUOTES("treegenrec");
+#endif
     cons_(); cons_();
 D(  printf("treegenrec: stack = "); writeterm(stk, stdout); printf("\n"); )
     treegenrecaux();
@@ -2383,13 +2882,13 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"stack",		stack_,		".. X Y Z  ->  .. X Y Z [Z Y X ..]",
 "Pushes the stack as a list."},
 
-{"__symtabmax",		symtabmax_,	"->",
+{"__symtabmax",		symtabmax_,	"->  I",
 "Pushes value of maximum size of the symbol table."},
 
-{"__symtabindex",	symtabindex_,	"->",
+{"__symtabindex",	symtabindex_,	"->  I",
 "Pushes current size of the symbol table."},
 
-{"__dump",		dump_,		"->",
+{"__dump",		dump_,		"->  [..]",
 "debugging only: pushes the dump as a list."},
 
 {"conts",		conts_,		"->  [[P] [Q] ..]",
@@ -2401,14 +2900,18 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"undeferror",		undeferror_,	"->  I",
 "Pushes current value of undefined-is-error flag."},
 
-{"undefs",		undefs_,	"->",
+{"undefs",		undefs_,	"->  [..]",
 "Push a list of all undefined symbols in the current symbol table."},
 
 {"echo",			echo_,		"->  I",
 "Pushes value of echo flag, I = 0..3."},
 
 {"clock",		clock_,		"->  I",
+#ifdef CORRECT_CLOCK_SECONDS
+"Pushes the integer value of current CPU usage in milliseconds."},
+#else
 "Pushes the integer value of current CPU usage in hundreds of a second."},
+#endif
 
 {"time",		time_,		"->  I",
 "Pushes the current time (in seconds since the Epoch)."},
@@ -2416,7 +2919,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"rand",		rand_,		"  -> I",
 "I is a random integer."},
 
-{"__memorymax",		memorymax_,	"->",
+{"__memorymax",		memorymax_,	"->  I",
 "Pushes value of total size of memory."},
 
 {"stdin",		stdin_,		"->  S",
@@ -2582,10 +3085,18 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 "I is an integer equal to the float F truncated toward zero."},
 
 {"localtime",		localtime_,	"I  ->  T",
+#ifdef CORRECT_TIME_LIST
+"Converts a time I into a list T representing local time:\n[year month day hour minute second isdst yearday weekday].\nMonth is 1 = January ... 12 = December;\nisdst is a Boolean flagging daylight savings/summer time;\nweekday is 1 = Monday ... 7 = Sunday."},
+#else
 "Converts a time I into a list T representing local time:\n[year month day hour minute second isdst yearday weekday].\nMonth is 1 = January ... 12 = December;\nisdst is a Boolean flagging daylight savings/summer time;\nweekday is 0 = Monday ... 7 = Sunday."},
+#endif
 
 {"gmtime",		gmtime_,	"I  ->  T",
+#ifdef CORRECT_TIME_LIST
+"Converts a time I into a list T representing universal time:\n[year month day hour minute second isdst yearday weekday].\nMonth is 1 = January ... 12 = December;\nisdst is false; weekday is 1 = Monday ... 7 = Sunday."},
+#else
 "Converts a time I into a list T representing universal time:\n[year month day hour minute second isdst yearday weekday].\nMonth is 1 = January ... 12 = December;\nisdst is false; weekday is 0 = Monday ... 7 = Sunday."},
+#endif
 
 {"mktime",		mktime_,	"T  ->  I",
 "Converts a list T representing local time into a time I.\nT is in the format generated by localtime."},
@@ -2632,6 +3143,11 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"fflush",		fflush_,	"S  ->  S",
 "Flush stream S, forcing all buffered output to be written."},
 
+#ifdef FGET_FROM_FILE
+{"fget",		fget_,		"S  ->  S F",
+"Reads a factor from stream S and pushes it onto stack."},
+#endif
+
 {"fgetch",		fgetch_,	"S  ->  S C",
 "C is the next available character from stream S."},
 
@@ -2648,7 +3164,11 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 "A list of integers are written as bytes to the current position of stream S."},
 
 {"fremove",		fremove_,	"P  ->  B",
+#ifdef CORRECT_HELP_FREMOVE
+"The file system object with pathname P is removed from the file system.\nB is a boolean indicating success or failure."},
+#else
 "The file system object with pathname P is removed from the file system.\n is a boolean indicating success or failure."},
+#endif
 
 {"frename",		frename_,	"P1 P2  ->  B",
 "The file system object with pathname P1 is renamed to P2.\nB is a boolean indicating success or failure."},
@@ -2766,6 +3286,11 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"in",			in_,			"X A  ->  B",
 "Tests whether X is a member of aggregate A."},
 
+#ifdef SAMETYPE_BUILTIN
+{"sametype",		sametype_,	"X Y  ->  B",
+"Tests whether X and Y have the same type."},
+#endif
+
 {"integer",		integer_,	"X  ->  B",
 "Tests whether X is an integer."},
 
@@ -2808,7 +3333,11 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 "Saves X, executes P, pushes X back."},
 
 {"app1",		app1_,		"X [P]  ->  R",
+#ifdef CORRECT_APP1_DOC
+"Executes P, pushes result R on stack with X."},
+#else
 "Executes P, pushes result R on stack without X."},
+#endif
 
 {"app11",		app11_,		"X Y [P]  ->  R",
 "Executes P, pushes result R on stack."},
@@ -2894,14 +3423,26 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"tailrec",		tailrec_,	"[P] [T] [R1]  ->  ...",
 "Executes P. If that yields true, executes T.\nElse executes R1, recurses."},
 
+#ifdef CORRECT_BINREC_HELP
+{"binrec",		binrec_,	"[P] [T] [R1] [R2]  ->  ...",
+#else
 {"binrec",		binrec_,	"[B] [T] [R1] [R2]  ->  ...",
+#endif
 "Executes P. If that yields true, executes T.\nElse uses R1 to produce two intermediates, recurses on both,\nthen executes R2 to combines their results."},
 
 {"genrec",		genrec_,	"[B] [T] [R1] [R2]  ->  ...",
+#ifdef CORRECT_GENREC_HELP
+"Executes B, if that yields true executes T.\nElse executes R1 and then [[[B] [T] [R1] R2] genrec] R2."},
+#else
 "Executes B, if that yields true executes T.\nElse executes R1 and then [[B] [T] [R1] [R2] genrec] R2."},
+#endif
 
 {"condnestrec",	condnestrec_,	"[ [C1] [C2] .. [D] ]  ->  ...",
+#ifdef HELP_CONDNESTREC
+"A generalisation of condlinrec.\nEach [Ci] is of the form [[B] [R1] [R2] .. [Rn]] and [D] is of the form\n[[R1] [R2] .. [Rn]]. Tries each B, or if all fail, takes the default [D].\nFor the case taken, executes each [Ri] but recurses between any two\nconsecutive [Ri]. (n > 3 would be exceptional.)"},
+#else
 "A generalisation of condlinrec. Each [Ci] is of the form [[B] [R1] [R2] .. [Rn]] and [D] is of the form [[R1] [R2] .. [Rn]]. Tries each B, or if all fail, takes the default [D]. For the case taken, executes each [Ri] but recurses between any two consecutive [Ri]. (n > 3 would be exceptional.)"},
+#endif
 
 {"condlinrec",		condlinrec_,	"[ [C1] [C2] .. [D] ]  ->  ...",
 "Each [Ci] is of the forms [[B] [T]] or [[B] [R1] [R2]].\nTries each B. If that yields true and there is just a [T], executes T and exit.\nIf there are [R1] and [R2], executes R1, recurses, executes R2.\nSubsequent case are ignored. If no B yields true, then [D] is used.\nIt is then of the forms [[T]] or [[R1] [R2]]. For the former, executes T.\nFor the latter executes R1, recurses, executes R2."},
@@ -2940,10 +3481,18 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 "Recursively traverses leaves of tree T, executes P for each leaf."},
 
 {"treerec",		treerec_,	"T [O] [C]  ->  ...",
+#ifdef CORRECT_TREEREC_HELP
+"T is a tree. If T is a leaf, executes O. Else executes [[[O] C] treerec] C."},
+#else
 "T is a tree. If T is a leaf, executes O. Else executes [[O] [C] treerec] C."},
+#endif
 
 {"treegenrec",		treegenrec_,	"T [O1] [O2] [C]  ->  ...",
+#ifdef CORRECT_TREEGENREC_HELP
+"T is a tree. If T is a leaf, executes O1.\nElse executes O2 and then [[[O1] [O2] C] treegenrec] C."},
+#else
 "T is a tree. If T is a leaf, executes O1.\nElse executes O2 and then [[O1] [O2] [C] treegenrec] C."},
+#endif
 
 /* MISCELLANEOUS */
 
@@ -2972,7 +3521,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 "Sets value of flag for tracing garbage collection to I (= 0..5)."},
 
 {"setautoput",		setautoput_,	"I  ->",
-"Sets value of flag for automatic put to I (if I = 0, none;\nif I = 1, put; if I = 2, stack."},
+"Sets value of flag for automatic put to I (if I = 0, none;\nif I = 1, put; if I = 2, stack)."},
 
 {"setundeferror",	setundeferror_,	"I  ->",
 "Sets flag that controls behavior of undefined functions\n(0 = no error, 1 = error)."},
@@ -3000,6 +3549,11 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 
 {"get",			get_,		"->  F",
 "Reads a factor from input and pushes it onto stack."},
+
+#ifdef GETCH_AS_BUILTIN
+{"getch",		getch_,		"->  F",
+"Reads a character from input and pushes it onto stack."},
+#endif
 
 {"put",			put_,		"X  ->",
 "Writes X to output, pops X off stack."},
@@ -3056,10 +3610,23 @@ PRIVATE void helpdetail_()
 	    writeterm(n->u.ent->u.body, stdout);
 	    printf("\n"); break; }
 	else
+#ifdef CORRECT_HELPDETAIL
+	{ Operator op;
+	  if ((op = n->op) == BOOLEAN_)
+	      op = n->u.num ? TRUE_ : FALSE_;
+	  if (op == INTEGER_ && n->u.num == MAXINT)
+	      op = MAXINT_;
+	    printf("%s	:   %s.\n%s\n",
+		optable[ (int) op].name,
+		optable[ (int) op].messg1,
+		optable[ (int) op].messg2);
+	}
+#else
 	    printf("%s        :   %s.\n%s\n",
 		optable[ (int) n->op].name,
 		optable[ (int) n->op].messg1,
 		optable[ (int) n->op].messg2);
+#endif
 	printf("\n");
 	n = n->next; }
     POP(stk);
@@ -3067,6 +3634,17 @@ PRIVATE void helpdetail_()
 #define PLAIN (style == 0)
 #define HTML (style == 1)
 #define LATEX (style == 2)
+#ifdef CORRECT_HEADERS
+#define HEADER(N,NAME,HEAD)					\
+    if (strcmp(N,NAME) == 0)					\
+      { printf("\n\n");						\
+	if (HTML) printf("<DT><BR><B>");			\
+	if (LATEX) printf("\\item[--- \\BX{");			\
+	printf("%s",HEAD);					\
+	if (LATEX) printf("} ---] \\verb# #");			\
+	if (HTML) printf("</B><BR><BR>");			\
+	printf("\n\n"); }
+#else
 #define HEADER(N,NAME,HEAD)					\
     if (strcmp(N,NAME) == 0)					\
       { printf("\n\n");						\
@@ -3074,6 +3652,8 @@ PRIVATE void helpdetail_()
 	printf("%s",HEAD);					\
 	if (LATEX) printf("} ---] \\verb# #");				\
 	printf("\n\n"); }
+#endif
+
 PRIVATE void make_manual(int style /* 0=plain, 1=HTML, 2=Latex */)
 {
     int i; char * n;
@@ -3098,7 +3678,7 @@ PRIVATE void make_manual(int style /* 0=plain, 1=HTML, 2=Latex */)
 	    if (LATEX) printf("}]  \\verb#");
 	    if (HTML) printf(" <CODE>      :  </CODE> ");
 		/* the above line does not produce the spaces around ":" */
-	    else printf("      :  ");
+	    else printf("\t:  ");
 	    printf("%s", optable[i].messg1);
 	    if (HTML) printf("\n<DD>");
 	    else if (LATEX) printf("# \\\\ \n {\\small\\verb#");

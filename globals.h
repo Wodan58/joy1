@@ -1,9 +1,72 @@
 /* FILE : globals.h */
 
+#define NO_COMPILER_WARNINGS
+#define CORRECT_FIVE_PARAMS
+#define GET_FROM_STDIN
+#define NO_BANG_AS_PERIOD
+#define CORRECT_TAKE_STRING
+#define CORRECT_FREAD_PARAM
+#define PROTECT_BUFFER_OVERFLOW
+#define CORRECT_NEG_INTEGER
+#define DONT_READ_PAST_EOF
+#define CHECK_EMPTY_STACK
+#define CORRECT_GARBAGE_COLLECTOR
+#define CORRECT_FLOAT_BUFFER
+#define READ_NUMBER_AND_STOP
+#define HELP_CONDNESTREC
+#define SAMETYPE_BUILTIN
+#define CORRECT_HEADERS
+#define CORRECT_TIME_LIST
+#define CORRECT_HELP_FREMOVE
+#define CORRECT_BINREC_HELP
+#define READ_HEXADECIMAL_NUMBER
+#define SECURE_PUTCHARS
+#define GETCH_AS_BUILTIN
+#define CORRECT_INTERN_STRCPY
+#define CORRECT_INTERN_LOOKUP
+#define CORRECT_STRING_WRITE
+#define CORRECT_INHAS_COMPARE
+#define CORRECT_TYPE_COMPARE
+#define APPLY_FORWARD_SYMBOL
+#define BDW_ALSO_IN_MAIN
+#define FGET_FROM_FILE
+#define CORRECT_STRFTIME_BUF
+#define SIGNAL_WRITE_PIPE
+#ifndef BIT_32
+#define USE_SNPRINTF
+#endif
+#define CORRECT_MODF_CHECK
+#define CORRECT_APP1_DOC
+#define NO_JUMP_FAIL
+#define CORRECT_GENREC_HELP
+#define CORRECT_TREEREC_HELP
+#define CORRECT_TREEGENREC_HELP
+#ifndef GC_BDW
+#define CORRECT_TREEREC_AUX
+#define CORRECT_TREEGENREC_AUX
+#define CORRECT_PRIMREC
+#endif
+#define NO_DUPLICATE_CH
+#define CORRECT_CASE_COMPARE
+#define CORRECT_CLOCK_SECONDS
+#define NOT_ALSO_FOR_FLOAT
+#define NOT_ALSO_FOR_FILE
+#define CORRECT_NOT_FOR_LIST
+#define CORRECT_NULL_CASES
+#define TAILREC_CHECK_QUOTES
+#define TREEREC_CHECK_QUOTES
+#define TREEGENREC_CHECK_QUOTES
+#define USE_NEW_FUNCTION_SYNTAX
+#define REST_OF_UNIX_ESCAPES
+#define CORRECT_OCTAL_NUMBER
+#define NO_EXECUTE_ERROR
+#define CORRECT_HELPDETAIL
+
 				/* configure			*/
 #define SHELLESCAPE	'$'
 #define INPSTACKMAX	10
-#define INPLINEMAX	255
+#define INPLINEMAX	1024
+#define FLOAT_BUFFER	320
 #define ALEN		20
 #define HASHSIZE	9
 #define SYMTABMAX	1000
@@ -17,8 +80,13 @@
 #define INIAUTOPUT	1
 #define INITRACEGC	1
 				/* installation dependent	*/
+#ifdef BIT_32
 #define SETSIZE		32
 #define MAXINT		2147483647
+#else
+#define SETSIZE		64
+#define MAXINT		9223372036854775807LL
+#endif
 				/* symbols from getsym		*/
 #define ILLEGAL_	 0
 #define COPIED_		 1
@@ -32,6 +100,14 @@
 #define LIST_	9
 #define FLOAT_	10
 #define FILE_	11
+#ifdef BUILTIN_BUILTIN
+#define FIRST_BUILTIN	12
+#endif
+#ifdef CORRECT_HELPDETAIL
+#define FALSE_		12
+#define TRUE_		13
+#define MAXINT_		14
+#endif
 #define LBRACK		900
 #define LBRACE		901
 #define LPAREN		902
@@ -64,8 +140,13 @@ typedef int Symbol;
 typedef short Operator;
 
 typedef union
+#ifdef BIT_32
       { long num;
 	long set;
+#else
+      {	long long num;
+	long long set;
+#endif
 	char *str;
 	double dbl;
 	FILE *fil;
@@ -101,7 +182,11 @@ CLASS int tracegc;
 CLASS int startclock,gc_clock;			/* main		*/
 CLASS int ch;					/* scanner	*/
 CLASS Symbol sym;
+#ifdef BIT_32
 CLASS long num;
+#else
+CLASS long long num;
+#endif
 CLASS double dbl;
 CLASS char id[ALEN];
 CLASS int hashvalue;
@@ -172,6 +257,10 @@ PUBLIC void readfactor(void)	/* read a JOY factor		*/;
 PUBLIC void readterm(void);
 PUBLIC void writefactor(Node *n, FILE *stm);
 PUBLIC void writeterm(Node *n, FILE *stm);
+
+#if defined(GET_FROM_STDIN) || defined(FGET_FROM_FILE)
+PUBLIC void redirect(FILE *);
+#endif
 
 #define USR_NEWNODE(u,r)	(bucket.ent = u, newnode(USR_, bucket, r))
 #define ANON_FUNCT_NEWNODE(u,r)	(bucket.proc = u, newnode(ANON_FUNCT_, bucket, r))

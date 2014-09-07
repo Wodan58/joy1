@@ -17,6 +17,12 @@ static int linenumber = 0;
 static char linbuf[INPLINEMAX];
 static int linelength, currentcolumn = 0;
 static int errorcount = 0;
+#ifdef READ_NUMBER_AND_STOP
+static int unget1 = 0, unget2 = 0;
+#endif
+#ifdef GET_FROM_STDIN
+static int get_from_stdin = 0;
+#endif
 
 PUBLIC void inilinebuffer(void)
 {
@@ -31,17 +37,35 @@ PUBLIC void putline(void)
 }
 PRIVATE void getch()
 {
+#ifdef DONT_READ_PAST_EOF
+    int c;
+#else
     char c;
+#endif
+#ifdef READ_NUMBER_AND_STOP
+    if (unget1) {
+	ch = unget1;
+	unget1 = unget2;
+	unget2 = 0;
+	return;
+    }
+#endif
     if (currentcolumn == linelength)
       { Again:
 	currentcolumn = 0; linelength = 0;
 	linenumber++;
 	while ((c = getc(infile[ilevel])) != EOLN)
 	  { linbuf[linelength++] = c;
+#ifdef DONT_READ_PAST_EOF
+	    if (c == EOF) linelength--;
+#endif
 	    if (feof(infile[ilevel]))
 	      { ilevel--;
 D(		printf("reset to level %d\n",ilevel); )
 		if (ilevel < 0) quit_(); } }
+#ifdef DONT_READ_PAST_EOF
+	if (linelength)
+#endif
 	linbuf[linelength++] = ' ';  /* to help getsym for numbers */
 	linbuf[linelength++] = '\0';
 	if (echoflag) putline();
@@ -72,6 +96,19 @@ PUBLIC int doinclude(char *filnam)
     execerror("valid file name","include");
     return 0;
 }
+
+#if defined(GET_FROM_STDIN) || defined(FGET_FROM_FILE)
+PUBLIC void redirect(FILE *fp)
+{
+    if (infile[ilevel] != fp && !get_from_stdin) {
+	get_from_stdin = fp == stdin;
+	if (++ilevel == INPSTACKMAX)
+	    execerror("fewer include files", "redirect");
+	infile[ilevel] = fp;
+    }
+}
+#endif
+
 PRIVATE char specialchar()
 {
     getch();
@@ -83,6 +120,10 @@ PRIVATE char specialchar()
 	case 'f' : return '\f';
 	case '\'': return '\'';
 	case '\"': return '\"';
+#ifdef REST_OF_UNIX_ESCAPES
+	case 'v' : return '\v';
+	case '\\': return '\\';
+#endif
 	default :
 	    if (ch >= '0' && ch <= '9')
 	      { int i;
@@ -140,24 +181,72 @@ Start:
 		string[i++] = ch; getch();}
 	    string[i] = '\0'; getch();
 D(	    printf("getsym: string = %s\n",string); )
+#ifdef NO_COMPILER_WARNINGS
+	    num = (size_t)malloc(strlen(string) + 1);
+	    strcpy((char *)(size_t)num, string);
+#else
 	    num = (long) malloc(strlen(string) + 1);
 	    strcpy((char *) num, string);
+#endif
 	    sym = STRING_; return; }
 	case '-': /* PERHAPS unary minus */
 	case '0': case '1': case '2': case '3': case '4':
 	case '5': case '6': case '7': case '8': case '9':
 	  { char number[25];
 	    char *p = number;
+#ifdef CORRECT_OCTAL_NUMBER
+	    int octal = ch == '0';
+#endif
+#ifdef READ_HEXADECIMAL_NUMBER
+	    int hexal = 0;
+#endif
 	    if ( isdigit(ch) ||
 		 ( currentcolumn < linelength &&
 		   isdigit((int)linbuf[currentcolumn]) ) )
-	      { do {*p++ = ch; getch();}
-		    while (strchr("0123456789+-Ee.", ch));
+#ifdef PROTECT_BUFFER_OVERFLOW
+	      { do {if (p - number < 24) *p++ = ch; getch();
+#else
+	      { do {*p++ = ch; getch();
+#endif
+#ifdef READ_HEXADECIMAL_NUMBER
+		    if (hexal && !isxdigit(ch))
+			break;
+		    if (octal && (ch == 'x' || ch == 'X')) {
+			octal = 0;
+			hexal = 1;
+		    }
+#endif
+#ifdef CORRECT_OCTAL_NUMBER
+		    if (octal && ch == '.')
+			octal = 0;
+		    if (octal && (strchr("89", ch) || !isdigit(ch)))
+			break;
+#endif
+#ifdef READ_HEXADECIMAL_NUMBER
+		} while (strchr("0123456789+-Ee.XxAaBbCcdDdFf", ch));
+#else
+		} while (strchr("0123456789+-Ee.", ch));
+#endif
 		*p = 0;
+#ifdef READ_NUMBER_AND_STOP
+		if (p[-1] == '.') {
+		    p[-1] = 0;
+		    unget1 = '.';
+		    unget2 = ch;
+		}
+#endif
+#ifdef READ_HEXADECIMAL_NUMBER
+		if (strchr(number, '.'))
+#else
 		if (strpbrk(number, ".eE"))
+#endif
 		  { dbl = strtod(number, NULL); sym = FLOAT_; return;}
 		else
+#ifdef BIT_32
 		  { num = strtol(number, NULL, 0); sym = INTEGER_; return; } } }
+#else
+		  { num = strtoll(number, NULL,0); sym = INTEGER_; return; } } }
+#endif
 	    /* ELSE '-' is not unary minus, fall through */
 	default:
 	  { int i = 0;
@@ -184,8 +273,10 @@ D(	    printf("getsym: string = %s\n",string); )
 		    { sym = JPUBLIC; return; }
 		/* possibly other uppers here */
 		}
+#ifndef NO_BANG_AS_PERIOD
 	    if (strcmp(id,"!") == 0) /* should this remain or be deleted ? */
 	      { sym = PERIOD; return; }
+#endif
 	    if (strcmp(id,"==") == 0)
 	      { sym = EQDEF; return; }
 	    if (strcmp(id,"true") == 0)

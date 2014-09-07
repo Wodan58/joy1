@@ -23,13 +23,13 @@ Literal integers are written in ordinary decimal notation.
 The usual binary operators are:  +  -  *  /
 But these operators are written after their arguments.
 What will the program   2  3  +   leave on the stack ?
-ÿ	hahaha 
+	hahaha
 An integer is expected:
 	1234 
 No, the right answer is:  5 
 What will the program   7  6  *   leave on the stack ?
 	42 
-Excellent.
+Good.
 What will the program   7  6  *  2  3  +  -   leave on the stack ?
 	36 
 No, the right answer is:  37 
@@ -40,7 +40,7 @@ Some important operators for lists are:
     first      rest      cons      concat
 What will the program   [5 4 2 7]  first   leave on the stack ?
 	5 
-Terrific.
+Good.
 What will the program   [5 4 2 7]  rest   leave on the stack ?
 	7 
 A list is expected:
@@ -48,7 +48,7 @@ A list is expected:
 No, the right answer is:  [4 2 7] 
 What will the program   8  [9 3]  cons   leave on the stack ?
 	[  8  9   3    ] 
-Great.
+Good.
 What will the program   [5 3]  dup  concat   leave on the stack ?
 	[ [5 3] 5 3] 
 No, the right answer is:  [5 3 5 3] 
@@ -69,25 +69,26 @@ on the stack. But combinators always expect a quoted program
 and perhaps something else. For example, the   map   combinator
 expects a single program and below that an aggregate, e.g. a list.
 What will the program   [3 2 4] [dup +] map   leave on the stack ?
+
 	[ 9 4  16] 
 No, the right answer is:  [6 4 8] 
 What will the dots   ...   have to be, so that
 	[3 2 4]  ...  map
 leaves    [13 12 14]    on the stack ?
 	[ 10 + ] 
-Terrific.
+Good.
 Another example is the   filter   combinator, which expects
 a program that computes a truth value, and below that an aggregate.
 What will the program   
 	[5 16 3 7 14]  [10 <]  filter   leave on the stack ?
 	[5 3 7] 
-Terrific.
+Good.
 For the next question, provide the shortest answer
 What will the dots   ...   have to be, so that
 	[5 10 9 11 2]  [10 +]  map   ...  filter
 leaves    [15 19 12]    on the stack ?
 	[ 20 <] 
-Splendid.
+Good.
 You answered 3 of the 4 questions correctly.
 
 3 - The ifte and linrec combinators
@@ -96,6 +97,7 @@ Two more complicated combinators are the  ifte  and the  linrec
 combinators.  The  ifte  combinator expects three quotation parameters
 on the stack. In most cases they have been pushed just beforehand.
 What will the program   5  [7 <]  [10 +]  [10 -]  ifte   leave on the stack ?
+
 	15 
 Good.
 What will the program   8  [7 <]  [10 +]  [10 -]  ifte   leave on the stack ?
@@ -110,10 +112,10 @@ factorial function, which has the form:
       ifte
 What could be used as the first quote?
 	[ 0 =] 
-Great.
+Good.
 What could be used as the second quote?
 	[ succ ] 
-Splendid.
+Good.
 This question is harder:
 What could be used as the third quote?
 	[ factorial *] 
@@ -129,10 +131,10 @@ not to have the definition at all, by using the  linrec  combinator:
       linrec
 What could be used as the third quote ?
 	[  dup  pred  ] 
-Terrific.
+Good.
 What could be used as the fourth quote ?
 	[ * ] 
-Excellent.
+Good.
 You answered 5 of the 7 questions correctly.
 
 
@@ -143,34 +145,35 @@ To repeat something, here are the sections again
 Type the number of the section you want, or 
 type  0  to do all sections, or
 type any other number (even negative) to quit.
+
 	2 
 2 - The map and filter combinators
 
 Combinators are similar to operators, they expect something
-on the stacgc - 49 nodes inspected, 24 nodes copied, clock: 1
-k. But combinators always expect a quoted program
+on the stack. But combinators always expect a quoted program
 and perhaps something else. For example, the   map   combinator
 expects a single program and below that an aggregate, e.g. a list.
 What will the program   [3 2 4] [dup +] map   leave on the stack ?
+
 	[6 4 8] 
 Good.
 What will the dots   ...   have to be, so that
 	[3 2 4]  ...  map
 leaves    [13 12 14]    on the stack ?
 	[ 10 +  ] 
-Splendid.
+Good.
 Another example is the   filter   combinator, which expects
 a program that computes a truth value, and below that an aggregate.
 What will the program   
 	[5 16 3 7 14]  [10 <]  filter   leave on the stack ?
 	[5 3 7] 
-Excellent.
+Good.
 For the next question, provide the shortest answer
 What will the dots   ...   have to be, so that
 	[5 10 9 11 2]  [10 +]  map   ...  filter
 leaves    [15 19 12]    on the stack ?
 	[ 20 <] 
-Excellent.
+Good.
 You answered 4 of the 4 questions correctly.
 
 
@@ -181,6 +184,7 @@ To repeat something, here are the sections again
 Type the number of the section you want, or 
 type  0  to do all sections, or
 type any other number (even negative) to quit.
+
 999 
 Leaving  Interactive tutorial on JOY
 

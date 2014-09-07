@@ -259,7 +259,7 @@ LAST
 55 
  
 (* END:  lsptst.lsp *) 
-ÿ 
+
 						(* back to lsptst.joy	*) 
 	EXIT	(* from Lisp *) 
 exit from Lisp interpreter

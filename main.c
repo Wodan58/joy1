@@ -1,5 +1,114 @@
 /* file: main.c */
 
+/*
+I comment on the functions in main.c which are relevant to the
+symbol table management. Comments are in the same order as they
+occur in main.c.
+
+function enterglobal:
+
+Used for most definitions, except for those inside a HIDE,
+PRIVATE, PUBLIC, MODULE. Probably this should be implemented
+first.
+For a definition "foo == ...", enters identifier id
+(string "foo") into global table. For a first use of "bar" inside
+"foo == ..bar.." enters "bar" into global table. In my implementation this
+part of the table uses a hashing method, the actual hash value
+has already been computed by the scannner.
+
+function lookup:
+
+Since HIDE's and modules can be nested, there is the notion
+of level (up to 10, which is ample), level 0 means global).
+The array display contains the starting points of the local
+tables. So, to lookup identifier id (string "foo"), start
+at the current highest level (display_lookup), do a linear
+search at that local table. If not found, go down one level
+and repeat. If found on a local level, return (global variable
+location now knows where "foo" is.
+If "foo" was not found locally, search the global table which
+is hashed: another linear search through the list for this
+particular hash value. If not found enter into global table.
+ALSO NOTE: my implementation fails to enter "foo" flagged
+as is_module = 0 in the normal case. It so happens that
+memory is automatically initialised to 0, so it worked. But
+this was bad programming. Sorry.
+
+
+function enteratom:
+
+If we are inside a HIDE, PRIVATE or a module and see "foo == ..."
+enter "foo" into table (with a NULL body), and add this
+entry to the current local table at the current diplay level.
+
+function definition:
+
+Remember from that a definition is either simple (of the
+form "foo == ..") or compound (HIDE, MODULE etc).
+In the body of the function the first 6 lines are just for
+parsing the compound ones, in each case calling function
+compound_def.
+The next few lines deal with empty definitions, which should
+be allowed so that ";" can be used as a terminator and not just
+as a separator between definitions (Pascal uses a similar trick
+for statement terminator/separator).
+The remainder deals with the case of atom "foo". The warning for
+overwriting inbuilt should be clear, also the parsing for "==".
+Then a term "..." is read, which readterm always leaves on the stack.
+That is term, on top of the stack, is then attached as the body
+to the part of the symbol table at here.
+
+function defsequence:
+
+This just parses definition sequences separated by ";".
+
+function compound_def:
+
+This processes in accordance with the grammar
+compound-definition :==
+["MODULE" atomic symbol]
+["PRIVATE" definition-sequence ]
+                               ^ (* ERROR: MISSING "compound_def"
+                                    SEE DISGUST BELOW *)
+["PUBLIC" definition-sequence]
+("END" | ".")
+Each of the 3 parts is optional. Instead of "PRIVATE.. PUBLIC.."
+the combination "HIDE..IN.." can be used, and instead of
+"PUBLIC" the syntax "LIBRA.." or "DEFINE.." can be used.
+So, depending on what the symbol from the scanner is:
+
+If the symbol is "MODULE", the next symbol must be an atom,
+say "mymodule", enter it as an atom into the global or
+local part of the symbol table, increment two display
+indices for entering and lookup, then parse a compound definition,
+which will be at one level higher than the preceding.
+and then: set the is_module flag to 1 and the fields
+to the current value. Finally decrement these two indices.
+If the symbol is "PRIVATE" or "HIDE", the next item to be
+parsed has to be a definition sequence. But the details
+of what to do with the display indices depend on whether
+we are already inside something that is hidden. If we are,
+then only the display_enter is incremented before the
+definition sequence and decremented afterwards. If we are not,
+then both indices are incremented and decremented at the same
+place. In either case after all that the function calls
+itself. [NOTE: TO MY DISGUST, THE GRAMMAR IN THE MANUAL DOES
+NOT SAY THIS - VERY SORRY.]
+If the symbol is "PUBLIC" or "LIBRA" or "IN", parse and
+process a definition-sequence.
+If the symbols is anything else, warn about empty
+compound definition.
+
+I suppose part of the difficulty of understanding this function
+is due to the fact that I tried to squeeze the earlier "HIDE..IN.."
+into the same mould as the quite separate "PRIVATE.." and "PUBLIC..",
+and trying to use the same display mechanism for the levels of
+hiding by "HIDE" or "PRIVATE". Maybe there is a more elegant way
+of doing this, possibly by separating the cases and duplicating
+some of the code.
+
+Manfred von Thun, 2006
+*/
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -7,6 +116,12 @@
 #include <time.h>
 #define ALLOC
 #include "globals.h"
+#ifdef BDW_ALSO_IN_MAIN
+# ifdef GC_BDW
+#    include "gc/include/gc.h"
+#    define malloc GC_malloc_atomic
+# endif
+#endif
 
 PRIVATE void enterglobal()
 {
@@ -38,10 +153,33 @@ D(  printf("%s  hashes to %d\n",id,hashvalue); )
     if (location == symtab) /* not found, enter in global */
 	enterglobal();
 }
+
+#ifdef APPLY_FORWARD_SYMBOL
+PRIVATE Entry *local(void)
+{
+    int i;
+    Entry *loc;
+
+    for (i = display_lookup; i > 0; i--) {
+	for (loc = display[i]; loc && strcmp(id, loc->name); loc = loc->next)
+	    ;
+	if (loc) /* found in local table */
+	    return loc;
+    }
+    return 0;
+}
+#endif
+
 PRIVATE void enteratom()
 {
     if (display_enter > 0)
+#ifdef APPLY_FORWARD_SYMBOL
+      { if ((location = local()) != NULL)
+	    return;
+	location = symtabindex++;
+#else
       { location = symtabindex++;
+#endif
 D(	printf("hidden definition '%s' at %ld \n",id,LOC2INT(location)); )
 	location->name = (char *) malloc(strlen(id) + 1);
 	strcpy(location->name, id);
@@ -146,7 +284,9 @@ PRIVATE void compound_def()
 }
 
 jmp_buf begin;
+#ifndef NO_JUMP_FAIL
 jmp_buf fail;
+#endif
 
 PUBLIC void abortexecution_(void)
 {
@@ -154,10 +294,12 @@ PUBLIC void abortexecution_(void)
     longjmp(begin,0);
 }
 
+#ifndef NO_JUMP_FAIL
 PUBLIC void fail_(void)
 {
     longjmp(fail,1);
 }
+#endif
 
 PUBLIC void execerror(char *message, char *op)
 {
@@ -190,7 +332,9 @@ static int mustinclude = 1;
 
 int main(int argc, char **argv)
 {
+#ifndef NO_DUPLICATE_CH
     int ch;
+#endif
     g_argc = argc;
     g_argv = argv;
     if (argc > 1) {
@@ -224,8 +368,13 @@ int main(int argc, char **argv)
     display[0] = NULL;
     inimem1(); inimem2();
     setjmp(begin);
+#ifndef NO_JUMP_FAIL
     setjmp(fail);
+#endif
 D(  printf("starting main loop\n"); )
+#ifdef SIGNAL_WRITE_PIPE
+    setbuf(stdout, 0);
+#endif
     while (1)
      { if (mustinclude)
 	  { mustinclude = 0;
@@ -258,5 +407,10 @@ D(	    printf("program is: "); writeterm(stk->u.lis, stdout); printf("\n"); )
 	      { writefactor(stk, stdout); printf("\n"); stk = stk->next; } }
 
 	 if (sym != END && sym != PERIOD)
+#ifdef NO_EXECUTE_ERROR
+	   { error(" END or period '.' expected");
+	     while (getsym(), sym != END && sym != PERIOD); } }
+#else
 	     error(" END or period '.' expected"); }
+#endif
 }

@@ -30,7 +30,11 @@ PUBLIC void inimem2(void)
 {
 # ifndef GC_BDW
     mem_low = memoryindex;
+#ifdef CORRECT_GARBAGE_COLLECTOR
+    mem_mid = mem_low + (&memory[MEM_HIGH] - mem_low) / 2;
+#else
     mem_mid = mem_low + (MEM_HIGH)/2;
+#endif
     if (tracegc > 1)
       { printf("memory = %ld : %ld\n",
 		(long)memory,MEM2INT(memory));
@@ -46,17 +50,28 @@ PUBLIC void inimem2(void)
 }
 PUBLIC void printnode(Node *p)
 {
+# ifdef GC_BDW
+    if (p) p = 0;
+# endif
 # ifndef GC_BDW
     printf("%10ld:        %-10s %10ld %10ld\n",
 	MEM2INT(p),
 	symtab[(short) p->op].name,
+#ifdef NO_COMPILER_WARNINGS
+	p->op == LIST_ ? MEM2INT(p->u.lis) : (size_t)p->u.num,
+#else
 	p->op == LIST_ ? MEM2INT(p->u.lis) : p->u.num,
+#endif
 	MEM2INT(p->next));
 # endif
 }
 # ifndef GC_BDW
+#ifdef USE_NEW_FUNCTION_SYNTAX
+PRIVATE Node *copy(Node *n)
+#else
 PRIVATE Node *copy(n)
     Node *n;
+#endif
 {
     Node *temp;
     nodesinspected++;
@@ -83,7 +98,11 @@ PRIVATE Node *copy(n)
 	case FILE_:
 	    temp->u.fil = n->u.fil; break;
 	case LIST_:
+#ifdef NO_COMPILER_WARNINGS
+	    temp->u.lis = copy(n->u.lis); break;
+#else
 	    temp->u.num = (long)copy(n->u.lis); break;
+#endif
 	default:
 	    temp->u.num = n->u.num; }
 /* end of replacement */
@@ -98,8 +117,12 @@ PRIVATE Node *copy(n)
 # endif
 
 # ifndef GC_BDW
+#ifdef USE_NEW_FUNCTION_SYNTAX
+PRIVATE void gc1(char *mess)
+#else
 PRIVATE void gc1(mess)
     char * mess;
+#endif
 {
     start_gc_clock = clock();
     if (tracegc > 1)
@@ -128,8 +151,12 @@ PRIVATE void gc1(mess)
     COP(dump,"dump"); COP(dump1,"dump1"); COP(dump2,"dump2");
     COP(dump3,"dump3"); COP(dump4,"dump4"); COP(dump5,"dump5");
 }
+#ifdef USE_NEW_FUNCTION_SYNTAX
+PRIVATE void gc2(char *mess)
+#else
 PRIVATE void gc2(mess)
     char * mess;
+#endif
 {
     int this_gc_clock;
     this_gc_clock = clock() - start_gc_clock;
@@ -159,7 +186,14 @@ PUBLIC Node *newnode(Operator o, Types u, Node *r)
       { gc1("automatic");
 	if (o == LIST_) u.lis = copy(u.lis);
 	r = copy(r);
+#ifdef CORRECT_GARBAGE_COLLECTOR
+	gc2("automatic");
+	if ((direction == +1 && memoryindex >= mem_mid) ||
+	    (direction == -1 && memoryindex <= mem_mid))
+	    execerror("memory", "copying"); }
+#else
 	gc2("automatic"); }
+#endif
     p = memoryindex;
     memoryindex += direction;
 # else
@@ -169,17 +203,24 @@ PUBLIC Node *newnode(Operator o, Types u, Node *r)
     p->op = o;
     p->u = u;
     p->next = r;
+# ifndef GC_BDW
 D(  printnode(p); )
+# endif
     return p;
 }
 PUBLIC void memoryindex_(void)
 {
 # ifndef GC_BDW
+#ifdef NO_COMPILER_WARNINGS
+    stk = INTEGER_NEWNODE(MEM2INT(memoryindex),stk);
+#else
     stk = INTEGER_NEWNODE((long)MEM2INT(memoryindex),stk);
+#endif
 # else
     stk = INTEGER_NEWNODE(0L, stk);
 # endif
 }
+#if 0
 PRIVATE void readmodule_field(void)
 {
     Entry *p;
@@ -203,6 +244,7 @@ D(  printf("found field: %s\n",p->name); )
     stk = USR_NEWNODE(p,stk);
     return;
 }
+#endif
 PUBLIC void readfactor(void)	/* read a JOY factor		*/
 {
     switch (sym)
@@ -291,13 +333,20 @@ PUBLIC void readterm(void)
 
 PUBLIC void writefactor(Node *n, FILE *stm)
 {
+#ifdef CORRECT_STRING_WRITE
+    char *p;
+#endif
     if (n == NULL)
 	execerror("non-empty stack","print");
     switch (n->op)
       { case BOOLEAN_:
 	    fprintf(stm, "%s", n->u.num ? "true" : "false"); return;
 	case INTEGER_:
+#ifdef BIT_32
 	    fprintf(stm, "%ld",n->u.num); return;
+#else
+	    fprintf(stm, "%lld", n->u.num); return;
+#endif
 	case FLOAT_:
 	    fprintf(stm, "%g", n->u.dbl); return;
 	case SET_:
@@ -314,7 +363,18 @@ PUBLIC void writefactor(Node *n, FILE *stm)
 	case CHAR_:
 	    fprintf(stm, "'%c", (char) n->u.num); return;
 	case STRING_:
+#ifdef CORRECT_STRING_WRITE
+	    fputc('"', stm);
+	    for (p = n->u.str; *p; p++) {
+		if (*p == '"' || *p == '\\')
+		    fputc('\\', stm);
+		fputc(*p, stm);
+	    }
+	    fputc('"', stm);
+	    return;
+#else
 	    fprintf(stm, "\"%s\"",n->u.str); return;
+#endif
 	case LIST_:
 	    fprintf(stm, "%s","[");
 	    writeterm(n->u.lis, stm);

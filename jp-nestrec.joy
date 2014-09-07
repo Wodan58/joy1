@@ -300,7 +300,7 @@ DEFINE
 
 [source destination temp]  2  cnr-hanoi.
 		#
-[S D T]  5  cnr-hanoi.
+[S D T]  5  cnr-hanoi newline.					(* R.W. *)
   
 DEFINE
     cnr-fact ==

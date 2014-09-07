@@ -3,6 +3,7 @@ Copyright 2001 by Manfred von Thun
 usrlib  is loaded
 inilib  is loaded
 agglib  is loaded
+
 Testing the 12 translators in the library  symlib.joy
 agglib  is already loaded
 numlib  is loaded
