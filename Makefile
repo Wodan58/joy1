@@ -20,7 +20,7 @@ all:
 
 clean:
 	rm -f gc.succ gc.fail *.o
-	cd gc; $(MAKE) clean
+	@if test -d gc; then cd gc && $(MAKE) clean; fi
 
 tar:
 	cd gc; $(MAKE) clean
