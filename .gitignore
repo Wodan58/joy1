@@ -1,7 +1,10 @@
 *.swp
 *.tar.gz
 joy*
-gc*.*/
+gc
 gc.fail
 gc.succ
 *.o
+CmakeCache.txt
+CmakeFiles
+cmake_install.cmake
