@@ -1,7 +1,7 @@
 #
 #  Makefile for JOY
 #
-cmake_minimum_required(VERSION 3.0.1)
+cmake_minimum_required(VERSION 2.8.9)
 project(Joy)
 
 set(GC_BDW ON)
@@ -16,7 +16,7 @@ add_definitions(-O3 -Wall -Wextra -Werror)
 if(BIT_32)
   add_definitions(-DBIT_32 -ansi -pedantic)
 else()
-  add_definitions(-Wno-format)
+  add_definitions(-Wno-format -Wno-pointer-to-int-cast)
 endif()
 
 add_executable(joy interp.c scan.c utils.c main.c)
