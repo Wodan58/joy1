@@ -1908,7 +1908,7 @@ start:
     while (conts->u.lis != NULL)
       {
 	if (tracegc > 5)
-	  { printf("exeterm1: %ld ",(long)conts->u.lis);
+	  { printf("exeterm1: %p ", conts->u.lis);
 	    printnode(conts->u.lis); }
 	stepper = conts->u.lis;
 	conts->u.lis = conts->u.lis->next;
@@ -1934,7 +1934,7 @@ D(		printf("trying to do "); )
 D(		writefactor(dump1, stdout); )
 		(*(stepper->u.proc))(); break; }
 	if (tracegc > 5)
-	  { printf("exeterm2: %ld ",(long)stepper);
+	  { printf("exeterm2: %p ", stepper);
             printnode(stepper); }
 /*
 	stepper = stepper->next; }
@@ -3591,9 +3591,9 @@ PUBLIC void inisymboltable(void)		/* initialise			*/
 	symtabindex->u.proc = optable[i].proc;
 	symtabindex->next = hashentry[hashvalue];
 	hashentry[hashvalue] = symtabindex;
-D(	printf("entered %s in symbol table at %ld = %ld\n", \
-	    symtabindex->name, (long)symtabindex, \
-	    LOC2INT(symtabindex)); )
+D(	printf("entered %s in symbol table at %p = %p\n", \
+	    symtabindex->name, (void *)symtabindex, \
+	    (void *)LOC2INT(symtabindex)); )
 	symtabindex++; }
     firstlibra = symtabindex;
 }

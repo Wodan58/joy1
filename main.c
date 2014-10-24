@@ -131,7 +131,7 @@ D(  printf("getsym, new: '%s'\n",id); )
     strcpy(location->name,id);
     location->u.body = NULL; /* may be assigned in definition */
     location->next = hashentry[hashvalue];
-D(  printf("entered %s at %ld\n",id,LOC2INT(location)); )
+D(  printf("entered %s at %p\n",id,(void *)LOC2INT(location)); )
     hashentry[hashvalue] = location;
 }
 PUBLIC void lookup(void)
@@ -180,7 +180,7 @@ PRIVATE void enteratom()
 #else
       { location = symtabindex++;
 #endif
-D(	printf("hidden definition '%s' at %ld \n",id,LOC2INT(location)); )
+D(	printf("hidden definition '%s' at %p\n",id,(void *)LOC2INT(location)); )
 	location->name = (char *) malloc(strlen(id) + 1);
 	strcpy(location->name, id);
 	location->u.body = NULL; /* may be assigned later */

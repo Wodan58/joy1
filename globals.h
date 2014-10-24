@@ -203,8 +203,8 @@ CLASS Entry					/* symbol table	*/
     *firstlibra,				/* inioptable	*/
     *location;					/* getsym	*/
 
-#define LOC2INT(e) (((long)e - (long)symtab) / sizeof(Entry))
-#define INT2LOC(x) ((Entry*) ((x + (long)symtab)) * sizeof(Entry))
+#define LOC2INT(e) (((size_t)e - (size_t)symtab) / sizeof(Entry))
+#define INT2LOC(x) ((Entry*) ((x + (size_t)symtab)) * sizeof(Entry))
 
 CLASS Node			/* dynamic memory	*/
 /*
@@ -214,8 +214,8 @@ CLASS Node			/* dynamic memory	*/
     *prog, *stk, *conts,
     *dump, *dump1, *dump2, *dump3, *dump4, *dump5;
 
-#define MEM2INT(n) (((long)n - (long)memory) / sizeof(Node))
-#define INT2MEM(x) ((Node*) ((x + (long)&memory) * sizeof(Node)))
+#define MEM2INT(n) (((size_t)n - (size_t)memory) / sizeof(Node))
+#define INT2MEM(x) ((Node*) ((x + (size_t)&memory) * sizeof(Node)))
 
 /* GOOD REFS:
 	005.133l H4732		A LISP interpreter in C

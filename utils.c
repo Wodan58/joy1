@@ -36,16 +36,16 @@ PUBLIC void inimem2(void)
     mem_mid = mem_low + (MEM_HIGH)/2;
 #endif
     if (tracegc > 1)
-      { printf("memory = %ld : %ld\n",
-		(long)memory,MEM2INT(memory));
-	printf("memoryindex = %ld : %ld\n",
-		(long)memoryindex,MEM2INT(memoryindex));
-	printf("mem_low = %ld : %ld\n",
-		(long)mem_low,MEM2INT(mem_low));
-	printf("top of mem = %ld : %ld\n",
-		(long)(&memory[MEM_HIGH]),MEM2INT((&memory[MEM_HIGH])));
-	printf("mem_mid = %ld : %ld\n",
-		(long)mem_mid,MEM2INT(mem_mid)); }
+      { printf("memory = %p : %p\n",
+		(void *)memory,(void *)MEM2INT(memory));
+	printf("memoryindex = %p : %p\n",
+		(void *)memoryindex,(void *)MEM2INT(memoryindex));
+	printf("mem_low = %p : %p\n",
+		(void *)mem_low,(void *)MEM2INT(mem_low));
+	printf("top of mem = %p : %p\n",
+		(void *)&memory[MEM_HIGH],(void *)MEM2INT((&memory[MEM_HIGH])));
+	printf("mem_mid = %p : %p\n",
+		(void *)mem_mid,(void *)MEM2INT(mem_mid)); }
 # endif
 }
 PUBLIC void printnode(Node *p)
@@ -54,15 +54,15 @@ PUBLIC void printnode(Node *p)
     if (p) p = 0;
 # endif
 # ifndef GC_BDW
-    printf("%10ld:        %-10s %10ld %10ld\n",
-	MEM2INT(p),
-	symtab[(short) p->op].name,
+    printf("%10p:        %-10s %10p %10p\n",
+	(void *)MEM2INT(p),
+	symtab[(int) p->op].name,
 #ifdef NO_COMPILER_WARNINGS
-	p->op == LIST_ ? MEM2INT(p->u.lis) : (size_t)p->u.num,
+	p->op == LIST_ ? (void *)MEM2INT(p->u.lis) : (void *)(size_t)p->u.num,
 #else
 	p->op == LIST_ ? MEM2INT(p->u.lis) : p->u.num,
 #endif
-	MEM2INT(p->next));
+	(void *)MEM2INT(p->next));
 # endif
 }
 # ifndef GC_BDW
@@ -250,7 +250,7 @@ PUBLIC void readfactor(void)	/* read a JOY factor		*/
     switch (sym)
       { case ATOM:
 	    lookup();
-D(	    printf("readfactor: location = %ld\n",(long) location); )
+D(	    printf("readfactor: location = %p\n", (void *)location); )
 /* replace the following two lines:
 	    if (location->is_module)
 	      { readmodule_field(); return; }

@@ -7,6 +7,8 @@ project(Joy)
 set(GC_BDW ON)
 set(BIT_32 OFF)
 
+set(CMAKE_EXE_LINKER_FLAGS "-Wl,--stack,0x10000000")
+
 if(GC_BDW)
   add_definitions(-DGC_BDW -pthread)
 endif()
@@ -16,7 +18,7 @@ add_definitions(-O3 -Wall -Wextra -Werror)
 if(BIT_32)
   add_definitions(-DBIT_32 -ansi -pedantic)
 else()
-  add_definitions(-Wno-format -Wno-pointer-to-int-cast)
+  add_definitions(-Wno-format)
 endif()
 
 add_executable(joy interp.c scan.c utils.c main.c)
