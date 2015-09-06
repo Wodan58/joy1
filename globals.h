@@ -27,7 +27,7 @@
 #define CORRECT_STRING_WRITE
 /* #define CORRECT_INHAS_COMPARE */
 #define CORRECT_TYPE_COMPARE
-#define APPLY_FORWARD_SYMBOL
+/* #define APPLY_FORWARD_SYMBOL */
 #define BDW_ALSO_IN_MAIN
 #define FGET_FROM_FILE
 #define CORRECT_STRFTIME_BUF
@@ -62,6 +62,7 @@
 #define NO_EXECUTE_ERROR
 #define CORRECT_HELPDETAIL
 #define CORRECT_ALEN
+#define NO_HELP_LOCAL_SYMBOLS
 
 				/* configure			*/
 #define SHELLESCAPE	'$'
@@ -165,6 +166,9 @@ typedef struct Node
 typedef struct Entry
   { char *name;
     int is_module;
+#ifdef NO_HELP_LOCAL_SYMBOLS
+    int is_local;
+#endif
     union 
       { Node *body;
 	struct Entry *module_fields;
@@ -202,7 +206,9 @@ CLASS int display_lookup;
 CLASS Entry					/* symbol table	*/
     symtab[SYMTABMAX],
     *hashentry[HASHSIZE],
+#if 0
     *localentry,
+#endif
     *symtabindex,
     *display[DISPLAYMAX],
     *firstlibra,				/* inioptable	*/

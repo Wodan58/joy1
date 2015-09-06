@@ -1881,6 +1881,21 @@ PUBLIC void dummy_(void)
 {
     /* never called */
 }
+#ifdef NO_HELP_LOCAL_SYMBOLS
+#define HELP(PROCEDURE,REL)					\
+PRIVATE void PROCEDURE()					\
+{   Entry *i = symtabindex;					\
+    int column = 0;						\
+    int name_length;						\
+    while (i != symtab)						\
+	if ((--i)->name[0] REL '_' && !i->is_local)		\
+	  { name_length = strlen(i->name) + 1;			\
+	    if (column + name_length > 72)			\
+	      { printf("\n"); column = 0; }			\
+	    printf("%s ", i->name);  				\
+	    column += name_length; }				\
+    printf("\n"); }
+#else
 #define HELP(PROCEDURE,REL)					\
 PRIVATE void PROCEDURE()					\
 {   Entry *i = symtabindex;					\
@@ -1894,6 +1909,7 @@ PRIVATE void PROCEDURE()					\
 	    printf("%s ", i->name);  				\
 	    column += name_length; }				\
     printf("\n"); }
+#endif
 HELP(help1_,!=)
 HELP(h_help1_,==)
 
@@ -3614,7 +3630,9 @@ PUBLIC void inisymboltable(void)		/* initialise			*/
     int i; char *s;
     symtabindex = symtab;
     for (i = 0; i < HASHSIZE; hashentry[i++] = symtab) ;
+#if 0
     localentry = symtab;
+#endif
     for (i = 0; optable[i].name; i++)
       { s = optable[i].name;
 	/* ensure same algorithm in getsym */

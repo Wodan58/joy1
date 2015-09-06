@@ -14,7 +14,7 @@ For a definition "foo == ...", enters identifier id
 (string "foo") into global table. For a first use of "bar" inside
 "foo == ..bar.." enters "bar" into global table. In my implementation this
 part of the table uses a hashing method, the actual hash value
-has already been computed by the scannner.
+has already been computed by the scanner.
 
 function lookup:
 
@@ -39,7 +39,7 @@ function enteratom:
 
 If we are inside a HIDE, PRIVATE or a module and see "foo == ..."
 enter "foo" into table (with a NULL body), and add this
-entry to the current local table at the current diplay level.
+entry to the current local table at the current display level.
 
 function definition:
 
@@ -96,7 +96,7 @@ itself. [NOTE: TO MY DISGUST, THE GRAMMAR IN THE MANUAL DOES
 NOT SAY THIS - VERY SORRY.]
 If the symbol is "PUBLIC" or "LIBRA" or "IN", parse and
 process a definition-sequence.
-If the symbols is anything else, warn about empty
+If the symbol is anything else, warn about empty
 compound definition.
 
 I suppose part of the difficulty of understanding this function
@@ -184,6 +184,9 @@ D(	printf("hidden definition '%s' at %p\n",id,(void *)LOC2INT(location)); )
 	location->name = (char *) malloc(strlen(id) + 1);
 	strcpy(location->name, id);
 	location->u.body = NULL; /* may be assigned later */
+#ifdef NO_HELP_LOCAL_SYMBOLS
+	location->is_local = 1;
+#endif
 	location->next = display[display_enter];
 	display[display_enter] = location; }
     else lookup();
