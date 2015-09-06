@@ -25,7 +25,7 @@
 #define CORRECT_INTERN_STRCPY
 #define CORRECT_INTERN_LOOKUP
 #define CORRECT_STRING_WRITE
-#define CORRECT_INHAS_COMPARE
+/* #define CORRECT_INHAS_COMPARE */
 #define CORRECT_TYPE_COMPARE
 #define APPLY_FORWARD_SYMBOL
 #define BDW_ALSO_IN_MAIN
@@ -61,13 +61,18 @@
 #define CORRECT_OCTAL_NUMBER
 #define NO_EXECUTE_ERROR
 #define CORRECT_HELPDETAIL
+#define CORRECT_ALEN
 
 				/* configure			*/
 #define SHELLESCAPE	'$'
 #define INPSTACKMAX	10
 #define INPLINEMAX	1024
 #define FLOAT_BUFFER	320
+#ifdef CORRECT_ALEN
+#define ALEN		22
+#else
 #define ALEN		20
+#endif
 #define HASHSIZE	9
 #define SYMTABMAX	1000
 #define DISPLAYMAX	10	/* nesting in HIDE & MODULE	*/

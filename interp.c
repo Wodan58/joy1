@@ -1899,6 +1899,33 @@ HELP(h_help1_,==)
 
 /* - - - - -   C O M B I N A T O R S   - - - - - */
 
+#ifdef TRACE
+PUBLIC void printfactor(Node *n, FILE *stm)
+{
+    switch (n->op)
+      { case BOOLEAN_:
+	    fprintf(stm, "type boolean"); return;
+	case INTEGER_:
+	    fprintf(stm, "type integer"); return;
+	case FLOAT_:
+	    fprintf(stm, "type float"); return;
+	case SET_:
+	    fprintf(stm, "type set"); return;
+	case CHAR_:
+	    fprintf(stm, "type char"); return;
+	case STRING_:
+	    fprintf(stm, "type string"); return;
+	case LIST_:
+	    fprintf(stm, "type list"); return;
+	case USR_:
+	    fprintf(stm, n->u.ent->name); return;
+	case FILE_:
+	    fprintf(stm, "type file"); return;
+	default:
+	    fprintf(stm, "%s",symtab[(int) n->op].name); return; }
+}
+#endif
+
 PUBLIC void exeterm(Node *n)
 {
     Node *stepper;
@@ -1907,8 +1934,14 @@ start:
     conts = LIST_NEWNODE(n,conts);
     while (conts->u.lis != NULL)
       {
+#ifdef TRACE
+	printfactor(conts->u.lis, stdout);
+	printf(" . ");
+	writeterm(stk, stdout);
+	printf("\n");
+#endif
 	if (tracegc > 5)
-	  { printf("exeterm1: %p ", conts->u.lis);
+	  { printf("exeterm1: %p ", (void *)conts->u.lis);
 	    printnode(conts->u.lis); }
 	stepper = conts->u.lis;
 	conts->u.lis = conts->u.lis->next;
@@ -1934,7 +1967,7 @@ D(		printf("trying to do "); )
 D(		writefactor(dump1, stdout); )
 		(*(stepper->u.proc))(); break; }
 	if (tracegc > 5)
-	  { printf("exeterm2: %p ", stepper);
+	  { printf("exeterm2: %p ", (void *)stepper);
             printnode(stepper); }
 /*
 	stepper = stepper->next; }
@@ -3445,7 +3478,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 #endif
 
 {"condlinrec",		condlinrec_,	"[ [C1] [C2] .. [D] ]  ->  ...",
-"Each [Ci] is of the forms [[B] [T]] or [[B] [R1] [R2]].\nTries each B. If that yields true and there is just a [T], executes T and exit.\nIf there are [R1] and [R2], executes R1, recurses, executes R2.\nSubsequent case are ignored. If no B yields true, then [D] is used.\nIt is then of the forms [[T]] or [[R1] [R2]]. For the former, executes T.\nFor the latter executes R1, recurses, executes R2."},
+"Each [Ci] is of the forms [[B] [T]] or [[B] [R1] [R2]].\nTries each B. If that yields true and there is just a [T], executes T and exit.\nIf there are [R1] and [R2], executes R1, recurses, executes R2.\nSubsequent cases are ignored. If no B yields true, then [D] is used.\nIt is then of the forms [[T]] or [[R1] [R2]]. For the former, executes T.\nFor the latter executes R1, recurses, executes R2."},
 
 {"step",			step_,		"A  [P]  ->  ...",
 "Sequentially putting members of aggregate A onto stack,\nexecutes P for each member of A."},
@@ -3517,7 +3550,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"__manual_list",	manual_list_aux_,   "->  L",
 "Pushes a list L of lists (one per operator) of three documentation strings"},
 
-{"__settracegc",		settracegc_,	"I  ->",
+{"__settracegc",	settracegc_,	"I  ->",
 "Sets value of flag for tracing garbage collection to I (= 0..5)."},
 
 {"setautoput",		setautoput_,	"I  ->",
@@ -3542,7 +3575,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 "Creates an aggregate A containing the interpreter's command line arguments."},
 
 {"argc",		argc_,		"-> I",
-"Pushes the number of command line arguments. This is quivalent to 'argv size'."},
+"Pushes the number of command line arguments. This is equivalent to 'argv size'."},
 
 {"__memoryindex",	memoryindex_,	"->",
 "Pushes current value of memory."},
