@@ -120,6 +120,7 @@ Manfred von Thun, 2006
 # ifdef GC_BDW
 #    include "gc/include/gc.h"
 #    define malloc GC_malloc_atomic
+#    define strdup GC_strdup
 # endif
 #endif
 
@@ -130,10 +131,14 @@ D(  printf("getsym, new: '%s'\n",id); )
     location->name = (char *) malloc(strlen(id) + 1);
     strcpy(location->name,id);
     location->u.body = NULL; /* may be assigned in definition */
+#ifdef USE_UNKNOWN_SYMBOLS
+    location->is_unknown = 1;
+#endif
     location->next = hashentry[hashvalue];
 D(  printf("entered %s at %p\n",id,(void *)LOC2INT(location)); )
     hashentry[hashvalue] = location;
 }
+
 PUBLIC void lookup(void)
 {
 int i;
@@ -154,32 +159,46 @@ D(  printf("%s  hashes to %d\n",id,hashvalue); )
 	enterglobal();
 }
 
-#ifdef APPLY_FORWARD_SYMBOL
-PRIVATE Entry *local(void)
+#ifdef USE_UNKNOWN_SYMBOLS
+PRIVATE void detachatom()
 {
-    int i;
-    Entry *loc;
+    Entry *cur, *prev;
 
-    for (i = display_lookup; i > 0; i--) {
-	for (loc = display[i]; loc && strcmp(id, loc->name); loc = loc->next)
-	    ;
-	if (loc) /* found in local table */
-	    return loc;
-    }
-    return 0;
+    for (prev = cur = hashentry[hashvalue]; cur != symtab; cur = cur->next)
+	if (cur == location) {
+	    if (prev == cur)
+		hashentry[hashvalue] = cur->next;
+	    else
+		prev->next = cur->next;
+	    break;
+	}
 }
 #endif
 
 PRIVATE void enteratom()
 {
-    if (display_enter > 0)
-#ifdef APPLY_FORWARD_SYMBOL
-      { if ((location = local()) != NULL)
-	    return;
-	location = symtabindex++;
-#else
-      { location = symtabindex++;
+#ifdef USE_UNKNOWN_SYMBOLS
+    lookup();
+    if (display_enter > 0) {
+	if (location->is_unknown)
+	    detachatom();
+	else {
+	    location = symtabindex++;
+D(	printf("hidden definition '%s' at %p\n",id,(void *)LOC2INT(location)); )
+	    location->name = (char *) malloc(strlen(id) + 1);
+	    strcpy(location->name, id);
+	    location->u.body = NULL; /* may be assigned later */
+	}
+#ifdef NO_HELP_LOCAL_SYMBOLS
+	location->is_local = 1;
 #endif
+	location->next = display[display_enter];
+	display[display_enter] = location;
+    }
+    location->is_unknown = 0;
+#else
+    if (display_enter > 0)
+      { location = symtabindex++;
 D(	printf("hidden definition '%s' at %p\n",id,(void *)LOC2INT(location)); )
 	location->name = (char *) malloc(strlen(id) + 1);
 	strcpy(location->name, id);
@@ -190,7 +209,9 @@ D(	printf("hidden definition '%s' at %p\n",id,(void *)LOC2INT(location)); )
 	location->next = display[display_enter];
 	display[display_enter] = location; }
     else lookup();
+#endif
 }
+
 PRIVATE void defsequence();		/* forward */
 PRIVATE void compound_def();		/* forward */
 
@@ -223,7 +244,7 @@ D(  printf("assigned this body: "); )
 D(  writeterm(stk->u.lis, stdout); )
 D(  printf("\n"); )
     if (here != NULL)
-      { here->u.body = stk->u.lis; here->is_module = 0; }
+      { here->u.body = stk->u.lis; /* here->is_module = 0; */ }
     stk = stk->next;
 }
 

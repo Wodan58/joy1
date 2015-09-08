@@ -63,6 +63,7 @@
 #define CORRECT_HELPDETAIL
 #define CORRECT_ALEN
 #define NO_HELP_LOCAL_SYMBOLS
+#define USE_UNKNOWN_SYMBOLS
 
 				/* configure			*/
 #define SHELLESCAPE	'$'
@@ -94,21 +95,18 @@
 #define MAXINT		9223372036854775807LL
 #endif
 				/* symbols from getsym		*/
-#define ILLEGAL_	 0
-#define COPIED_		 1
-#define USR_		 2
+#define ILLEGAL_	0
+#define COPIED_		1
+#define USR_		2
 #define ANON_FUNCT_	3
 #define BOOLEAN_	4
-#define CHAR_	5
+#define CHAR_		5
 #define INTEGER_	6
-#define SET_	7
-#define STRING_	8
-#define LIST_	9
-#define FLOAT_	10
-#define FILE_	11
-#ifdef BUILTIN_BUILTIN
-#define FIRST_BUILTIN	12
-#endif
+#define SET_		7
+#define STRING_		8
+#define LIST_		9
+#define FLOAT_		10
+#define FILE_		11
 #ifdef CORRECT_HELPDETAIL
 #define FALSE_		12
 #define TRUE_		13
@@ -168,6 +166,9 @@ typedef struct Entry
     int is_module;
 #ifdef NO_HELP_LOCAL_SYMBOLS
     int is_local;
+#endif
+#ifdef USE_UNKNOWN_SYMBOLS
+    int is_unknown;
 #endif
     union 
       { Node *body;
@@ -246,7 +247,7 @@ CLASS Node			/* dynamic memory	*/
 PUBLIC void stack_(void);
 PUBLIC void dummy_(void);
 PUBLIC void exeterm(Node *n);
-PUBLIC void inisymboltable(void)		/* initialise			*/;
+PUBLIC void inisymboltable(void)		/* initialise		*/;
 PUBLIC char *opername(int o);
 PUBLIC void lookup(void);
 PUBLIC void abortexecution_(void);
