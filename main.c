@@ -164,7 +164,7 @@ PRIVATE void detachatom()
 {
     Entry *cur, *prev;
 
-    for (prev = cur = hashentry[hashvalue]; cur != symtab; cur = cur->next)
+    for (prev = cur = hashentry[hashvalue]; cur != symtab; cur = cur->next) {
 	if (cur == location) {
 	    if (prev == cur)
 		hashentry[hashvalue] = cur->next;
@@ -172,6 +172,8 @@ PRIVATE void detachatom()
 		prev->next = cur->next;
 	    break;
 	}
+	prev = cur;
+    }
 }
 #endif
 
