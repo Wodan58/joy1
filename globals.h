@@ -27,7 +27,6 @@
 #define CORRECT_STRING_WRITE
 /* #define CORRECT_INHAS_COMPARE */
 #define CORRECT_TYPE_COMPARE
-/* #define APPLY_FORWARD_SYMBOL */
 #define BDW_ALSO_IN_MAIN
 #define FGET_FROM_FILE
 #define CORRECT_STRFTIME_BUF
@@ -64,6 +63,9 @@
 #define CORRECT_ALEN
 #define NO_HELP_LOCAL_SYMBOLS
 #define USE_UNKNOWN_SYMBOLS
+#define DONT_ADD_MODULE_NAMES
+#define CHECK_SYMTABMAX
+#define CHECK_DISPLAYMAX
 
 				/* configure			*/
 #define SHELLESCAPE	'$'
@@ -163,12 +165,16 @@ typedef struct Node
     struct Node *next; } Node;
 typedef struct Entry
   { char *name;
+#if defined(NO_HELP_LOCAL_SYMBOLS) || defined(USE_UNKNOWN_SYMBOLS)
+    unsigned char is_module;
+#else
     int is_module;
+#endif
 #ifdef NO_HELP_LOCAL_SYMBOLS
-    int is_local;
+    unsigned char is_local;
 #endif
 #ifdef USE_UNKNOWN_SYMBOLS
-    int is_unknown;
+    unsigned char is_unknown;
 #endif
     union 
       { Node *body;

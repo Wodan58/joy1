@@ -265,7 +265,9 @@ D(	    printf("readfactor: location = %p\n", (void *)location); )
     else getsym();
     if (sym != ATOM) 
       { error("atom expected as module field"); return; }
+#ifndef DONT_ADD_MODULE_NAMES
     lookup();
+#endif
 D(  printf("looking for field %s\n",id); )
     while (mod_fields && strcmp(id,mod_fields->name) != 0)
 	mod_fields = mod_fields->next;

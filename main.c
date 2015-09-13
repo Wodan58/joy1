@@ -126,6 +126,10 @@ Manfred von Thun, 2006
 
 PRIVATE void enterglobal()
 {
+#ifdef CHECK_SYMTABMAX
+    if (symtabindex - symtab >= SYMTABMAX)
+	execerror("index", "symbols");
+#endif
     location = symtabindex++;
 D(  printf("getsym, new: '%s'\n",id); )
     location->name = (char *) malloc(strlen(id) + 1);
@@ -185,6 +189,10 @@ PRIVATE void enteratom()
 	if (location->is_unknown)
 	    detachatom();
 	else {
+#ifdef CHECK_SYMTABMAX
+	    if (symtabindex - symtab >= SYMTABMAX)
+		execerror("index", "symbols");
+#endif
 	    location = symtabindex++;
 D(	printf("hidden definition '%s' at %p\n",id,(void *)LOC2INT(location)); )
 	    location->name = (char *) malloc(strlen(id) + 1);
@@ -200,7 +208,13 @@ D(	printf("hidden definition '%s' at %p\n",id,(void *)LOC2INT(location)); )
     location->is_unknown = 0;
 #else
     if (display_enter > 0)
+#ifdef CHECK_SYMTABMAX
+      { if (symtabindex - symtab >= SYMTABMAX)
+	    execerror("index", "symbols");
+	location = symtabindex++;
+#else
       { location = symtabindex++;
+#endif
 D(	printf("hidden definition '%s' at %p\n",id,(void *)LOC2INT(location)); )
 	location->name = (char *) malloc(strlen(id) + 1);
 	strcpy(location->name, id);
@@ -268,6 +282,10 @@ PRIVATE void compound_def()
 		abortexecution_(); }
 	    enteratom(); here = location; getsym();
 	    ++display_enter; ++display_lookup;
+#ifdef CHECK_DISPLAYMAX
+	    if (display_enter >= DISPLAYMAX)
+		execerror("index", "display");
+#endif
 	    display[display_enter] = NULL;
 	    compound_def();
 	    here->is_module = 1;
@@ -284,6 +302,10 @@ PRIVATE void compound_def()
 		printf("enter = %d\n",LOC2INT(display[display_enter]));
 */
 		++display_enter;
+#ifdef CHECK_DISPLAYMAX
+		if (display_enter >= DISPLAYMAX)
+		    execerror("index", "display");
+#endif
 		defsequence();
 		--display_enter;
 /*
@@ -295,6 +317,10 @@ PRIVATE void compound_def()
 	      }
 	    else
 	      { ++display_enter; ++display_lookup;
+#ifdef CHECK_DISPLAYMAX
+		if (display_enter >= DISPLAYMAX)
+		    execerror("index", "display");
+#endif
 		display[display_enter] = NULL;
 		defsequence();
 		--display_enter;
@@ -360,6 +386,9 @@ int main(int argc, char **argv)
 {
 #ifndef NO_DUPLICATE_CH
     int ch;
+#endif
+#ifdef GC_BDW
+    GC_init();
 #endif
     g_argc = argc;
     g_argv = argv;
