@@ -1,4 +1,4 @@
-regres: flatjoy grmtst joytut jp-church jp-joytst jp-nestrec jp-reprodtst laztst lsptst modtst mtrtst plgtst reptst symtst test
+regres: modtst flatjoy grmtst joytut jp-church jp-joytst jp-nestrec jp-reprodtst laztst lsptst mtrtst plgtst reptst symtst test
 	rm -f joy.out
 
 flatjoy:
@@ -9,7 +9,7 @@ grmtst:
 	tail --lines=+3 $@.out | head --lines=328 | diff -w - joy.out
 
 joytut:
-	./joy $@.inp </dev/null >joy.out
+	./joy $@.inp >joy.out
 	sed '/^JOY/d;/^Copy/d;/^Monday/d;/^time/d;s/joytut/joytut quit/' <$@.out | diff -w - joy.out
 
 jp-church:
@@ -30,7 +30,7 @@ laztst:
 	sed '/^JOY/d;/^Copy/d;/^Friday/d;/^Time/d' <$@.out | diff -w - joy.out
 
 lsptst:
-	./joy $@.joy </dev/null >joy.out
+	./joy $@.joy >joy.out
 	head -265 <$@.out | sed '/^JOY/d;/^Copy/d;s/^lisp/lisp quit/' | diff -w - joy.out
 
 modtst:

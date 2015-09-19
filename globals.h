@@ -1,5 +1,6 @@
 /* FILE : globals.h */
 
+#define USE_ONLY_STDIN
 #define NO_COMPILER_WARNINGS
 #define CORRECT_FIVE_PARAMS
 #define GET_FROM_STDIN
@@ -66,6 +67,12 @@
 #define DONT_ADD_MODULE_NAMES
 #define CHECK_SYMTABMAX
 #define CHECK_DISPLAYMAX
+#define HASHVALUE_FUNCTION
+#define USE_SHELL_ESCAPE
+#ifndef LEX_YACC
+#define ENABLE_TRACEGC
+#endif
+#define NO_WASTE_FP
 
 				/* configure			*/
 #define SHELLESCAPE	'$'
@@ -127,10 +134,12 @@
 #define EQDEF		1101
 #define HIDE		1102
 #define IN		1103
+#ifndef LEX_YACC
 #define END		1104
 #define MODULE		1105
 #define JPRIVATE	1106
 #define JPUBLIC		1107
+#endif
 
 #ifdef DEBUG
 #    define D(x) x
@@ -143,6 +152,9 @@
 
 				/* types			*/
 typedef int Symbol;
+#ifdef LEX_YACC
+#include "joy.h"
+#else
 typedef short Operator;
 
 typedef union
@@ -181,6 +193,7 @@ typedef struct Entry
 	struct Entry *module_fields;
 	void  (*proc) (); } u;
     struct Entry *next; } Entry;
+#endif
 
 #ifdef ALLOC
 #    define CLASS
@@ -224,7 +237,7 @@ CLASS Entry					/* symbol table	*/
 #define LOC2INT(e) (((size_t)e - (size_t)symtab) / sizeof(Entry))
 #define INT2LOC(x) ((Entry*) ((x + (size_t)symtab)) * sizeof(Entry))
 
-CLASS Node			/* dynamic memory	*/
+CLASS Node				/* dynamic memory	*/
 /*
     memory[MEMORYMAX],
     *memoryindex,
@@ -259,7 +272,11 @@ PUBLIC void lookup(void);
 PUBLIC void abortexecution_(void);
 PUBLIC void execerror(char *message, char *op);
 PUBLIC void quit_(void);
+#ifdef USE_ONLY_STDIN
+PUBLIC void inilinebuffer(char *filnam);
+#else
 PUBLIC void inilinebuffer(void);
+#endif
 PUBLIC void putline(void);
 PUBLIC int endofbuffer(void);
 PUBLIC void error(char *message);
@@ -271,7 +288,7 @@ PUBLIC void printnode(Node *p);
 PUBLIC void gc_(void);
 PUBLIC Node *newnode(Operator o, Types u, Node *r);
 PUBLIC void memoryindex_(void);
-PUBLIC void readfactor(void)	/* read a JOY factor		*/;
+PUBLIC void readfactor(void)		/* read a JOY factor		*/;
 PUBLIC void readterm(void);
 PUBLIC void writefactor(Node *n, FILE *stm);
 PUBLIC void writeterm(Node *n, FILE *stm);
@@ -280,8 +297,12 @@ PUBLIC void writeterm(Node *n, FILE *stm);
 PUBLIC void redirect(FILE *);
 #endif
 
+#ifdef HASHVALUE_FUNCTION
+PUBLIC void HashValue(char *str);
+#endif
+
 #define USR_NEWNODE(u,r)	(bucket.ent = u, newnode(USR_, bucket, r))
-#define ANON_FUNCT_NEWNODE(u,r)	(bucket.proc = u, newnode(ANON_FUNCT_, bucket, r))
+#define ANON_FUNCT_NEWNODE(u,r)	(bucket.proc= u, newnode(ANON_FUNCT_,bucket,r))
 #define BOOLEAN_NEWNODE(u,r)	(bucket.num = u, newnode(BOOLEAN_, bucket, r))
 #define CHAR_NEWNODE(u,r)	(bucket.num = u, newnode(CHAR_, bucket, r))
 #define INTEGER_NEWNODE(u,r)	(bucket.num = u, newnode(INTEGER_, bucket, r))

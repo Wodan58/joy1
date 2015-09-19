@@ -37,7 +37,7 @@
 #include <ctype.h>
 #endif
 # ifdef GC_BDW
-#    include "gc/include/gc.h"
+#    include <gc.h>
 #    define malloc GC_malloc_atomic
 #    define realloc GC_realloc
 #    define free(X)
@@ -102,13 +102,13 @@ PRIVATE void manual_list_aux_();
     if (stk->op != STRING_)					\
 	execerror("string",NAME)
 #define STRING2(NAME)						\
-    if (stk->next->op != STRING_)					\
+    if (stk->next->op != STRING_)				\
 	execerror("string as second parameter",NAME)
 #define INTEGER(NAME)						\
     if (stk->op != INTEGER_)					\
 	execerror("integer",NAME)
 #define INTEGER2(NAME)						\
-    if (stk->next->op != INTEGER_)					\
+    if (stk->next->op != INTEGER_)				\
 	execerror("integer as second parameter",NAME)
 #define CHARACTER(NAME)						\
     if (stk->op != CHAR_)					\
@@ -199,11 +199,11 @@ PRIVATE void manual_list_aux_();
 
 #define POP(X) X = X->next
 
-#define NULLARY(CONSTRUCTOR,VALUE)                                     \
+#define NULLARY(CONSTRUCTOR,VALUE)                              \
     stk = CONSTRUCTOR(VALUE, stk)
-#define UNARY(CONSTRUCTOR,VALUE)                                       \
+#define UNARY(CONSTRUCTOR,VALUE)                                \
     stk = CONSTRUCTOR(VALUE, stk->next)
-#define BINARY(CONSTRUCTOR,VALUE)                                      \
+#define BINARY(CONSTRUCTOR,VALUE)                               \
     stk = CONSTRUCTOR(VALUE, stk->next->next)
 #define GNULLARY(TYPE,VALUE)                                    \
     stk = newnode(TYPE,(VALUE),stk)
@@ -221,7 +221,7 @@ PRIVATE void manual_list_aux_();
 
 /* - - - -  O P E R A N D S   - - - - */
 
-#define PUSH(PROCEDURE,CONSTRUCTOR,VALUE)				\
+#define PUSH(PROCEDURE,CONSTRUCTOR,VALUE)			\
 PRIVATE void PROCEDURE()					\
 {   NULLARY(CONSTRUCTOR,VALUE); }
 PUSH(true_,BOOLEAN_NEWNODE,1L)				/* constants	*/
@@ -288,7 +288,6 @@ PRIVATE void intern_()
 #else
     strcpy(id, stk->u.str);
 #endif
-    hashvalue = 0;
 #ifdef CORRECT_INTERN_LOOKUP
     p = 0;
     if (id[0] == '-' || !strchr("(#)[]{}.;'\"0123456789", id[0]))
@@ -298,8 +297,13 @@ PRIVATE void intern_()
     if (!p || *p)
 	execerror("valid name", id);
 #endif
+#ifdef HASHVALUE_FUNCTION
+    HashValue(id);
+#else
+    hashvalue = 0;
     for (p = id; *p; p++) hashvalue += *p;
     hashvalue %= HASHSIZE;
+#endif
     lookup();
     if (location < firstlibra)
 	{ bucket.proc = location->u.proc;
@@ -389,10 +393,10 @@ PRIVATE void PROCEDURE()					\
     SAME2TYPES(NAME);						\
     switch (stk->next->op)					\
       { case SET_:						\
-	    BINARY(SET_NEWNODE,(long)(stk->next->u.set OPER1 stk->u.set));	\
+	    BINARY(SET_NEWNODE,(long)(stk->next->u.set OPER1 stk->u.set)); \
 	    return;						\
 	case BOOLEAN_: case CHAR_: case INTEGER_: case LIST_:	\
-	    BINARY(BOOLEAN_NEWNODE,(long)(stk->next->u.num OPER2 stk->u.num));	\
+	    BINARY(BOOLEAN_NEWNODE,(long)(stk->next->u.num OPER2 stk->u.num)); \
 	    return;						\
 	default:						\
 	    BADDATA(NAME); } }
@@ -555,7 +559,7 @@ PRIVATE void format_()
     leng = snprintf(0, 0, format, width, prec, stk->u.num);
     result = malloc(leng + 1);
 #else
-    result = malloc(INPLINEMAX);			/* should be sufficient */
+    result = malloc(INPLINEMAX);		/* should be sufficient */
 #endif
     NUMERICTYPE("format");
 #ifdef USE_SNPRINTF
@@ -595,7 +599,7 @@ PRIVATE void formatf_()
 #ifdef CORRECT_FLOAT_BUFFER
     result = malloc(FLOAT_BUFFER);		/* should be sufficient */
 #else
-    result = malloc(INPLINEMAX);			/* should be sufficient */
+    result = malloc(INPLINEMAX);		/* should be sufficient */
 #endif
 #endif
     FLOAT("formatf");
@@ -621,17 +625,17 @@ PRIVATE void PROCEDURE()					\
     t = FUNC(&timval);						\
     wday = t->tm_wday;						\
     if (wday == 0) wday = 7;					\
-    dump1 = LIST_NEWNODE(NULL, dump1);			\
-    DMP1 = INTEGER_NEWNODE(wday, DMP1);		\
-    DMP1 = INTEGER_NEWNODE((long)t->tm_yday, DMP1);	\
-    DMP1 = BOOLEAN_NEWNODE((long)t->tm_isdst, DMP1);	\
-    DMP1 = INTEGER_NEWNODE((long)t->tm_sec, DMP1);	\
-    DMP1 = INTEGER_NEWNODE((long)t->tm_min, DMP1);	\
-    DMP1 = INTEGER_NEWNODE((long)t->tm_hour, DMP1);	\
-    DMP1 = INTEGER_NEWNODE((long)t->tm_mday, DMP1);	\
-    DMP1 = INTEGER_NEWNODE((long)(t->tm_mon + 1), DMP1); \
-    DMP1 = INTEGER_NEWNODE((long)(t->tm_year + 1900), DMP1); \
-    UNARY(LIST_NEWNODE, DMP1);						\
+    dump1 = LIST_NEWNODE(NULL, dump1);				\
+    DMP1 = INTEGER_NEWNODE(wday, DMP1);				\
+    DMP1 = INTEGER_NEWNODE((long)t->tm_yday, DMP1);		\
+    DMP1 = BOOLEAN_NEWNODE((long)t->tm_isdst, DMP1);		\
+    DMP1 = INTEGER_NEWNODE((long)t->tm_sec, DMP1);		\
+    DMP1 = INTEGER_NEWNODE((long)t->tm_min, DMP1);		\
+    DMP1 = INTEGER_NEWNODE((long)t->tm_hour, DMP1);		\
+    DMP1 = INTEGER_NEWNODE((long)t->tm_mday, DMP1);		\
+    DMP1 = INTEGER_NEWNODE((long)(t->tm_mon + 1), DMP1); 	\
+    DMP1 = INTEGER_NEWNODE((long)(t->tm_year + 1900), DMP1);	\
+    UNARY(LIST_NEWNODE, DMP1);					\
     POP(dump1);							\
     return; }
 UNMKTIME(localtime_,"localtime",localtime)
@@ -698,7 +702,7 @@ PRIVATE void strftime_()
 PRIVATE void PROCEDURE()					\
 {   ONEPARAM(NAME);						\
     FLOAT(NAME);						\
-    UNARY(FLOAT_NEWNODE, FUNC(FLOATVAL));				\
+    UNARY(FLOAT_NEWNODE, FUNC(FLOATVAL));			\
     return; }
 UFLOAT(acos_,"acos",acos)
 UFLOAT(asin_,"asin",asin)
@@ -720,7 +724,7 @@ UFLOAT(tanh_,"tanh",tanh)
 PRIVATE void PROCEDURE()					\
 {   TWOPARAMS(NAME);						\
     FLOAT2(NAME);						\
-    BINARY(FLOAT_NEWNODE, FUNC(FLOATVAL2, FLOATVAL));			\
+    BINARY(FLOAT_NEWNODE, FUNC(FLOATVAL2, FLOATVAL));		\
     return; }
 BFLOAT(atan2_,"atan2",atan2)
 BFLOAT(pow_,"pow",pow)
@@ -791,7 +795,7 @@ PLUSMINUS(minus_,"-",-)
 PRIVATE void PROCEDURE()					\
 {   TWOPARAMS(NAME);						\
     if (FLOATABLE2)						\
-      { BINARY(FLOAT_NEWNODE,						\
+      { BINARY(FLOAT_NEWNODE,					\
 	    FLOATVAL OPER FLOATVAL2 ?				\
 	    FLOATVAL2 : FLOATVAL);				\
 	return; } 						\
@@ -801,7 +805,7 @@ PRIVATE void PROCEDURE()					\
 	BINARY(CHAR_NEWNODE,					\
 	    stk->u.num OPER stk->next->u.num ?			\
 	    stk->next->u.num : stk->u.num);			\
-    else BINARY(INTEGER_NEWNODE,					\
+    else BINARY(INTEGER_NEWNODE,				\
 	    stk->u.num OPER stk->next->u.num ?			\
 	    stk->next->u.num : stk->u.num); }
 MAXMIN(max_,"max",<)
@@ -1012,7 +1016,7 @@ PRIVATE void PROCEDURE()					\
     }								\
     stk = CONSTRUCTOR(comp, stk->next->next); }
 #else
-#define COMPREL(PROCEDURE,NAME,CONSTRUCTOR,OPR)				\
+#define COMPREL(PROCEDURE,NAME,CONSTRUCTOR,OPR)			\
 PRIVATE void PROCEDURE()					\
   { long comp = 0;						\
     TWOPARAMS(NAME);						\
@@ -1114,11 +1118,11 @@ PRIVATE void frename_()
     BINARY(BOOLEAN_NEWNODE, (long)!rename(stk->next->u.str, stk->u.str));
     return; }
 
-#define FILEGET(PROCEDURE,NAME,CONSTRUCTOR,EXPR)			\
+#define FILEGET(PROCEDURE,NAME,CONSTRUCTOR,EXPR)		\
 PRIVATE void PROCEDURE()					\
 {   ONEPARAM(NAME);						\
     FILE(NAME);							\
-    NULLARY(CONSTRUCTOR,EXPR);						\
+    NULLARY(CONSTRUCTOR,EXPR);					\
     return; }
 FILEGET(feof_,"feof",BOOLEAN_NEWNODE,(long)feof(stk->u.fil))
 FILEGET(ferror_,"ferror",BOOLEAN_NEWNODE,(long)ferror(stk->u.fil))
@@ -1453,7 +1457,7 @@ PRIVATE void PROCEDURE()					\
 	    break; }						\
 	default:						\
 	    BADAGGREGATE(NAME); }				\
-    BINARY(BOOLEAN_NEWNODE,(long)found);					\
+    BINARY(BOOLEAN_NEWNODE,(long)found);			\
 }
 #endif
 INHAS(in_,"in",stk,stk->next)
@@ -1471,14 +1475,14 @@ PRIVATE void PROCEDURE()					\
 	    for (i = 0; i < SETSIZE; i++)			\
 	      { if (AGGR->u.set & (1 << i))			\
 		  { if (indx == 0)				\
-			{BINARY(INTEGER_NEWNODE,i); return;}		\
+			{BINARY(INTEGER_NEWNODE,i); return;}	\
 		    indx--; } }					\
 	    INDEXTOOLARGE(NAME);				\
 	    return; }						\
 	case STRING_:						\
 	    if (strlen(AGGR->u.str) < (size_t)INDEX->u.num)	\
 		INDEXTOOLARGE(NAME);				\
-	    BINARY(CHAR_NEWNODE,(long)AGGR->u.str[INDEX->u.num]);		\
+	    BINARY(CHAR_NEWNODE,(long)AGGR->u.str[INDEX->u.num]);	\
 	    return;						\
 	case LIST_:						\
 	  { Node *n = AGGR->u.lis;  int i  = INDEX->u.num;	\
@@ -1487,7 +1491,7 @@ PRIVATE void PROCEDURE()					\
 	      { if (n->next == NULL)				\
 		    INDEXTOOLARGE(NAME);			\
 		n = n->next; i--; }				\
-	    GBINARY(n->op,n->u);					\
+	    GBINARY(n->op,n->u);				\
 	    return; }						\
 	default:						\
 	    BADAGGREGATE(NAME); }				\
@@ -1553,8 +1557,8 @@ PRIVATE void PROCEDURE()					\
 {   TWOPARAMS(NAME);						\
     switch (AGGR->op)						\
       { case LIST_:						\
-	    BINARY(LIST_NEWNODE,newnode(ELEM->op,			\
-				 ELEM->u,AGGR->u.lis));	\
+	    BINARY(LIST_NEWNODE,newnode(ELEM->op,		\
+				 ELEM->u,AGGR->u.lis));		\
 	    break;						\
 	case SET_:						\
 	    CHECKSETMEMBER(ELEM,NAME);				\
@@ -1637,7 +1641,7 @@ PRIVATE void take_()
 	    return; }
 	case LIST_:
 	  { int i = stk->u.num;
-	    if (i < 1) { BINARY(LIST_NEWNODE,NULL); return; }	/* null string */
+	    if (i < 1) { BINARY(LIST_NEWNODE,NULL); return; } /* null string */
 	    dump1 = newnode(LIST_,stk->next->u,dump1);/* old  */
 	    dump2 = LIST_NEWNODE(0L, dump2);		  /* head */
 	    dump3 = LIST_NEWNODE(0L, dump3);		  /* last */
@@ -1904,7 +1908,7 @@ PRIVATE void PROCEDURE()					\
     while (i != symtab)						\
 	if ((--i)->name[0] REL '_')				\
 	  { name_length = strlen(i->name) + 1;			\
-	    if (column + name_length > 72)		\
+	    if (column + name_length > 72)			\
 	      { printf("\n"); column = 0; }			\
 	    printf("%s ", i->name);  				\
 	    column += name_length; }				\
@@ -1956,9 +1960,11 @@ start:
 	writeterm(stk, stdout);
 	printf("\n");
 #endif
+#ifdef ENABLE_TRACEGC
 	if (tracegc > 5)
 	  { printf("exeterm1: %p ", (void *)conts->u.lis);
 	    printnode(conts->u.lis); }
+#endif
 	stepper = conts->u.lis;
 	conts->u.lis = conts->u.lis->next;
 	switch (stepper->op)
@@ -1976,15 +1982,19 @@ start:
 		break;
 	    case COPIED_: case ILLEGAL_:
 		printf("exeterm: attempting to execute bad node\n");
+#ifdef ENABLE_TRACEGC
 		printnode(stepper);
+#endif
 		break;
 	    default:
 D(		printf("trying to do "); )
-D(		writefactor(dump1, stdout); )
+D(		writefactor(stepper, stdout); )
 		(*(stepper->u.proc))(); break; }
+#ifdef ENABLE_TRACEGC
 	if (tracegc > 5)
 	  { printf("exeterm2: %p ", (void *)stepper);
             printnode(stepper); }
+#endif
 /*
 	stepper = stepper->next; }
 */
@@ -2450,21 +2460,21 @@ PRIVATE void PROCEDURE()					\
 	  { char *s;						\
 	    for (s = SAVED2->u.str;				\
 		 *s != '\0' && result == INITIAL; s++)		\
-	      { stk = CHAR_NEWNODE((long)*s,SAVED3);			\
+	      { stk = CHAR_NEWNODE((long)*s,SAVED3);		\
 		exeterm(SAVED1->u.lis);				\
 		if (stk->u.num != INITIAL)			\
 		    result = 1 - INITIAL; }			\
 	    break; }						\
 	case LIST_ :						\
 	  { dump1 = newnode(LIST_,SAVED2->u,dump1);		\
-	    while (DMP1 != NULL && result == INITIAL)	\
-	      { stk = newnode(DMP1->op,			\
-			DMP1->u,SAVED3);		\
+	    while (DMP1 != NULL && result == INITIAL)		\
+	      { stk = newnode(DMP1->op,				\
+			DMP1->u,SAVED3);			\
 		exeterm(SAVED1->u.lis);				\
 		if (stk->u.num != INITIAL)			\
 		     result = 1 - INITIAL; 			\
-		DMP1 = DMP1->next; }		\
-	    POP(dump1);				\
+		DMP1 = DMP1->next; }				\
+	    POP(dump1);						\
 	    break; }						\
 	default :						\
 	    BADAGGREGATE(NAME); }				\
@@ -2876,42 +2886,42 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 	/* THESE MUST BE DEFINED IN THE ORDER OF THEIR VALUES */
 {
 
-{"__ILLEGAL",		dummy_,			"->",
+{"__ILLEGAL",		dummy_,		"->",
 "internal error, cannot happen - supposedly."},
 
-{"__COPIED",		dummy_,			"->",
+{"__COPIED",		dummy_,		"->",
 "no message ever, used for gc."},
 
-{"__USR",		dummy_,			"usg",
+{"__USR",		dummy_,		"usg",
 "user node."},
 
-{"__ANON_FUNCT",	dummy_,			"->",
+{"__ANON_FUNCT",	dummy_,		"->",
 "op for anonymous function call."},
 
 /* LITERALS */
 
-{" truth value type",		dummy_,		"->  B",
+{" truth value type",	dummy_,		"->  B",
 "The logical type, or the type of truth values.\nIt has just two literals: true and false."},
 
-{" character type",		dummy_,		"->  C",
+{" character type",	dummy_,		"->  C",
 "The type of characters. Literals are written with a single quote.\nExamples:  'A  '7  ';  and so on. Unix style escapes are allowed."},
 
-{" integer type",		dummy_,		"->  I",
+{" integer type",	dummy_,		"->  I",
 "The type of negative, zero or positive integers.\nLiterals are written in decimal notation. Examples:  -123   0   42."},
 
-{" set type",			dummy_,		"->  {...}",
+{" set type",		dummy_,		"->  {...}",
 "The type of sets of small non-negative integers.\nThe maximum is platform dependent, typically the range is 0..31.\nLiterals are written inside curly braces.\nExamples:  {}  {0}  {1 3 5}  {19 18 17}."},
 
-{" string type",		dummy_,		"->  \"...\" ",
+{" string type",	dummy_,		"->  \"...\" ",
 "The type of strings of characters. Literals are written inside double quotes.\nExamples: \"\"  \"A\"  \"hello world\" \"123\".\nUnix style escapes are accepted."},
 
-{" list type",			dummy_,		"->  [...]",
+{" list type",		dummy_,		"->  [...]",
 "The type of lists of values of any type (including lists),\nor the type of quoted programs which may contain operators or combinators.\nLiterals of this type are written inside square brackets.\nExamples: []  [3 512 -7]  [john mary]  ['A 'C ['B]]  [dup *]."},
 
-{" float type",			dummy_,		"->  F",
+{" float type",		dummy_,		"->  F",
 "The type of floating-point numbers.\nLiterals of this type are written with embedded decimal points (like 1.2)\nand optional exponent specifiers (like 1.5E2)"},
 
-{" file type",			dummy_,		"->  FILE:",
+{" file type",		dummy_,		"->  FILE:",
 "The type of references to open I/O streams,\ntypically but not necessarily files.\nThe only literals of this type are stdin, stdout, and stderr."},
 
 /* OPERANDS */
@@ -2952,7 +2962,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"undefs",		undefs_,	"->  [..]",
 "Push a list of all undefined symbols in the current symbol table."},
 
-{"echo",			echo_,		"->  I",
+{"echo",		echo_,		"->  I",
 "Pushes value of echo flag, I = 0..3."},
 
 {"clock",		clock_,		"->  I",
@@ -3085,7 +3095,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"ceil",		ceil_,		"F  ->  G",
 "G is the float ceiling of F."},
 
-{"cos",		cos_,		"F  ->  G",
+{"cos",			cos_,		"F  ->  G",
 "G is the cosine of F."},
 
 {"cosh",		cosh_,		"F  ->  G",
@@ -3103,7 +3113,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"ldexp",		ldexp_,		"F I  -> G",
 "G is F times 2 to the Ith power."},
 
-{"log",		log_,		"F  ->  G",
+{"log",			log_,		"F  ->  G",
 "G is the natural logarithm of F."},
 
 {"log10",		log10_,		"F  ->  G",
@@ -3115,7 +3125,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"pow",			pow_,		"F G  ->  H",
 "H is F raised to the Gth power."},
 
-{"sin",		sin_,		"F  ->  G",
+{"sin",			sin_,		"F  ->  G",
 "G is the sine of F."},
 
 {"sinh",		sinh_,		"F  ->  G",
@@ -3124,7 +3134,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"sqrt",		sqrt_,		"F  ->  G",
 "G is the square root of F."},
 
-{"tan",		tan_,		"F  ->  G",
+{"tan",			tan_,		"F  ->  G",
 "G is the tangent of F."},
 
 {"tanh",		tanh_,		"F  ->  G",
@@ -3302,7 +3312,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 
 /* PREDICATES */
 
-{"null",			null_,		"X  ->  B",
+{"null",		null_,		"X  ->  B",
 "Tests for empty aggregate X or zero numeric."},
 
 {"small",		small_,		"X  ->  B",
@@ -3343,7 +3353,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"integer",		integer_,	"X  ->  B",
 "Tests whether X is an integer."},
 
-{"char",			char_,		"X  ->  B",
+{"char",		char_,		"X  ->  B",
 "Tests whether X is a character."},
 
 {"logical",		logical_,	"X  ->  B",
@@ -3355,7 +3365,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"string",		string_,	"X  ->  B",
 "Tests whether X is a string."},
 
-{"list",			list_,		"X  ->  B",
+{"list",		list_,		"X  ->  B",
 "Tests whether X is a list."},
 
 {"leaf",		leaf_,		"X  ->  B",
@@ -3433,7 +3443,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"branch",		branch_,	"B [T] [F]  ->  ...",
 "If B is true, then executes T else executes F."},
 
-{"ifte",			ifte_,		"[B] [T] [F]  ->  ...",
+{"ifte",		ifte_,		"[B] [T] [F]  ->  ...",
 "Executes B. If that yields true, then executes T else executes F."},
 
 {"ifinteger",		ifinteger_,	"X [T] [E]  ->  ...",
@@ -3486,7 +3496,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 "Executes B, if that yields true executes T.\nElse executes R1 and then [[B] [T] [R1] [R2] genrec] R2."},
 #endif
 
-{"condnestrec",	condnestrec_,	"[ [C1] [C2] .. [D] ]  ->  ...",
+{"condnestrec",		condnestrec_,	"[ [C1] [C2] .. [D] ]  ->  ...",
 #ifdef HELP_CONDNESTREC
 "A generalisation of condlinrec.\nEach [Ci] is of the form [[B] [R1] [R2] .. [Rn]] and [D] is of the form\n[[R1] [R2] .. [Rn]]. Tries each B, or if all fail, takes the default [D].\nFor the case taken, executes each [Ri] but recurses between any two\nconsecutive [Ri]. (n > 3 would be exceptional.)"},
 #else
@@ -3496,10 +3506,10 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"condlinrec",		condlinrec_,	"[ [C1] [C2] .. [D] ]  ->  ...",
 "Each [Ci] is of the forms [[B] [T]] or [[B] [R1] [R2]].\nTries each B. If that yields true and there is just a [T], executes T and exit.\nIf there are [R1] and [R2], executes R1, recurses, executes R2.\nSubsequent cases are ignored. If no B yields true, then [D] is used.\nIt is then of the forms [[T]] or [[R1] [R2]]. For the former, executes T.\nFor the latter executes R1, recurses, executes R2."},
 
-{"step",			step_,		"A  [P]  ->  ...",
+{"step",		step_,		"A  [P]  ->  ...",
 "Sequentially putting members of aggregate A onto stack,\nexecutes P for each member of A."},
 
-{"fold",			fold_,		"A V0 [P]  ->  V",
+{"fold",		fold_,		"A V0 [P]  ->  V",
 "Starting with value V0, sequentially pushes members of aggregate A\nand combines with binary operator P to produce value V."},
 
 {"map",			map_,		"A [P]  ->  B",
@@ -3520,7 +3530,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"split",		split_,		"A [B]  ->  A1 A2",
 "Uses test B to split aggregate A into sametype aggregates A1 and A2 ."},
 
-{"some",			some_,		"A  [B]  ->  X",
+{"some",		some_,		"A  [B]  ->  X",
 "Applies test B to members of aggregate A, X = true if some pass."},
 
 {"all",			all_,		"A [B]  ->  X",
@@ -3551,7 +3561,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"_help",		h_help1_,		"->",
 "Lists all hidden symbols in library and then all hidden inbuilt symbols."},
 
-{"helpdetail",			helpdetail_,		"[ S1  S2  .. ]",
+{"helpdetail",		helpdetail_,		"[ S1  S2  .. ]",
 "Gives brief help on each symbol S in the list."},
 
 {"manual",		plain_manual_,		"->",
@@ -3625,7 +3635,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {0, dummy_, "->","->"}
 };
 
-PUBLIC void inisymboltable(void)		/* initialise			*/
+PUBLIC void inisymboltable(void)		/* initialise		*/
 {
     int i; char *s;
     symtabindex = symtab;
@@ -3635,9 +3645,13 @@ PUBLIC void inisymboltable(void)		/* initialise			*/
 #endif
     for (i = 0; optable[i].name; i++)
       { s = optable[i].name;
+#ifdef HASHVALUE_FUNCTION
+	HashValue(s);
+#else
 	/* ensure same algorithm in getsym */
 	for (hashvalue = 0; *s != '\0';) hashvalue += *s++;
 	hashvalue %= HASHSIZE;
+#endif
 	symtabindex->name = optable[i].name;
 	symtabindex->u.proc = optable[i].proc;
 	symtabindex->next = hashentry[hashvalue];
@@ -3699,9 +3713,9 @@ PRIVATE void helpdetail_()
 #define HEADER(N,NAME,HEAD)					\
     if (strcmp(N,NAME) == 0)					\
       { printf("\n\n");						\
-        if (LATEX) printf("\\item[--- \\BX{");				\
+        if (LATEX) printf("\\item[--- \\BX{");			\
 	printf("%s",HEAD);					\
-	if (LATEX) printf("} ---] \\verb# #");				\
+	if (LATEX) printf("} ---] \\verb# #");			\
 	printf("\n\n"); }
 #endif
 

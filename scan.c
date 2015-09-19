@@ -5,13 +5,20 @@
 #include <ctype.h>
 #include "globals.h"
 #ifdef GC_BDW
-#    include "gc/include/gc.h"
+#    include <gc.h>
 #    define malloc GC_malloc_atomic
 #endif
 
 #define EOLN '\n'
 
+#ifdef USE_ONLY_STDIN
+static struct {
+    FILE *fp;
+    char *name;
+} infile[INPSTACKMAX];
+#else
 static FILE  *infile[INPSTACKMAX];
+#endif
 static int ilevel;
 static int linenumber = 0;
 static char linbuf[INPLINEMAX];
@@ -24,9 +31,18 @@ static int unget1 = 0, unget2 = 0;
 static int get_from_stdin = 0;
 #endif
 
+#ifdef USE_ONLY_STDIN
+PUBLIC void inilinebuffer(char *str)
+#else
 PUBLIC void inilinebuffer(void)
+#endif
 {
+#ifdef USE_ONLY_STDIN
+    infile[0].fp = srcfile;
+    infile[0].name = str;
+#else
     ilevel = 0; infile[ilevel] = srcfile;
+#endif
 }
 
 PUBLIC void putline(void)
@@ -35,6 +51,7 @@ PUBLIC void putline(void)
     if (echoflag > 1) printf("\t");
     printf("%s\n",linbuf);
 }
+
 PRIVATE void getch()
 {
 #ifdef DONT_READ_PAST_EOF
@@ -54,13 +71,25 @@ PRIVATE void getch()
       { Again:
 	currentcolumn = 0; linelength = 0;
 	linenumber++;
+#ifdef USE_ONLY_STDIN
+	while ((c = getc(srcfile)) != EOLN)
+#else
 	while ((c = getc(infile[ilevel])) != EOLN)
+#endif
 	  { linbuf[linelength++] = c;
 #ifdef DONT_READ_PAST_EOF
 	    if (c == EOF) linelength--;
 #endif
+#ifdef USE_ONLY_STDIN
+	    if (feof(srcfile))
+#else
 	    if (feof(infile[ilevel]))
+#endif
 	      { ilevel--;
+#ifdef USE_ONLY_STDIN
+		if (ilevel >= 0)
+		    srcfile = infile[ilevel].fp;
+#endif
 D(		printf("reset to level %d\n",ilevel); )
 		if (ilevel < 0) quit_(); } }
 #ifdef DONT_READ_PAST_EOF
@@ -69,14 +98,20 @@ D(		printf("reset to level %d\n",ilevel); )
 	linbuf[linelength++] = ' ';  /* to help getsym for numbers */
 	linbuf[linelength++] = '\0';
 	if (echoflag) putline();
+#ifdef USE_SHELL_ESCAPE
 	if (linbuf[0] == SHELLESCAPE)
 	    { system(&linbuf[1 ]); goto Again; } }
+#else
+	}
+#endif
     ch = linbuf[currentcolumn++];
 }
+
 PUBLIC int endofbuffer(void)
 {
     return (currentcolumn == linelength);
 }
+
 PUBLIC void error(char *message)
 {
     int i;
@@ -87,12 +122,22 @@ PUBLIC void error(char *message)
     printf("^\n\t%s\n",message);
     errorcount++;
 }
+
 PUBLIC int doinclude(char *filnam)
 {
     if (ilevel+1 == INPSTACKMAX)
 	execerror("fewer include files","include");
+#ifdef USE_ONLY_STDIN
+    infile[ilevel].fp = srcfile;
+    if ((srcfile = fopen(filnam, "r")) != 0) {
+	infile[++ilevel].fp = srcfile;
+	infile[ilevel].name = filnam;
+	return 1;
+    }
+#else
     if ((infile[ilevel+1] = fopen(filnam,"r")) != NULL)
 	{ ilevel++; return(1); }
+#endif
     execerror("valid file name","include");
     return 0;
 }
@@ -100,12 +145,22 @@ PUBLIC int doinclude(char *filnam)
 #if defined(GET_FROM_STDIN) || defined(FGET_FROM_FILE)
 PUBLIC void redirect(FILE *fp)
 {
+#ifdef USE_ONLY_STDIN
+    if (infile[ilevel].fp != fp && !get_from_stdin) {
+	get_from_stdin = fp == stdin;
+	if (++ilevel == INPSTACKMAX)
+	    execerror("fewer include files", "redirect");
+	infile[ilevel].fp = fp;
+	infile[ilevel].name = 0;
+    }
+#else
     if (infile[ilevel] != fp && !get_from_stdin) {
 	get_from_stdin = fp == stdin;
 	if (++ilevel == INPSTACKMAX)
 	    execerror("fewer include files", "redirect");
 	infile[ilevel] = fp;
     }
+#endif
 }
 #endif
 
@@ -138,6 +193,15 @@ PRIVATE char specialchar()
 		return num; }
 	    else return ch; }
 }
+
+#ifdef HASHVALUE_FUNCTION
+PUBLIC void HashValue(char *s)
+{
+    for (hashvalue = 0; *s != '\0';) hashvalue += *s++;
+    hashvalue %= HASHSIZE;
+}
+#endif
+
 PUBLIC void getsym(void)
 {
 Start:
@@ -256,6 +320,9 @@ D(	    printf("getsym: string = %s\n",string); )
 	      while (isalpha(ch) || isdigit(ch) ||
 		       ch == '=' || ch == '_' || ch == '-');
 	    id[i] = '\0'; hashvalue %= HASHSIZE;
+#ifdef HASHVALUE_FUNCTION
+	    HashValue(id);
+#endif
 	    if (isupper((int)id[1]))
 	      { if (strcmp(id,"LIBRA") == 0 || strcmp(id,"DEFINE") == 0)
 		   { sym = LIBRA; return; }

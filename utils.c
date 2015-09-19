@@ -3,7 +3,7 @@
 #include <string.h>
 #include "globals.h"
 # ifdef GC_BDW
-#    include "gc/include/gc.h"
+#    include <gc.h>
 # endif
 
 # ifndef GC_BDW
@@ -141,7 +141,7 @@ PRIVATE void gc1(mess)
     if (X != NULL)						\
       { if (tracegc > 2)					\
 	  { printf("old %s = ",NAME);				\
-	    writeterm(X, stdout); printf("\n"); }			\
+	    writeterm(X, stdout); printf("\n"); }		\
 	X = copy(X);						\
 	if (tracegc > 2)					\
 	  { printf("new %s = ",NAME);				\

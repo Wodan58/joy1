@@ -118,9 +118,8 @@ Manfred von Thun, 2006
 #include "globals.h"
 #ifdef BDW_ALSO_IN_MAIN
 # ifdef GC_BDW
-#    include "gc/include/gc.h"
+#    include <gc.h>
 #    define malloc GC_malloc_atomic
-#    define strdup GC_strdup
 # endif
 #endif
 
@@ -387,6 +386,9 @@ int main(int argc, char **argv)
 #ifndef NO_DUPLICATE_CH
     int ch;
 #endif
+#ifdef NO_WASTE_FP
+    FILE *fp;
+#endif
 #ifdef GC_BDW
     GC_init();
 #endif
@@ -403,8 +405,14 @@ int main(int argc, char **argv)
 	    printf("failed to open the file '%s'.\n", argv[1]);
 	    exit(1);
 	}
+#ifdef USE_ONLY_STDIN
+	inilinebuffer(argv[1]);
+#endif
     } else {
 	srcfile = stdin;
+#ifdef USE_ONLY_STDIN
+	inilinebuffer(0);
+#endif
 #ifdef GC_BDW
 	printf("JOY  -  compiled at %s on %s (BDW)\n",__TIME__,__DATE__);
 #else
@@ -418,7 +426,9 @@ int main(int argc, char **argv)
     tracegc = INITRACEGC;
     autoput = INIAUTOPUT;
     ch = ' ';
+#ifndef USE_ONLY_STDIN
     inilinebuffer();
+#endif
     inisymboltable();
     display[0] = NULL;
     inimem1(); inimem2();
@@ -433,8 +443,13 @@ D(  printf("starting main loop\n"); )
     while (1)
      { if (mustinclude)
 	  { mustinclude = 0;
+#ifdef NO_WASTE_FP
+	    if ((fp = fopen("usrlib.joy", "r")) != 0) {
+		fclose(fp); doinclude("usrlib.joy"); } }
+#else
 	    if (fopen("usrlib.joy","r"))
 	        doinclude("usrlib.joy"); }
+#endif
 	getsym();
 
 	if (sym == LIBRA || sym == HIDE || sym == MODULE )
