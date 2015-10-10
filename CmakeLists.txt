@@ -10,7 +10,7 @@ set(BIT_32 ON)
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,--stack,0x100000")
 
 if(GC_BDW)
-  add_definitions(-DGC_BDW)
+  add_definitions(-DGC_BDW -DSINGLE -DSTATS)
 endif()
 
 add_definitions(-I../bdwgc/include -O3 -Wall -Wextra -Werror)

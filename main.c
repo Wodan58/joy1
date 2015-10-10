@@ -158,6 +158,7 @@ D(  printf("%s  hashes to %d\n",id,hashvalue); )
     while (location != symtab &&
 	   strcmp(id,location->name) != 0)
 	location = location->next;
+
     if (location == symtab) /* not found, enter in global */
 	enterglobal();
 }
@@ -341,7 +342,9 @@ jmp_buf fail;
 
 PUBLIC void abortexecution_(void)
 {
+#ifndef SINGLE
     conts = dump = dump1 = dump2 = dump3 = dump4 = dump5 = NULL;
+#endif
     longjmp(begin,0);
 }
 
@@ -388,6 +391,9 @@ int main(int argc, char **argv)
 #endif
 #ifdef NO_WASTE_FP
     FILE *fp;
+#endif
+#ifdef SINGLE
+    Node *my_prog;
 #endif
 #ifdef GC_BDW
     GC_init();
@@ -461,6 +467,11 @@ D(  printf("starting main loop\n"); )
 
 	  { readterm();
 D(	    printf("program is: "); writeterm(stk->u.lis, stdout); printf("\n"); )
+#ifdef SINGLE
+	    my_prog = stk->u.lis;
+	    stk = stk->next;
+	    exeterm(my_prog);
+#else
 	    prog = stk->u.lis;
 	    stk = stk->next;
 	    conts = NULL;
@@ -471,6 +482,7 @@ D(	    printf("program is: "); writeterm(stk->u.lis, stdout); printf("\n"); )
 		CHECK(dump,"dump"); CHECK(dump1,"dump1");
 		CHECK(dump2,"dump2"); CHECK(dump3,"dump3");
 		CHECK(dump4,"dump4"); CHECK(dump5,"dump5"); }
+#endif
 	    if (autoput == 2 && stk != NULL)
 	      { writeterm(stk, stdout); printf("\n"); }
 	    else if (autoput == 1 && stk != NULL)

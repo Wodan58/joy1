@@ -27,7 +27,7 @@ static int errorcount = 0;
 #ifdef READ_NUMBER_AND_STOP
 static int unget1 = 0, unget2 = 0;
 #endif
-#ifdef GET_FROM_STDIN
+#if defined(GET_FROM_STDIN) || defined(FGET_FROM_FILE)
 static int get_from_stdin = 0;
 #endif
 

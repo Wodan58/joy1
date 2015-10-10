@@ -41,11 +41,9 @@
 #define CORRECT_GENREC_HELP
 #define CORRECT_TREEREC_HELP
 #define CORRECT_TREEGENREC_HELP
-#ifndef GC_BDW
 #define CORRECT_TREEREC_AUX
 #define CORRECT_TREEGENREC_AUX
 #define CORRECT_PRIMREC
-#endif
 #define NO_DUPLICATE_CH
 #define CORRECT_CASE_COMPARE
 #define CORRECT_CLOCK_SECONDS
@@ -69,10 +67,10 @@
 #define CHECK_DISPLAYMAX
 #define HASHVALUE_FUNCTION
 #define USE_SHELL_ESCAPE
-#ifndef LEX_YACC
 #define ENABLE_TRACEGC
-#endif
 #define NO_WASTE_FP
+#define MAKE_CONTS_OBSOLETE
+/* #define TRACK_USED_SYMBOLS */
 
 				/* configure			*/
 #define SHELLESCAPE	'$'
@@ -188,6 +186,9 @@ typedef struct Entry
 #ifdef USE_UNKNOWN_SYMBOLS
     unsigned char is_unknown;
 #endif
+#ifdef TRACK_USED_SYMBOLS
+    unsigned char is_used;
+#endif
     union 
       { Node *body;
 	struct Entry *module_fields;
@@ -242,8 +243,12 @@ CLASS Node				/* dynamic memory	*/
     memory[MEMORYMAX],
     *memoryindex,
 */
+#ifdef GC_BDW_ST
+    *stk;
+#else
     *prog, *stk, *conts,
     *dump, *dump1, *dump2, *dump3, *dump4, *dump5;
+#endif
 
 #define MEM2INT(n) (((size_t)n - (size_t)memory) / sizeof(Node))
 #define INT2MEM(x) ((Node*) ((x + (size_t)&memory) * sizeof(Node)))

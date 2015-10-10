@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
+#include <stdlib.h>
 #include "globals.h"
 # ifdef GC_BDW
 #    include <gc.h>
@@ -20,7 +21,11 @@ static int start_gc_clock;
 
 PUBLIC void inimem1(void)
 {
+#ifdef SINGLE
+    stk = NULL;
+#else
     stk = conts = dump = dump1 = dump2 = dump3 = dump4 = dump5 = NULL;
+#endif
 # ifndef GC_BDW
     direction = +1;
     memoryindex = mem_low;
@@ -178,6 +183,22 @@ PUBLIC void gc_(void)
    GC_gcollect();
 # endif
 }
+
+#ifdef STATS
+static double nodes;
+
+static void report_nodes(void)
+{
+    fprintf(stderr, "%.0f nodes used\n", nodes);    
+}
+
+static void count_nodes(void)
+{
+    if (++nodes == 1)
+	atexit(report_nodes);
+}
+#endif
+
 PUBLIC Node *newnode(Operator o, Types u, Node *r)
 {
     Node *p;
@@ -206,6 +227,9 @@ PUBLIC Node *newnode(Operator o, Types u, Node *r)
 # ifndef GC_BDW
 D(  printnode(p); )
 # endif
+#ifdef STATS
+    count_nodes();
+#endif
     return p;
 }
 PUBLIC void memoryindex_(void)
@@ -315,22 +339,44 @@ D(  printf("found field: %s\n",mod_fields->name); )
 }
 PUBLIC void readterm(void)
 {
+#ifdef SINGLE
+    Node **my_dump;
+#endif
     stk = LIST_NEWNODE(0L,stk);
+#ifdef SINGLE
+    my_dump = &stk->u.lis;
+#endif
     if (sym <= ATOM)
       { readfactor();
+#ifdef SINGLE
+	*my_dump = stk;
+	my_dump = &stk->next;
+	stk = stk->next;
+#else
 	stk->next->u.lis = stk;
 	stk = stk->next;
 	stk->u.lis->next = NULL;
 	dump = newnode(LIST_,stk->u,dump);
+#endif
 	getsym();
 	while (sym <= ATOM)
 	  { readfactor();
+#ifdef SINGLE
+	    *my_dump = stk;
+	    my_dump = &stk->next;
+	    stk = stk->next;
+#else
 	    dump->u.lis->next = stk;
 	    stk = stk->next;
 	    dump->u.lis->next->next = NULL;
 	    dump->u.lis = dump->u.lis->next;
+#endif
 	    getsym(); }
+#ifdef SINGLE
+	    *my_dump = 0; }
+#else
 	dump = dump->next; }
+#endif
 }
 
 PUBLIC void writefactor(Node *n, FILE *stm)

@@ -1,0 +1,23 @@
+(*
+    Joy symbol table.
+
+    Oplossing: laat enteratom een lookup doen. indien een globaal symbool nog
+    geen waarde heeft, neem dit symbool over.
+*)
+# DEFINE b == .
+
+DEFINE d == b.		(* b -> undefined global symbol *)
+
+d .			(* b -> niet gedefinieerd *)
+
+MODULE m
+
+PRIVATE a == b;		(* b -> undefined local symbol ? *)
+	b == 7;		(* b -> definieert de meest recente b *)
+
+PUBLIC c == a.
+
+END
+
+d .			(* gelijk aan m.b en dat zou niet moeten *)
+m.c .
