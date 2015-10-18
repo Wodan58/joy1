@@ -246,7 +246,7 @@ CLASS Node				/* dynamic memory	*/
     memory[MEMORYMAX],
     *memoryindex,
 */
-#ifdef GC_BDW_ST
+#ifdef SINGLE
     *stk;
 #else
     *prog, *stk, *conts,
@@ -271,8 +271,8 @@ CLASS Node				/* dynamic memory	*/
 */
 
 /* Public procedures: */
-PUBLIC void stack_(void);
-PUBLIC void dummy_(void);
+/* PUBLIC void stack_(void);
+PUBLIC void dummy_(void); */
 PUBLIC void exeterm(Node *n);
 PUBLIC void inisymboltable(void)		/* initialise		*/;
 PUBLIC char *opername(int o);

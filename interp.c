@@ -252,7 +252,7 @@ PUSH(clock_,INTEGER_NEWNODE,(long)(clock() - startclock))
 PUSH(time_,INTEGER_NEWNODE,(long)time(NULL))
 PUSH(argc_,INTEGER_NEWNODE,(long)g_argc)
 
-PUBLIC void stack_(void)
+PRIVATE void stack_(void)
 { NULLARY(LIST_NEWNODE, stk); }
 
 /* - - - - -   O P E R A T O R S   - - - - - */
@@ -2142,7 +2142,7 @@ PRIVATE void get_()
     readfactor();
 }
 
-PUBLIC void dummy_(void)
+PRIVATE void dummy_(void)
 {
     /* never called */
 }
