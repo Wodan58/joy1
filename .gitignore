@@ -4,6 +4,9 @@ joy*
 gc
 gc.fail
 gc.succ
+make.gc
+make.nogc
+Makefile
 *.o
 CmakeCache.txt
 CmakeFiles

@@ -414,9 +414,9 @@ PUBLIC void writefactor(Node *n, FILE *stm)
 #ifdef CORRECT_STRING_WRITE
 	    fputc('"', stm);
 	    for (p = n->u.str; *p; p++) {
-		if (*p == '"' || *p == '\\')
+		if (*p == '"' || *p == '\\' || *p == '\n')
 		    fputc('\\', stm);
-		fputc(*p, stm);
+		fputc(*p == '\n' ? 'n' : *p, stm);
 	    }
 	    fputc('"', stm);
 	    return;

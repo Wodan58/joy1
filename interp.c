@@ -2230,7 +2230,6 @@ void exeterm(Node * n)
 	atexit(report_symbols);
     }
 #endif
-  start:
     while (n) {
 #ifdef TRACE
 	printfactor(n, stdout);
@@ -2239,6 +2238,10 @@ void exeterm(Node * n)
 	printf("\n");
 #endif
 	switch (n->op) {
+	case COPIED_:
+	case ILLEGAL_:
+	    printf("exeterm: attempting to execute bad node\n");
+	    break;
 	case BOOLEAN_:
 	case CHAR_:
 	case INTEGER_:
@@ -2253,7 +2256,7 @@ void exeterm(Node * n)
 		execerror("definition", n->u.ent->name);
 	    if (!n->next) {
 		n = n->u.ent->u.body;
-		goto start;
+		continue;
 	    }
 	    exeterm(n->u.ent->u.body);
 	    break;

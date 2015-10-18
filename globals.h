@@ -145,7 +145,7 @@
 #    define D(x)
 #endif
 
-#define PRIVATE static
+#define PRIVATE
 #define PUBLIC
 
 				/* types			*/
@@ -169,6 +169,7 @@ typedef union
 	struct Node *lis;
 	struct Entry *ent;
 	void (*proc)(); } Types;
+#endif
 typedef struct Node
   { Operator op;
     Types u;
@@ -189,12 +190,14 @@ typedef struct Entry
 #ifdef TRACK_USED_SYMBOLS
     unsigned char is_used;
 #endif
+#ifdef LEX_YACC
+    unsigned char is_expanding;
+#endif
     union 
       { Node *body;
 	struct Entry *module_fields;
 	void  (*proc) (); } u;
     struct Entry *next; } Entry;
-#endif
 
 #ifdef ALLOC
 #    define CLASS
