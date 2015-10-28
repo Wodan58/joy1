@@ -71,6 +71,7 @@
 #define NO_WASTE_FP
 #define MAKE_CONTS_OBSOLETE
 /* #define TRACK_USED_SYMBOLS */
+#define TYPED_NODES
 
 				/* configure			*/
 #define SHELLESCAPE	'$'
@@ -171,8 +172,11 @@ typedef union
 	void (*proc)(); } Types;
 #endif
 typedef struct Node
-  { Operator op;
-    Types u;
+  { Types u;
+    Operator op;
+#ifdef TYPED_NODES
+    Operator type;
+#endif
     struct Node *next; } Node;
 typedef struct Entry
   { char *name;
@@ -271,8 +275,10 @@ CLASS Node				/* dynamic memory	*/
 */
 
 /* Public procedures: */
-/* PUBLIC void stack_(void);
-PUBLIC void dummy_(void); */
+#if 0
+PUBLIC void stack_(void);
+PUBLIC void dummy_(void);
+#endif
 PUBLIC void exeterm(Node *n);
 PUBLIC void inisymboltable(void)		/* initialise		*/;
 PUBLIC char *opername(int o);
