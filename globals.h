@@ -72,6 +72,10 @@
 #define MAKE_CONTS_OBSOLETE
 /* #define TRACK_USED_SYMBOLS */
 #define TYPED_NODES
+#define RUNTIME_CHECKS
+#define CORRECT_STRING_CONCAT
+#define CORRECT_SIZE_CHECK
+#define CORRECT_FORMATF_MESSAGE
 
 				/* configure			*/
 #define SHELLESCAPE	'$'

@@ -50,6 +50,7 @@ PRIVATE void make_manual(int style /* 0=plain, 1=html, 2=latex */);
 PRIVATE void manual_list_();
 PRIVATE void manual_list_aux_();
 
+#ifdef RUNTIME_CHECKS
 #define ONEPARAM(NAME)						\
     if (stk == NULL)						\
 	execerror("one parameter",NAME)
@@ -123,18 +124,43 @@ PRIVATE void manual_list_aux_();
 #define NUMERIC2(NAME)						\
     if (stk->next->op != INTEGER_ && stk->next->op != CHAR_)	\
 	execerror("numeric second parameter",NAME)
+#else
+#define ONEPARAM(NAME)
+#define TWOPARAMS(NAME)
+#define THREEPARAMS(NAME)
+#define FOURPARAMS(NAME)
+#define FIVEPARAMS(NAME)
+#define ONEQUOTE(NAME)
+#define TWOQUOTES(NAME)
+#define THREEQUOTES(NAME)
+#define FOURQUOTES(NAME)
+#define SAME2TYPES(NAME)
+#define STRING(NAME)
+#define STRING2(NAME)
+#define INTEGER(NAME)
+#define INTEGER2(NAME)
+#define CHARACTER(NAME)
+#define INTEGERS2(NAME)
+#define NUMERICTYPE(NAME)
+#define NUMERIC2(NAME)
+#endif
 #define FLOATABLE						\
     (stk->op == INTEGER_ || stk->op == FLOAT_)
 #define FLOATABLE2						\
     ((stk->op == FLOAT_ && stk->next->op == FLOAT_) ||		\
 	(stk->op == FLOAT_ && stk->next->op == INTEGER_) ||	\
 	(stk->op == INTEGER_ && stk->next->op == FLOAT_))
+#ifdef RUNTIME_CHECKS
 #define FLOAT(NAME)						\
     if (!FLOATABLE)						\
 	execerror("float or integer", NAME);
 #define FLOAT2(NAME)						\
     if (!(FLOATABLE2 || (stk->op == INTEGER_ && stk->next->op == INTEGER_))) \
 	execerror("two floats or integers", NAME)
+#else
+#define FLOAT(NAME)
+#define FLOAT2(NAME)
+#endif
 #define FLOATVAL						\
     (stk->op == FLOAT_ ? stk->u.dbl : (double) stk->u.num)
 #define FLOATVAL2						\
@@ -145,6 +171,7 @@ PRIVATE void manual_list_aux_();
     if (FLOATABLE2) { BINARY(FLOAT_NEWNODE, OPER(FLOATVAL2, FLOATVAL)); return; }
 #define FLOAT_I(OPER)						\
     if (FLOATABLE2) { BINARY(FLOAT_NEWNODE, (FLOATVAL2) OPER (FLOATVAL)); return; }
+#ifdef RUNTIME_CHECKS
 #define FILE(NAME)						\
     if (stk->op != FILE_ || stk->u.fil == NULL)			\
 	execerror("file", NAME)
@@ -182,6 +209,21 @@ PRIVATE void manual_list_aux_();
     execerror("aggregate parameter",NAME)
 #define BADDATA(NAME)						\
     execerror("different type",NAME)
+#else
+#define FILE(NAME)
+#define CHECKZERO(NAME)
+#define LIST(NAME)
+#define LIST2(NAME)
+#define USERDEF(NAME)
+#define CHECKLIST(OPR,NAME)
+#define CHECKSETMEMBER(NODE,NAME)
+#define CHECKEMPTYSET(SET,NAME)
+#define CHECKEMPTYSTRING(STRING,NAME)
+#define CHECKEMPTYLIST(LIST,NAME)
+#define INDEXTOOLARGE(NAME)
+#define BADAGGREGATE(NAME)
+#define BADDATA(NAME)
+#endif
 
 #define DMP dump->u.lis
 #define DMP1 dump1->u.lis
@@ -286,7 +328,10 @@ PRIVATE void name_()
 }
 
 PRIVATE void intern_()
-{   char *p;
+{
+#if defined(RUNTIME_CHECKS) || !defined(HASHVALUE_FUNCTION)
+    char *p;
+#endif
     ONEPARAM("intern");
     STRING("intern");
 #ifdef CORRECT_INTERN_STRCPY
@@ -295,6 +340,7 @@ PRIVATE void intern_()
 #else
     strcpy(id, stk->u.str);
 #endif
+#ifdef RUNTIME_CHECKS
 #ifdef CORRECT_INTERN_LOOKUP
     p = 0;
     if (id[0] == '-' || !strchr("(#)[]{}.;'\"0123456789", id[0]))
@@ -303,6 +349,7 @@ PRIVATE void intern_()
 		break;
     if (!p || *p)
 	execerror("valid name", id);
+#endif
 #endif
 #ifdef HASHVALUE_FUNCTION
     HashValue(id);
@@ -319,7 +366,8 @@ PRIVATE void intern_()
 }
 
 PRIVATE void getenv_()
-{   ONEPARAM("getenv");
+{
+    ONEPARAM("getenv");
     STRING("getenv");
     UNARY(STRING_NEWNODE, getenv(stk->u.str)); }
 
@@ -494,7 +542,6 @@ ANDORXOR(and_,"and",&,&&)
 ANDORXOR(or_,"or",|,||)
 ANDORXOR(xor_,"xor",^,!=)
 
-
 /* - - -   INTEGER   - - - */
 
 #define ORDCHR(PROCEDURE,NAME,RESULTTYP)			\
@@ -571,14 +618,17 @@ MULDIV(mul_,"*",*,)
 MULDIV(divide_,"/",/,CHECKZERO("/"))
 */
 PRIVATE void mul_()
-{   TWOPARAMS("*");
+{
+    TWOPARAMS("*");
     FLOAT_I(*);
     INTEGERS2("*");
     BINARY(INTEGER_NEWNODE,stk->next->u.num * stk->u.num);
 }
 
 PRIVATE void divide_()
-{   TWOPARAMS("/");
+{
+#ifdef RUNTIME_CHECKS
+    TWOPARAMS("/");
 #ifdef NO_COMPILER_WARNINGS
     if ((stk->op == FLOAT_   && stk->u.dbl == 0.0) ||
 	(stk->op == INTEGER_ && stk->u.num == 0))
@@ -587,13 +637,15 @@ PRIVATE void divide_()
 	stk->op == INTEGER_ && stk->u.num == 0)
 #endif
       execerror("non-zero divisor","/");
+#endif
     FLOAT_I(/);
     INTEGERS2("/");
     BINARY(INTEGER_NEWNODE,stk->next->u.num / stk->u.num);
 }
 
 PRIVATE void rem_()
-{   TWOPARAMS("rem");
+{
+    TWOPARAMS("rem");
     FLOAT_P(fmod);
     INTEGERS2("rem");
     CHECKZERO("rem");
@@ -641,7 +693,8 @@ PRIVATE void strtol_()
 #endif
 
 PRIVATE void strtod_()
-{   ONEPARAM("strtod");
+{
+    ONEPARAM("strtod");
     STRING("strtod");
     UNARY(FLOAT_NEWNODE, strtod(stk->u.str, NULL)); }
 
@@ -663,8 +716,10 @@ PRIVATE void format_()
     CHARACTER("format");
     spec = stk->u.num;
     POP(stk);
+#ifdef RUNTIME_CHECKS
     if (!strchr("dioxX", spec))
 	execerror("one of: d i o x X", "format");
+#endif
     strcpy(format, "%*.*ld");
     format[5] = spec;
 #ifdef USE_SNPRINTF
@@ -690,18 +745,34 @@ PRIVATE void formatf_()
 #ifdef USE_SNPRINTF
     int leng;
 #endif
+#ifdef CORRECT_FORMATF_MESSAGE
+    FOURPARAMS("formatf");
+    INTEGER("formatf");
+    INTEGER2("formatf");
+#else
     FOURPARAMS("format");
     INTEGER("format");
     INTEGER2("format");
+#endif
     prec = stk->u.num;
     POP(stk);
     width = stk->u.num;
     POP(stk);
+#ifdef CORRECT_FORMATF_MESSAGE
+    CHARACTER("formatf");
+#else
     CHARACTER("format");
+#endif
     spec = stk->u.num;
     POP(stk);
+#ifdef RUNTIME_CHECKS
     if (!strchr("eEfgG", spec))
+#ifdef CORRECT_FORMATF_MESSAGE
+	execerror("one of: e E f g G", "formatf");
+#else
 	execerror("one of: e E f g G", "format");
+#endif
+#endif
     strcpy(format, "%*.*lg");
     format[5] = spec;
 #ifdef USE_SNPRINTF
@@ -714,7 +785,11 @@ PRIVATE void formatf_()
     result = malloc(INPLINEMAX);		/* should be sufficient */
 #endif
 #endif
+#ifdef CORRECT_FORMATF_MESSAGE
     FLOAT("formatf");
+#else
+    FLOAT("format");
+#endif
 #ifdef USE_SNPRINTF
     snprintf(result, leng, format, width, prec, stk->u.dbl);
 #else
@@ -722,7 +797,6 @@ PRIVATE void formatf_()
 #endif
     UNARY(STRING_NEWNODE, result);
     return; }
-
 
 /* - - -   TIME   - - - */
 
@@ -1222,14 +1296,16 @@ PRIVATE void sametype_()
 /* - - -   FILES AND STREAMS   - - - */
 
 PRIVATE void fopen_()
-{   TWOPARAMS("fopen");
+{
+    TWOPARAMS("fopen");
     STRING("fopen");
     STRING2("fopen");
     BINARY(FILE_NEWNODE, fopen(stk->next->u.str, stk->u.str));
     return; }
 
 PRIVATE void fclose_()
-{   ONEPARAM("fclose");
+{
+    ONEPARAM("fclose");
     if (stk->op == FILE_ && stk->u.fil == NULL)
 	{ POP(stk);  return; }
     FILE("fclose");
@@ -1238,19 +1314,22 @@ PRIVATE void fclose_()
     return; }
 
 PRIVATE void fflush_()
-{   ONEPARAM("fflush");
+{
+    ONEPARAM("fflush");
     FILE("fflush");
     fflush(stk->u.fil);
     return; }
 
 PRIVATE void fremove_()
-{   ONEPARAM("fremove");
+{
+    ONEPARAM("fremove");
     STRING("fremove");
     UNARY(BOOLEAN_NEWNODE, (long)!remove(stk->u.str));
     return; }
 
 PRIVATE void frename_()
-{   TWOPARAMS("frename");
+{
+    TWOPARAMS("frename");
     STRING("frename");
     STRING2("frename");
     BINARY(BOOLEAN_NEWNODE, (long)!rename(stk->next->u.str, stk->u.str));
@@ -1292,9 +1371,13 @@ PRIVATE void fgets_()
 
 PRIVATE void fput_()
 {   FILE *stm;
+#ifdef RUNTIME_CHECKS
     TWOPARAMS("fput");
     if (stk->next->op != FILE_ || (stm = stk->next->u.fil) == NULL)
 	execerror("file", "fput");
+#else
+    stm = stk->next->u.fil;
+#endif
     writefactor(stk, stm);
     fprintf(stm, " ");
     POP(stk);
@@ -1303,9 +1386,13 @@ PRIVATE void fput_()
 #ifdef FGET_FROM_FILE
 PRIVATE void fget_()
 {   FILE *stm = NULL;
+#ifdef RUNTIME_CHECKS
     ONEPARAM("fget");
     if (stk->op != FILE_ || (stm = stk->u.fil) == NULL)
 	execerror("file", "fget");
+#else
+    stm = stk->u.fil;
+#endif
     redirect(stm);
     getsym();
     readfactor();
@@ -1324,9 +1411,13 @@ PRIVATE void fputch_()
 
 PRIVATE void fputchars_() /* suggested by Heiko Kuhrt, as "fputstring_" */
 {   FILE *stm;
+#ifdef RUNTIME_CHECKS
     TWOPARAMS("fputchars");
     if (stk->next->op != FILE_ || (stm = stk->next->u.fil) == NULL)
         execerror("file", "fputchars");
+#else
+    stm = stk->next->u.fil;
+#endif
 #ifdef SECURE_PUTCHARS
     fprintf(stm,"%s",stk->u.str);
 #else
@@ -1382,7 +1473,11 @@ PRIVATE void fwrite_()
     TWOPARAMS("fwrite");
     LIST("fwrite");
     for (n = stk->u.lis, length = 0; n; n = n->next, length++)
+#ifdef RUNTIME_CHECKS
 	if (n->op != INTEGER_) execerror("numeric list", "fwrite");
+#else
+	;
+#endif
     buff = malloc(length);
     for (n = stk->u.lis, i = 0; n; n = n->next, i++)
 	buff[i] = n->u.num;
@@ -1404,7 +1499,6 @@ PRIVATE void fseek_()
     FILE("fseek");
     NULLARY(BOOLEAN_NEWNODE, (long)!!fseek(stk->u.fil, pos, whence));
     return; }
-
 
 /* - - -   AGGREGATES   - - - */
 
@@ -1601,9 +1695,9 @@ PRIVATE void PROCEDURE()					\
 	case STRING_:						\
 	  { char *s;						\
 	    for (s = AGGR->u.str;				\
-		 *s != '\0' && *s != ELEM->u.num;		\
+		 s && *s != '\0' && *s != ELEM->u.num;		\
 		 s++);						\
-	    found = *s != '\0';					\
+	    found = s && *s != '\0';				\
 	    break; }						\
 	case LIST_:						\
 	  { Node *n = AGGR->u.lis;				\
@@ -1645,6 +1739,7 @@ PRIVATE void PROCEDURE()					\
 INHAS(in_,"in",stk,stk->next)
 INHAS(has_,"has",stk->next,stk)
 
+#ifdef RUNTIME_CHECKS
 #define OF_AT(PROCEDURE,NAME,AGGR,INDEX)			\
 PRIVATE void PROCEDURE()					\
 {   TWOPARAMS(NAME);						\
@@ -1678,6 +1773,31 @@ PRIVATE void PROCEDURE()					\
 	default:						\
 	    BADAGGREGATE(NAME); }				\
 }
+#else
+#define OF_AT(PROCEDURE,NAME,AGGR,INDEX)			\
+PRIVATE void PROCEDURE()					\
+{   switch (AGGR->op)						\
+      { case SET_:						\
+	  { long i; int indx = INDEX->u.num;			\
+	    for (i = 0; i < SETSIZE; i++)			\
+	      { if (AGGR->u.set & (1 << i))			\
+		  { if (indx == 0)				\
+			{BINARY(INTEGER_NEWNODE,i); return;}	\
+		    indx--; } }					\
+	    return; }						\
+	case STRING_:						\
+	    BINARY(CHAR_NEWNODE,(long)AGGR->u.str[INDEX->u.num]);	\
+	    return;						\
+	case LIST_:						\
+	  { Node *n = AGGR->u.lis;  int i  = INDEX->u.num;	\
+	    while (i > 0)					\
+	      { n = n->next; i--; }				\
+	    GBINARY(n->op,n->u);				\
+	    return; }						\
+	default:						\
+	    BADAGGREGATE(NAME); }				\
+}
+#endif
 OF_AT(of_,"of",stk,stk->next)
 OF_AT(at_,"at",stk->next,stk)
 
@@ -1737,6 +1857,7 @@ PRIVATE void opcase_()
 	n->next != NULL ? n->u.lis->next : n->u.lis);
 }
 
+#ifdef RUNTIME_CHECKS
 #define CONS_SWONS(PROCEDURE,NAME,AGGR,ELEM)			\
 PRIVATE void PROCEDURE()					\
 {   TWOPARAMS(NAME);						\
@@ -1761,6 +1882,29 @@ PRIVATE void PROCEDURE()					\
 	default:						\
 	    BADAGGREGATE(NAME); }				\
 }
+#else
+#define CONS_SWONS(PROCEDURE,NAME,AGGR,ELEM)			\
+PRIVATE void PROCEDURE()					\
+{   TWOPARAMS(NAME);						\
+    switch (AGGR->op)						\
+      { case LIST_:						\
+	    BINARY(LIST_NEWNODE,newnode(ELEM->op,		\
+				 ELEM->u,AGGR->u.lis));		\
+	    break;						\
+	case SET_:						\
+	    BINARY(SET_NEWNODE,AGGR->u.set | (1 << ELEM->u.num));	\
+	    break;						\
+	case STRING_:						\
+	  { char *s;						\
+	    s = (char *) malloc(strlen(AGGR->u.str) + 2);	\
+	    s[0] = ELEM->u.num;					\
+	    strcpy(s + 1,AGGR->u.str);				\
+	    BINARY(STRING_NEWNODE,s);				\
+	    break; }						\
+	default:						\
+	    BADAGGREGATE(NAME); }				\
+}
+#endif
 CONS_SWONS(cons_,"cons",stk,stk->next)
 CONS_SWONS(swons_,"swons",stk->next,stk)
 
@@ -1882,9 +2026,14 @@ PRIVATE void concat_()
 	  { char *s, *p;
 	    s = p = (char *)malloc(strlen(stk->next->u.str) +
 				   strlen(stk->u.str) + 1);
+#ifdef CORRECT_STRING_CONCAT
+	    strcpy(s, stk->next->u.str);
+	    strcat(s, stk->u.str);
+#else
 	    while ((*p++ = *(stk->next->u.str)++) != '\0');
 	    --p; /* don't want terminating null */
 	    while ((*p++ = *(stk->u.str)++) != '\0');
+#endif
 	    BINARY(STRING_NEWNODE,s);
 	    return; }
 	case LIST_:
@@ -2021,7 +2170,11 @@ PRIVATE void size_()
 	    while (e != NULL) {e = e->next; siz++;};
 	    break; }
 	default :
+#ifdef CORRECT_SIZE_CHECK
+	    BADAGGREGATE("size"); }
+#else
 	    BADDATA("size"); }
+#endif
     UNARY(INTEGER_NEWNODE,siz);
 }
 
@@ -2399,6 +2552,7 @@ PRIVATE void dip_()
 #endif
 
 #ifdef SINGLE
+#ifdef RUNTIME_CHECKS
 #define N_ARY(PROCEDURE,NAME,PARAMCOUNT,TOP)			\
 PRIVATE void PROCEDURE()					\
 {								\
@@ -2416,6 +2570,22 @@ N_ARY(nullary_,"nullary",ONEPARAM,stk)
 N_ARY(unary_,"unary",TWOPARAMS,stk->next)
 N_ARY(binary_,"binary",THREEPARAMS,stk->next->next)
 N_ARY(ternary_,"ternary",FOURPARAMS,stk->next->next->next)
+#else
+#define N_ARY(PROCEDURE,NAME,PARAMCOUNT,TOP)			\
+PRIVATE void PROCEDURE()					\
+{								\
+    Node *save, *top;						\
+    save = stk;							\
+    stk = stk->next;						\
+    top = TOP;							\
+    exeterm(save->u.lis);					\
+    stk = newnode(stk->op,stk->u,top);				\
+}
+N_ARY(nullary_,"nullary",ONEPARAM,stk)
+N_ARY(unary_,"unary",TWOPARAMS,stk->next)
+N_ARY(binary_,"binary",THREEPARAMS,stk->next->next)
+N_ARY(ternary_,"ternary",FOURPARAMS,stk->next->next->next)
+#endif
 #else
 #define N_ARY(PROCEDURE,NAME,PARAMCOUNT,TOP)			\
 PRIVATE void PROCEDURE()					\
@@ -2745,9 +2915,11 @@ PRIVATE void map_()
 	    while (my_dump1 != NULL)
 	      { stk = newnode(my_dump1->op,my_dump1->u,save);
 		exeterm(program);
+#ifdef RUNTIME_CHECKS
 #ifdef CHECK_EMPTY_STACK
 		if (stk == NULL)
 		    execerror("non-empty stack", "map");
+#endif
 #endif
 		if (my_dump2 == NULL)			/* first */
 		  { my_dump2 =
@@ -2798,9 +2970,11 @@ PRIVATE void map_()
 			      DMP1->u,SAVED3);
 		exeterm(SAVED1->u.lis);
 D(		printf("map: "); writefactor(stk, stdout); printf("\n"); )
+#ifdef RUNTIME_CHECKS
 #ifdef CHECK_EMPTY_STACK
 		if (stk == NULL)
 		    execerror("non-empty stack", "map");
+#endif
 #endif
 		if (DMP2 == NULL)			/* first */
 		  { DMP2 =
