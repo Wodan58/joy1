@@ -189,7 +189,7 @@ static double nodes;
 
 static void report_nodes(void)
 {
-    fprintf(stderr, "%.0f nodes used\n", nodes);    
+    fprintf(stderr, "%.0f nodes used\n", nodes);
 }
 
 static void count_nodes(void)
@@ -256,7 +256,7 @@ D(  while (p)  { printf("%s\n",p->name); p = p->next; } )
     if (sym != PERIOD)
 	error("period '.' expected after module name");
     else getsym();
-    if (sym != ATOM) 
+    if (sym != ATOM)
       { error("atom expected as module field"); return; }
     lookup();
 D(  printf("looking for field %s\n",id); )
@@ -287,7 +287,7 @@ D(	    printf("readfactor: location = %p\n", (void *)location); )
     if (sym != PERIOD)
 	error("period '.' expected after module name");
     else getsym();
-    if (sym != ATOM) 
+    if (sym != ATOM)
       { error("atom expected as module field"); return; }
 #ifndef DONT_ADD_MODULE_NAMES
     lookup();

@@ -83,7 +83,7 @@ PRIVATE void manual_list_aux_();
 #endif
 #define ONEQUOTE(NAME)						\
     if (stk->op != LIST_)					\
-	execerror("quotation as top parameter",NAME)		
+	execerror("quotation as top parameter",NAME)
 #define TWOQUOTES(NAME)						\
     ONEQUOTE(NAME);						\
     if (stk->next->op != LIST_)					\
@@ -191,7 +191,7 @@ PRIVATE void manual_list_aux_();
     if (OPR != LIST_)						\
 	execerror("internal list",NAME)
 #define CHECKSETMEMBER(NODE,NAME)				\
-    if ((NODE->op != INTEGER_ && NODE->op != CHAR_) || 		\
+    if ((NODE->op != INTEGER_ && NODE->op != CHAR_) ||		\
 	NODE->u.num >= SETSIZE)					\
 	execerror("small numeric",NAME)
 #define CHECKEMPTYSET(SET,NAME)					\
@@ -340,16 +340,14 @@ PRIVATE void intern_()
 #else
     strcpy(id, stk->u.str);
 #endif
-#ifdef RUNTIME_CHECKS
-#ifdef CORRECT_INTERN_LOOKUP
+#if defined(RUNTIME_CHECKS) && defined(CORRECT_INTERN_LOOKUP)
     p = 0;
     if (id[0] == '-' || !strchr("(#)[]{}.;'\"0123456789", id[0]))
-	for (p = id; *p; p++)
+	for (p = id + 1; *p; p++)
 	    if (!isalnum((int)*p) && !strchr("=_-", *p))
 		break;
     if (!p || *p)
 	execerror("valid name", id);
-#endif
 #endif
 #ifdef HASHVALUE_FUNCTION
     HashValue(id);
@@ -653,11 +651,20 @@ PRIVATE void rem_()
 
 
 PRIVATE void div_()
-{   ldiv_t result;
+{
+#ifdef BIT_32
+    ldiv_t result;
+#else
+    lldiv_t result;
+#endif
     TWOPARAMS("div");
     INTEGERS2("div");
     CHECKZERO("div");
+#ifdef BIT_32
     result = ldiv(stk->next->u.num, stk->u.num);
+#else
+    result = lldiv(stk->next->u.num, stk->u.num);
+#endif
     BINARY(INTEGER_NEWNODE, result.quot);
     NULLARY(INTEGER_NEWNODE, result.rem); }
 
@@ -820,7 +827,7 @@ PRIVATE void PROCEDURE()					\
     my_dump = INTEGER_NEWNODE((long)t->tm_min, my_dump);	\
     my_dump = INTEGER_NEWNODE((long)t->tm_hour, my_dump);	\
     my_dump = INTEGER_NEWNODE((long)t->tm_mday, my_dump);	\
-    my_dump = INTEGER_NEWNODE((long)(t->tm_mon + 1), my_dump); 	\
+    my_dump = INTEGER_NEWNODE((long)(t->tm_mon + 1), my_dump);	\
     my_dump = INTEGER_NEWNODE((long)(t->tm_year + 1900), my_dump);	\
     UNARY(LIST_NEWNODE, my_dump);				\
     return; }
@@ -844,7 +851,7 @@ PRIVATE void PROCEDURE()					\
     DMP1 = INTEGER_NEWNODE((long)t->tm_min, DMP1);		\
     DMP1 = INTEGER_NEWNODE((long)t->tm_hour, DMP1);		\
     DMP1 = INTEGER_NEWNODE((long)t->tm_mday, DMP1);		\
-    DMP1 = INTEGER_NEWNODE((long)(t->tm_mon + 1), DMP1); 	\
+    DMP1 = INTEGER_NEWNODE((long)(t->tm_mon + 1), DMP1);	\
     DMP1 = INTEGER_NEWNODE((long)(t->tm_year + 1900), DMP1);	\
     UNARY(LIST_NEWNODE, DMP1);					\
     POP(dump1);							\
@@ -1010,7 +1017,7 @@ PRIVATE void PROCEDURE()					\
       { BINARY(FLOAT_NEWNODE,					\
 	    FLOATVAL OPER FLOATVAL2 ?				\
 	    FLOATVAL2 : FLOATVAL);				\
-	return; } 						\
+	return; }						\
     SAME2TYPES(NAME);						\
     NUMERICTYPE(NAME);						\
     if (stk->op == CHAR_)					\
@@ -1250,7 +1257,7 @@ PRIVATE void PROCEDURE()					\
 	    while ( i < SETSIZE &&				\
 		    ( (stk->next->u.set & 1 << i) ==		\
 		      (stk->u.set & 1 << i) )  )		\
-		++i; 						\
+		++i;						\
 	    if (i == SETSIZE) i = 0; else ++i;			\
 	    if (!(stk->u.set & 1 << i)) i = -i;			\
 	    comp = i OPR 0;					\
@@ -1364,7 +1371,11 @@ PRIVATE void fgets_()
 	if (fgets(buff + length, size - length, stk->u.fil) == NULL)
 	    { buff[length] = 0; break; }
 	if (strchr(buff, '\n')) break;
+#ifdef CORRECT_FGETS
+	length = strlen(buff);
+#else
 	length += strlen(buff);
+#endif
 	size = size * 2; }
     NULLARY(STRING_NEWNODE, buff);
     return; }
@@ -2311,7 +2322,7 @@ PRIVATE void PROCEDURE()					\
 	  { name_length = strlen(i->name) + 1;			\
 	    if (column + name_length > 72)			\
 	      { printf("\n"); column = 0; }			\
-	    printf("%s ", i->name);  				\
+	    printf("%s ", i->name);				\
 	    column += name_length; }				\
     printf("\n"); }
 #else
@@ -2325,7 +2336,7 @@ PRIVATE void PROCEDURE()					\
 	  { name_length = strlen(i->name) + 1;			\
 	    if (column + name_length > 72)			\
 	      { printf("\n"); column = 0; }			\
-	    printf("%s ", i->name);  				\
+	    printf("%s ", i->name);				\
 	    column += name_length; }				\
     printf("\n"); }
 #endif
@@ -2915,11 +2926,9 @@ PRIVATE void map_()
 	    while (my_dump1 != NULL)
 	      { stk = newnode(my_dump1->op,my_dump1->u,save);
 		exeterm(program);
-#ifdef RUNTIME_CHECKS
-#ifdef CHECK_EMPTY_STACK
+#if defined(RUNTIME_CHECKS) && defined(CHECK_EMPTY_STACK)
 		if (stk == NULL)
 		    execerror("non-empty stack", "map");
-#endif
 #endif
 		if (my_dump2 == NULL)			/* first */
 		  { my_dump2 =
@@ -2970,11 +2979,9 @@ PRIVATE void map_()
 			      DMP1->u,SAVED3);
 		exeterm(SAVED1->u.lis);
 D(		printf("map: "); writefactor(stk, stdout); printf("\n"); )
-#ifdef RUNTIME_CHECKS
-#ifdef CHECK_EMPTY_STACK
+#if defined(RUNTIME_CHECKS) && defined(CHECK_EMPTY_STACK)
 		if (stk == NULL)
 		    execerror("non-empty stack", "map");
-#endif
 #endif
 		if (DMP2 == NULL)			/* first */
 		  { DMP2 =
@@ -3475,7 +3482,7 @@ PRIVATE void PROCEDURE()					\
 			my_dump->u,save);			\
 		exeterm(program);				\
 		if (stk->u.num != INITIAL)			\
-		     result = 1 - INITIAL; 			\
+		     result = 1 - INITIAL;			\
 		my_dump = my_dump->next; }			\
 	    break; }						\
 	default :						\
@@ -3515,7 +3522,7 @@ PRIVATE void PROCEDURE()					\
 			DMP1->u,SAVED3);			\
 		exeterm(SAVED1->u.lis);				\
 		if (stk->u.num != INITIAL)			\
-		     result = 1 - INITIAL; 			\
+		     result = 1 - INITIAL;			\
 		DMP1 = DMP1->next; }				\
 	    POP(dump1);						\
 	    break; }						\
@@ -4891,7 +4898,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"x",			x_,		"[P]i  ->  ...",
 "Executes P without popping [P]. So, [P] x  ==  [P] P."},
 
-{"dip", 		dip_,		"X [P]  ->  ... X",
+{"dip",			dip_,		"X [P]  ->  ... X",
 "Saves X, executes P, pushes X back."},
 
 {"app1",		app1_,		"X [P]  ->  R",

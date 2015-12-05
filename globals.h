@@ -76,6 +76,7 @@
 #define CORRECT_STRING_CONCAT
 #define CORRECT_SIZE_CHECK
 #define CORRECT_FORMATF_MESSAGE
+#define CORRECT_FGETS
 
 				/* configure			*/
 #define SHELLESCAPE	'$'
@@ -137,12 +138,10 @@
 #define EQDEF		1101
 #define HIDE		1102
 #define IN		1103
-#ifndef LEX_YACC
 #define END		1104
 #define MODULE		1105
 #define JPRIVATE	1106
 #define JPUBLIC		1107
-#endif
 
 #ifdef DEBUG
 #    define D(x) x
@@ -155,9 +154,7 @@
 
 				/* types			*/
 typedef int Symbol;
-#ifdef LEX_YACC
-#include "joy.h"
-#else
+
 typedef short Operator;
 
 typedef union
@@ -174,7 +171,7 @@ typedef union
 	struct Node *lis;
 	struct Entry *ent;
 	void (*proc)(); } Types;
-#endif
+
 typedef struct Node
   { Types u;
     Operator op;
@@ -182,9 +179,10 @@ typedef struct Node
     Operator type;
 #endif
     struct Node *next; } Node;
+
 typedef struct Entry
   { char *name;
-#if defined(NO_HELP_LOCAL_SYMBOLS) || defined(USE_UNKNOWN_SYMBOLS)
+#if defined(NO_HELP_LOCAL_SYMBOLS) || defined(USE_UNKNOWN_SYMBOLS) || defined(TRACK_USED_SYMBOLS)
     unsigned char is_module;
 #else
     int is_module;
@@ -198,10 +196,7 @@ typedef struct Entry
 #ifdef TRACK_USED_SYMBOLS
     unsigned char is_used;
 #endif
-#ifdef LEX_YACC
-    unsigned char is_expanding;
-#endif
-    union 
+    union
       { Node *body;
 	struct Entry *module_fields;
 	void  (*proc) (); } u;

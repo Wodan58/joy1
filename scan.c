@@ -227,7 +227,7 @@ Start:
 	    sym = LBRACE; getch(); return;
 	case '}':
 	    sym = RBRACE; getch(); return;
-	case '.': 
+	case '.':
 	    sym = PERIOD; getch(); return;
 	case ';':
 	    sym = SEMICOL; getch(); return;

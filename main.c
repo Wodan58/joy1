@@ -407,7 +407,7 @@ int main(int argc, char **argv)
 	g_argc--;
 	g_argv++;
 	srcfile = fopen(argv[1], "r");
-	if (!srcfile) { 
+	if (!srcfile) {
 	    printf("failed to open the file '%s'.\n", argv[1]);
 	    exit(1);
 	}
