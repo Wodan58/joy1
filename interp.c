@@ -3539,16 +3539,17 @@ SOMEALL(all_,"all",1L)
 PRIVATE void primrec_()
 {
     int n = 0; int i;
-    Node *second, *third;
+    Node *data, *second, *third;
 
     THREEPARAMS("primrec");
     third = stk->u.lis;
     stk = stk->next;
     second = stk->u.lis;
-    stk = stk->next;
-    switch (stk->op)
+    data = stk = stk->next;
+    POP(stk);
+    switch (data->op)
       { case LIST_:
-	  { Node *current = stk->u.lis;
+	  { Node *current = data->u.lis;
 	    while (current != NULL)
 	      { stk = newnode(current->op,current->u,stk);
 		current = current->next;
@@ -3556,12 +3557,12 @@ PRIVATE void primrec_()
 	    break; }
 	case STRING_:
 	  { char *s;
-	    for (s = stk->u.str; *s != '\0'; s++)
+	    for (s = data->u.str; *s != '\0'; s++)
 	      { stk = CHAR_NEWNODE((long) *s, stk);
 		n++; }
 	    break; }
 	case SET_:
-	  { long j; long set = stk->u.set;
+	  { long j; long set = data->u.set;
 	    for (j = 0; j < SETSIZE; j++)
 	        if (set & (1 << j))
 		  { stk = INTEGER_NEWNODE(j,stk);
@@ -3569,7 +3570,7 @@ PRIVATE void primrec_()
 	    break; }
 	case INTEGER_:
 	  { long j;
-	    for (j = stk->u.num; j > 0; j--)
+	    for (j = data->u.num; j > 0; j--)
 	      { stk = INTEGER_NEWNODE(j, stk);
 		n++; }
 	    break; }
