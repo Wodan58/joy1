@@ -189,7 +189,7 @@ static double nodes;
 
 static void report_nodes(void)
 {
-    fprintf(stderr, "%.0f nodes used\n", nodes);
+    fprintf(stderr, "%.0f nodes allocated\n", nodes);
 }
 
 static void count_nodes(void)

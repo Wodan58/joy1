@@ -721,7 +721,7 @@ PRIVATE void format_()
     width = stk->u.num;
     POP(stk);
     CHARACTER("format");
-    spec = stk->u.num;
+    spec = (char)stk->u.num;
     POP(stk);
 #ifdef RUNTIME_CHECKS
     if (!strchr("dioxX", spec))
@@ -770,7 +770,7 @@ PRIVATE void formatf_()
 #else
     CHARACTER("format");
 #endif
-    spec = stk->u.num;
+    spec = (char)stk->u.num;
     POP(stk);
 #ifdef RUNTIME_CHECKS
     if (!strchr("eEfgG", spec))
@@ -1226,7 +1226,7 @@ PRIVATE void PROCEDURE()					\
 	if (error)						\
 	    BADDATA(NAME);					\
 	else {							\
-	    comp = cmp OPR 0;					\
+	    comp = (int)(cmp OPR 0);				\
 	    if (comp < 0)					\
 		comp = -1;					\
 	    else if (comp > 0)					\
@@ -1491,7 +1491,7 @@ PRIVATE void fwrite_()
 #endif
     buff = malloc(length);
     for (n = stk->u.lis, i = 0; n; n = n->next, i++)
-	buff[i] = n->u.num;
+	buff[i] = (char)n->u.num;
     POP(stk);
     FILE("fwrite");
     fwrite(buff, (size_t)length, (size_t)1, stk->u.fil);
@@ -1886,7 +1886,7 @@ PRIVATE void PROCEDURE()					\
 	    if (ELEM->op != CHAR_)				\
 		execerror("character", NAME);			\
 	    s = (char *) malloc(strlen(AGGR->u.str) + 2);	\
-	    s[0] = ELEM->u.num;					\
+	    s[0] = (char)ELEM->u.num;				\
 	    strcpy(s + 1,AGGR->u.str);				\
 	    BINARY(STRING_NEWNODE,s);				\
 	    break; }						\
@@ -2383,6 +2383,16 @@ static void report_symbols(void)
 }
 #endif
 
+#ifdef STATS
+static double calls, opers;
+
+static void report_stats(void)
+{
+    fprintf(stderr, "%.0f calls to joy interpreter\n", calls);
+    fprintf(stderr, "%.0f operations executed\n", opers);
+}
+#endif
+
 #if defined(SINGLE) || defined(MAKE_CONTS_OBSOLETE)
 void exeterm(Node * n)
 {
@@ -2394,7 +2404,19 @@ void exeterm(Node * n)
 	atexit(report_symbols);
     }
 #endif
+#ifdef STATS
+    static int stats;
+
+    if (!stats) {
+	stats = 1;
+	atexit(report_stats);
+    }
+    ++calls;
+#endif
     while (n) {
+#ifdef STATS
+	++opers;
+#endif
 #ifdef TRACE
 	printfactor(n, stdout);
 	printf(" . ");
@@ -2948,7 +2970,7 @@ PRIVATE void map_()
 	    for (s = stk->u.str; *s != '\0'; s++)
 	      { stk = CHAR_NEWNODE((long)*s,save);
 		exeterm(program);
-		resultstring[j++] = stk->u.num; }
+		resultstring[j++] = (char)stk->u.num; }
 	    stk = STRING_NEWNODE(resultstring,save);
 	    break; }
 	case SET_:
