@@ -3,7 +3,7 @@ Joy1 installation manual
 
 To install Joy1, you first need to build it. For this, you have two choices:
 you can go for Joy1 with the Boehm GC or you can just as well build it without
-garbage collector. The latter version is easier, since it the source code is
+garbage collector. The latter version is easier, since the source code is
 self-contained.
 
 Joy1 without GC
