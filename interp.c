@@ -4425,7 +4425,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"__COPIED",		dummy_,		"->",
 "no message ever, used for gc."},
 
-{"__USR",		dummy_,		"usg",
+{"__USR",		dummy_,		"->",
 "user node."},
 
 {"__ANON_FUNCT",	dummy_,		"->",
@@ -4508,7 +4508,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"time",		time_,		"->  I",
 "Pushes the current time (in seconds since the Epoch)."},
 
-{"rand",		rand_,		"  -> I",
+{"rand",		rand_,		"->  I",
 "I is a random integer."},
 
 {"__memorymax",		memorymax_,	"->  I",
@@ -4517,10 +4517,10 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"stdin",		stdin_,		"->  S",
 "Pushes the standard input stream."},
 
-{"stdout",		stdout_,		"->  S",
+{"stdout",		stdout_,	"->  S",
 "Pushes the standard output stream."},
 
-{"stderr",		stderr_,		"->  S",
+{"stderr",		stderr_,	"->  S",
 "Pushes the standard error stream."},
 
 
@@ -4529,10 +4529,10 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"id",			id_,		"->",
 "Identity function, does nothing.\nAny program of the form  P id Q  is equivalent to just  P Q."},
 
-{"dup",			dup_,		" X  ->   X X",
+{"dup",			dup_,		"X  ->  X X",
 "Pushes an extra copy of X onto stack."},
 
-{"swap",		swap_,		" X Y  ->   Y X",
+{"swap",		swap_,		"X Y  ->  Y X",
 "Interchanges X and Y on top of the stack."},
 
 {"rollup",              rollup_,        "X Y Z  ->  Z X Y",
@@ -4562,7 +4562,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"rotated",             rotated_,       "X Y Z W  ->  Z Y X W",
 "As if defined by:   rotated  ==  [rotate] dip"},
 
-{"pop",			pop_,		" X  ->",
+{"pop",			pop_,		"X  ->",
 "Removes X from top of the stack."},
 
 {"choice",		choice_,	"B T F  ->  X",
@@ -4777,7 +4777,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"fputstring",		fputchars_,	"S \"abc..\"  ->  S",
 "== fputchars, as a temporary alternative."},
 
-{"fseek",		fseek_,		"S P W  ->  S",
+{"fseek",		fseek_,		"S P W  ->  S B",
 "Stream S is repositioned to position P relative to whence-point W,\nwhere W = 0, 1, 2 for beginning, current position, end respectively."},
 
 {"ftell",		ftell_,		"S  ->  S I",
@@ -4854,28 +4854,28 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {">=",			geql_,		"X Y  ->  B",
 "Either both X and Y are numeric or both are strings or symbols.\nTests whether X greater than or equal to Y.  Also supports float."},
 
-{">",			greater_,		"X Y  ->  B",
+{">",			greater_,	"X Y  ->  B",
 "Either both X and Y are numeric or both are strings or symbols.\nTests whether X greater than Y.  Also supports float."},
 
-{"<=",			leql_,			"X Y  ->  B",
+{"<=",			leql_,		"X Y  ->  B",
 "Either both X and Y are numeric or both are strings or symbols.\nTests whether X less than or equal to Y.  Also supports float."},
 
-{"<",			less_,			"X Y  ->  B",
+{"<",			less_,		"X Y  ->  B",
 "Either both X and Y are numeric or both are strings or symbols.\nTests whether X less than Y.  Also supports float."},
 
-{"!=",			neql_,			"X Y  ->  B",
+{"!=",			neql_,		"X Y  ->  B",
 "Either both X and Y are numeric or both are strings or symbols.\nTests whether X not equal to Y.  Also supports float."},
 
-{"=",			eql_,			"X Y  ->  B",
+{"=",			eql_,		"X Y  ->  B",
 "Either both X and Y are numeric or both are strings or symbols.\nTests whether X equal to Y.  Also supports float."},
 
-{"equal",		equal_,			"T U  ->  B",
+{"equal",		equal_,		"T U  ->  B",
 "(Recursively) tests whether trees T and U are identical."},
 
-{"has",			has_,			"A X  ->  B",
+{"has",			has_,		"A X  ->  B",
 "Tests whether aggregate A has X as a member."},
 
-{"in",			in_,			"X A  ->  B",
+{"in",			in_,		"X A  ->  B",
 "Tests whether X is a member of aggregate A."},
 
 #ifdef SAMETYPE_BUILTIN
@@ -5088,25 +5088,25 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 
 /* MISCELLANEOUS */
 
-{"help",		help1_,			"->",
+{"help",		help1_,		"->",
 "Lists all defined symbols, including those from library files.\nThen lists all primitives of raw Joy\n(There is a variant: \"_help\" which lists hidden symbols)."},
 
-{"_help",		h_help1_,		"->",
+{"_help",		h_help1_,	"->",
 "Lists all hidden symbols in library and then all hidden inbuilt symbols."},
 
-{"helpdetail",		helpdetail_,		"[ S1  S2  .. ]",
+{"helpdetail",		helpdetail_,	"[ S1  S2  .. ]",
 "Gives brief help on each symbol S in the list."},
 
-{"manual",		plain_manual_,		"->",
+{"manual",		plain_manual_,	"->",
 "Writes this manual of all Joy primitives to output file."},
 
-{"__html_manual",	html_manual_,		"->",
+{"__html_manual",	html_manual_,	"->",
 "Writes this manual of all Joy primitives to output file in HTML style."},
 
 {"__latex_manual",	latex_manual_,	"->",
 "Writes this manual of all Joy primitives to output file in Latex style but without the head and tail."},
 
-{"__manual_list",	manual_list_aux_,   "->  L",
+{"__manual_list",	manual_list_aux_, "->  L",
 "Pushes a list L of lists (one per operator) of three documentation strings"},
 
 {"__settracegc",	settracegc_,	"I  ->",
@@ -5121,7 +5121,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"setecho",		setecho_,	"I ->",
 "Sets value of echo flag for listing.\nI = 0: no echo, 1: echo, 2: with tab, 3: and linenumber."},
 
-{"gc",			gc_,	"->",
+{"gc",			gc_,		"->",
 "Initiates garbage collection."},
 
 {"system",		system_,	"\"command\"  ->",
@@ -5159,10 +5159,10 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"include",		include_,	"\"filnam.ext\"  ->",
 "Transfers input to file whose name is \"filnam.ext\".\nOn end-of-file returns to previous input file."},
 
-{"abort",		abortexecution_,	 "->",
+{"abort",		abortexecution_, "->",
 "Aborts execution of current Joy program, returns to Joy main cycle."},
 
-{"quit",		quit_,			"->",
+{"quit",		quit_,		"->",
 "Exit from Joy."},
 
 {0, dummy_, "->","->"}
