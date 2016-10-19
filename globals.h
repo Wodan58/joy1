@@ -1,5 +1,6 @@
 /* FILE : globals.h */
 
+#ifndef ORIGINAL_JOY
 #define USE_ONLY_STDIN
 #define NO_COMPILER_WARNINGS
 #define CORRECT_FIVE_PARAMS
@@ -77,7 +78,7 @@
 #define CORRECT_SIZE_CHECK
 #define CORRECT_FORMATF_MESSAGE
 #define CORRECT_FGETS
-
+#endif
 				/* configure			*/
 #define SHELLESCAPE	'$'
 #define INPSTACKMAX	10

@@ -395,8 +395,10 @@ int main(int argc, char **argv)
 #ifdef SINGLE
     Node *my_prog;
 #endif
+#ifdef BDW_ALSO_IN_MAIN
 #ifdef GC_BDW
     GC_init();
+#endif
 #endif
     g_argc = argc;
     g_argv = argv;

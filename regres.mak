@@ -1,4 +1,4 @@
-regres: gcd24_54 modtst test joytut jp-reprodtst mtrtst flatjoy jp-church reptst symtst jp-joytst plgtst lsptst laztst jp-nestrec grmtst zextra
+regres: gcd24_54 modtst test joytut jp-reprodtst mtrtst flatjoy jp-church reptst symtst jp-joytst plgtst lsptst laztst jp-nestrec grmtst
 	rm -f joy.out
 
 gcd24_54:
@@ -9,8 +9,8 @@ joytut:
 	sed '/^JOY/d;/^Copy/d;/^Monday/d;/^time/d;s/joytut/joytut quit/' <$@.out | diff -w - joy.out
 
 lsptst:
-	./joy $@.joy >joy.out
-	head -265 <$@.out | sed '/^JOY/d;/^Copy/d;s/^lisp/lisp quit/' | diff -w - joy.out
+	./joy $@.joy | tail -259 | head -255 >joy.out
+	head -261 <$@.out | tail -255 | sed '/^JOY/d;/^Copy/d;s/^lisp/lisp quit/' | diff -w - joy.out
 
 jp-joytst:
 	./joy $@.joy | sed '/^warning/d' >joy.out
@@ -57,6 +57,3 @@ flatjoy:
 
 jp-church:
 	./joy $@.joy | diff -w - $@.out
-
-zextra:
-	-./joy $@.joy | diff -w - $@.out
