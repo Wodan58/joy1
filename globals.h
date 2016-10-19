@@ -76,9 +76,9 @@
 #define CORRECT_FORMATF_MESSAGE
 #define CORRECT_FGETS
 #endif
-#define RUNTIME_CHECKS
-#define ENABLE_TRACEGC
 #define USE_SHELL_ESCAPE
+#define ENABLE_TRACEGC
+#define RUNTIME_CHECKS
 				/* configure			*/
 #define SHELLESCAPE	'$'
 #define INPSTACKMAX	10
