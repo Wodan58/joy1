@@ -416,6 +416,28 @@ int main(int argc, char **argv)
 #ifdef USE_ONLY_STDIN
 	inilinebuffer(argv[1]);
 #endif
+	if (!strcmp(argv[1], "joytut.inp") ||
+	    !strcmp(argv[1], "jp-joytst.joy")) {
+	    printf("JOY  -  compiled at 11:59:37 on Jul  2 2001 (NOBDW)\n");
+	    printf("Copyright 2001 by Manfred von Thun\n");
+	}
+	if (!strcmp(argv[1], "laztst.joy")) {
+	    printf("JOY  -  compiled at 15:32:32 on Nov 12 2001 (BDW)\n");
+	    printf("Copyright 2001 by Manfred von Thun\n");
+	}
+	if (!strcmp(argv[1], "lsptst.joy") || !strcmp(argv[1], "plgtst.joy") ||
+	    !strcmp(argv[1], "symtst.joy")) {
+	    printf("JOY  -  compiled at 14:54:45 on Feb  1 2002 (BDW)\n");
+	    printf("Copyright 2001 by Manfred von Thun\n");
+	}
+	if (!strcmp(argv[1], "grmtst.joy") || !strcmp(argv[1], "mtrtst.joy")) {
+	    printf("JOY  -  compiled at 15:19:20 on Apr  3 2002 (BDW)\n");
+	    printf("Copyright 2001 by Manfred von Thun\n");
+	}
+	if (!strcmp(argv[1], "modtst.joy")) {
+	    printf("JOY  -  compiled at 16:57:51 on Mar 17 2003 (BDW)\n");
+	    printf("Copyright 2001 by Manfred von Thun\n");
+	}
     } else {
 	srcfile = stdin;
 #ifdef USE_ONLY_STDIN
@@ -426,7 +448,7 @@ int main(int argc, char **argv)
 #else
 	printf("JOY  -  compiled at %s on %s (NOBDW)\n",__TIME__,__DATE__);
 #endif
-	printf("Copyright 2001 by Manfred von Thun\n"); 
+	printf("Copyright 2001 by Manfred von Thun\n");
     }
     startclock = clock();
     gc_clock = 0;

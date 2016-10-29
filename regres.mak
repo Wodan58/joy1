@@ -6,39 +6,35 @@ gcd24_54:
 
 joytut:
 	./joy $@.inp >joy.out
-	sed '/^JOY/d;/^Copy/d;/^Monday/d;/^time/d;s/joytut/joytut quit/' <$@.out | diff -w - joy.out
+	sed '/^Monday/d;/^time/d;s/^joytut/joytut quit/' <$@.out | diff -w - joy.out
 
 lsptst:
-	./joy $@.joy | tail -259 | head -255 >joy.out
-	head -261 <$@.out | tail -255 | sed '/^JOY/d;/^Copy/d;s/^lisp/lisp quit/' | diff -w - joy.out
+	./joy $@.joy | head -261 >joy.out
+	head -261 <$@.out | sed 's/^lisp/lisp quit/' | diff -w - joy.out
 
 jp-joytst:
 	./joy $@.joy | sed '/^warning/d' >joy.out
-	sed '/^JOY/d;/^Copy/d;/^Thursday/d;/^time/d;/^gc/d' <$@.out | diff -w - joy.out
+	sed '/^Thursday/d;/^time/d;/^gc/d' <$@.out | diff -w - joy.out
 
 laztst:
 	./joy $@.joy >joy.out
-	sed '/^JOY/d;/^Copy/d;/^Friday/d;/^Time/d' <$@.out | diff -w - joy.out
+	sed '/^Friday/d;/^Time/d' <$@.out | diff -w - joy.out
 
 grmtst:
-	./joy $@.joy | sed '/^warning/d' >joy.out
-	tail --lines=+3 $@.out | head --lines=328 | diff -w - joy.out
+	./joy $@.joy >joy.out
+	head -330 $@.out | diff -w - joy.out
 
 modtst:
-	./joy $@.joy >joy.out
-	tail --lines=+3 $@.out | diff -w - joy.out
+	./joy $@.joy | diff -w - $@.out
 
 mtrtst:
-	./joy $@.joy >joy.out
-	tail --lines=+3 $@.out | diff -w - joy.out
+	./joy $@.joy | diff -w - $@.out
 
 plgtst:
-	./joy $@.joy >joy.out
-	tail --lines=+3 $@.out | diff -w - joy.out
+	./joy $@.joy | diff -w - $@.out
 
 symtst:
-	./joy $@.joy >joy.out
-	tail --lines=+3 $@.out | diff -w - joy.out
+	./joy $@.joy | diff -w - $@.out
 
 test:
 	./joy $@.joy | diff -w - $@.out
