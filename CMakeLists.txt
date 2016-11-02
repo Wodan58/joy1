@@ -1,7 +1,7 @@
 #
 #  Makefile for JOY
 #
-cmake_minimum_required(VERSION 2.8.9)
+cmake_minimum_required(VERSION 3.0)
 project(Joy)
 add_definitions(-DORIGINAL_JOY -DGC_BDW -DBIT_32 -I.)
 add_executable(joy interp.c scan.c utils.c main.c)

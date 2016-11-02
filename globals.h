@@ -1,6 +1,7 @@
 /* FILE : globals.h */
 
 #ifndef ORIGINAL_JOY
+#define SINGLE
 #define USE_ONLY_STDIN
 #define NO_COMPILER_WARNINGS
 #define CORRECT_FIVE_PARAMS
