@@ -1363,11 +1363,13 @@ PRIVATE void getch_()
 PRIVATE void fgets_()
 {   int length = 0;
     int size = INPLINEMAX;
-    char *buff = NULL;
+    char *buff = NULL, *newbuff;
     ONEPARAM("fgets");
     FILE("fgets");
     for (;;)
-      { buff = realloc(buff, size);
+      { if ((newbuff = realloc(buff, size)) == 0)
+	    break;
+	buff = newbuff;
 	if (fgets(buff + length, size - length, stk->u.fil) == NULL)
 	    { buff[length] = 0; break; }
 	if (strchr(buff, '\n')) break;
@@ -1495,6 +1497,7 @@ PRIVATE void fwrite_()
     POP(stk);
     FILE("fwrite");
     fwrite(buff, (size_t)length, (size_t)1, stk->u.fil);
+    free(buff);
     return; }
 
 PRIVATE void fseek_()
@@ -3796,7 +3799,6 @@ PRIVATE void branch_()
 #ifdef SINGLE
 PRIVATE void while_()
 {
-    int num;
     Node *body, *test, *save;
 
     TWOPARAMS("while");
@@ -3808,7 +3810,7 @@ PRIVATE void while_()
     for (;;) {
 	save = stk;
 	exeterm(test);
-	num = stk->u.num;
+	int num = stk->u.num;
 	stk = save;
 	if (!num)
 	    return;
@@ -5170,14 +5172,14 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 
 PUBLIC void inisymboltable(void)		/* initialise		*/
 {
-    int i; char *s;
+    int i;
     symtabindex = symtab;
     for (i = 0; i < HASHSIZE; hashentry[i++] = symtab) ;
 #if 0
     localentry = symtab;
 #endif
     for (i = 0; optable[i].name; i++)
-      { s = optable[i].name;
+      { char *s = optable[i].name;
 #ifdef HASHVALUE_FUNCTION
 	HashValue(s);
 #else
@@ -5255,10 +5257,10 @@ PRIVATE void helpdetail_()
 
 PRIVATE void make_manual(int style /* 0=plain, 1=HTML, 2=Latex */)
 {
-    int i; char * n;
+    int i;
     if (HTML) printf("<HTML>\n<DL>\n");
     for (i = BOOLEAN_; optable[i].name != 0; i++)
-      { n = optable[i].name;
+      { char *n = optable[i].name;
 	HEADER(n," truth value type","literal") else
 	HEADER(n,"false","operand") else
 	HEADER(n,"id","operator") else
