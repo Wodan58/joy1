@@ -12,3 +12,4 @@ CmakeCache.txt
 CmakeFiles
 cmake_install.cmake
 fib.joy
+Makefile

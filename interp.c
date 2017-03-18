@@ -730,7 +730,7 @@ PRIVATE void format_()
     strcpy(format, "%*.*ld");
     format[5] = spec;
 #ifdef USE_SNPRINTF
-    leng = snprintf(0, 0, format, width, prec, stk->u.num);
+    leng = snprintf(0, 0, format, width, prec, stk->u.num) + 1;
     result = malloc(leng + 1);
 #else
     result = malloc(INPLINEMAX);		/* should be sufficient */
@@ -783,7 +783,7 @@ PRIVATE void formatf_()
     strcpy(format, "%*.*lg");
     format[5] = spec;
 #ifdef USE_SNPRINTF
-    leng = snprintf(0, 0, format, width, prec, stk->u.num);
+    leng = snprintf(0, 0, format, width, prec, stk->u.num) + 1;
     result = malloc(leng + 1);
 #else
 #ifdef CORRECT_FLOAT_BUFFER
