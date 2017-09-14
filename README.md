@@ -1,9 +1,9 @@
 Joy1
 ----
 
-This is a distribution of Joy1. As the Joy homepage was rather chaotic and
-ceased to exist by now, I decided to create a distribution of Joy1 that people
-can just download and use.
+Build|Linux|Windows
+---|---|---
+status|[![Travis CI build status](https://travis-ci.org/Wodan58/joy1.svg?branch=master)](https://travis-ci.org/Wodan58/joy1)|[![AppVeyor CI build status](https://ci.appveyor.com/api/projects/status/github/Wodan58/joy1?branch=master&svg=true)](https://ci.appveyor.com/project/Wodan58/joy1)
 
 Changes
 -------
