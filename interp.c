@@ -294,7 +294,7 @@ PUSH(clock_,INTEGER_NEWNODE,(long)(clock() - startclock))
 PUSH(time_,INTEGER_NEWNODE,(long)time(NULL))
 PUSH(argc_,INTEGER_NEWNODE,(long)g_argc)
 
-PRIVATE void stack_(void)
+PUBLIC void stack_(void)
 { NULLARY(LIST_NEWNODE, stk); }
 
 /* - - - - -   O P E R A T O R S   - - - - - */
@@ -1753,7 +1753,7 @@ PRIVATE void PROCEDURE()					\
 INHAS(in_,"in",stk,stk->next)
 INHAS(has_,"has",stk->next,stk)
 
-#ifdef RUNTIME_CHECKS
+#if defined(RUNTIME_CHECKS) && !defined(ORIGINAL_JOY)
 #define OF_AT(PROCEDURE,NAME,AGGR,INDEX)			\
 PRIVATE void PROCEDURE()					\
 {   TWOPARAMS(NAME);						\
@@ -1871,7 +1871,7 @@ PRIVATE void opcase_()
 	n->next != NULL ? n->u.lis->next : n->u.lis);
 }
 
-#ifdef RUNTIME_CHECKS
+#if defined(RUNTIME_CHECKS) && !defined(ORIGINAL_JOY)
 #define CONS_SWONS(PROCEDURE,NAME,AGGR,ELEM)			\
 PRIVATE void PROCEDURE()					\
 {   TWOPARAMS(NAME);						\
@@ -2251,7 +2251,7 @@ USETOP( srand_,"srand",INTEGER, srand((unsigned int) stk->u.num) )
 USETOP( include_,"include",STRING, doinclude(stk->u.str) )
 USETOP( system_,"system",STRING, system(stk->u.str) )
 
-#ifdef SINGLE
+#if defined(SINGLE) || defined(ORIGINAL_JOY)
 PRIVATE void undefs_(void)
 {
     Entry *i = symtabindex;
@@ -2309,7 +2309,7 @@ PRIVATE void get_()
     readfactor();
 }
 
-PRIVATE void dummy_(void)
+PUBLIC void dummy_(void)
 {
     /* never called */
 }
@@ -4779,7 +4779,11 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"fputstring",		fputchars_,	"S \"abc..\"  ->  S",
 "== fputchars, as a temporary alternative."},
 
+#ifdef CORRECT_FSEEK_MANUAL
 {"fseek",		fseek_,		"S P W  ->  S B",
+#else
+{"fseek",		fseek_,		"S P W  ->  S",
+#endif
 "Stream S is repositioned to position P relative to whence-point W,\nwhere W = 0, 1, 2 for beginning, current position, end respectively."},
 
 {"ftell",		ftell_,		"S  ->  S I",
@@ -5175,7 +5179,7 @@ PUBLIC void inisymboltable(void)		/* initialise		*/
     int i;
     symtabindex = symtab;
     for (i = 0; i < HASHSIZE; hashentry[i++] = symtab) ;
-#if 0
+#ifdef ORIGINAL_JOY
     localentry = symtab;
 #endif
     for (i = 0; optable[i].name; i++)
@@ -5290,7 +5294,7 @@ PRIVATE void make_manual(int style /* 0=plain, 1=HTML, 2=Latex */)
     if (HTML) printf("\n</DL>\n</HTML>\n");
 }
 
-#ifdef SINGLE
+#if defined(SINGLE) || defined(ORIGINAL_JOY)
 PRIVATE void manual_list_()
 {
     int i = -1;

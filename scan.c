@@ -23,7 +23,9 @@ static int ilevel;
 static int linenumber = 0;
 static char linbuf[INPLINEMAX];
 static int linelength, currentcolumn = 0;
+#ifndef REMOVE_UNUSED_ERRORCOUNT
 static int errorcount = 0;
+#endif
 #ifdef READ_NUMBER_AND_STOP
 static int unget1 = 0, unget2 = 0;
 #endif
@@ -120,7 +122,9 @@ PUBLIC void error(char *message)
     for (i = 0; i < currentcolumn-2; i++)
 	if (linbuf[i] <= ' ') putchar(linbuf[i]); else putchar(' ');
     printf("^\n\t%s\n",message);
+#ifndef REMOVE_UNUSED_ERRORCOUNT
     errorcount++;
+#endif
 }
 
 PUBLIC int doinclude(char *filnam)

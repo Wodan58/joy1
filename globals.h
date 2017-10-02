@@ -1,7 +1,13 @@
 /* FILE : globals.h */
 
-#ifndef ORIGINAL_JOY
+#ifdef ORIGINAL_JOY
+#ifndef BIT_32
+#define BIT_32
+#endif
+#else
+#ifdef GC_BDW
 #define SINGLE
+#endif
 #define USE_ONLY_STDIN
 #define NO_COMPILER_WARNINGS
 #define CORRECT_FIVE_PARAMS
@@ -76,7 +82,10 @@
 #define CORRECT_SIZE_CHECK
 #define CORRECT_FORMATF_MESSAGE
 #define CORRECT_FGETS
+#define REMOVE_UNUSED_ERRORCOUNT
+#define CORRECT_FSEEK_MANUAL
 #endif
+
 #define USE_SHELL_ESCAPE
 #define ENABLE_TRACEGC
 #define RUNTIME_CHECKS
@@ -151,7 +160,11 @@
 #    define D(x)
 #endif
 
+#ifdef ORIGINAL_JOY
+#define PRIVATE		static
+#else
 #define PRIVATE
+#endif
 #define PUBLIC
 
 				/* types			*/
@@ -235,7 +248,7 @@ CLASS int display_lookup;
 CLASS Entry					/* symbol table	*/
     symtab[SYMTABMAX],
     *hashentry[HASHSIZE],
-#if 0
+#ifdef ORIGINAL_JOY
     *localentry,
 #endif
     *symtabindex,
@@ -276,7 +289,7 @@ CLASS Node				/* dynamic memory	*/
 */
 
 /* Public procedures: */
-#if 0
+#ifdef ORIGINAL_JOY
 PUBLIC void stack_(void);
 PUBLIC void dummy_(void);
 #endif
