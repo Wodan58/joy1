@@ -1974,16 +1974,16 @@ PRIVATE void take_()
 	    /* do not swap the order of the next two statements ! ! ! */
 	    if (i < 0) i = 0;
 #ifdef NO_COMPILER_WARNINGS
-	    if ((size_t)i > strlen(old))  return; /* the old string unchanged */
+	    if ((size_t)i >= strlen(old)) return; /* the old string unchanged */
 #else
-	    if (i > strlen(old))  return; /* the old string unchanged */
+	    if (i >= strlen(old)) return; /* the old string unchanged */
 #endif
 #ifdef CORRECT_TAKE_STRING
 	    p = result = (char *) malloc(i + 1);
 	    while (i-- > 0) *p++ = *old++; *p = 0;
 #else
 	    p = result = (char *) malloc(strlen(old) - i + 1);
-	    while (i-- > 0)  *p++ = *old++;
+	    while (i-- > 0) *p++ = *old++;
 #endif
 	    UNARY(STRING_NEWNODE,result);
 	    return; }
