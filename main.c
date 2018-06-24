@@ -492,14 +492,16 @@ D(  printf("starting main loop\n"); )
 	  { readterm();
 D(	    printf("program is: "); writeterm(stk->u.lis, stdout); printf("\n"); )
 #ifdef SINGLE
-	    my_prog = stk->u.lis;
-	    stk = stk->next;
-	    exeterm(my_prog);
+	    if (stk != NULL)
+	      {	my_prog = stk->u.lis;
+		stk = stk->next;
+		exeterm(my_prog); }
 #else
-	    prog = stk->u.lis;
-	    stk = stk->next;
-	    conts = NULL;
-	    exeterm(prog);
+	    if (stk != NULL)
+	      {	prog = stk->u.lis;
+		stk = stk->next;
+		conts = NULL;
+		exeterm(prog); }
 	    if (conts || dump || dump1 || dump2 || dump3 || dump4 || dump5)
 	      { printf("the dumps are not empty\n");
 		CHECK(conts,"conts");
