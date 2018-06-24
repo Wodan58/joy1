@@ -1980,7 +1980,8 @@ PRIVATE void take_()
 #endif
 #ifdef CORRECT_TAKE_STRING
 	    p = result = (char *) malloc(i + 1);
-	    while (i-- > 0) *p++ = *old++; *p = 0;
+	    while (i-- > 0) *p++ = *old++;
+	    *p = 0;
 #else
 	    p = result = (char *) malloc(strlen(old) - i + 1);
 	    while (i-- > 0) *p++ = *old++;
@@ -2157,10 +2158,12 @@ PRIVATE void not_()
 #ifdef NOT_ALSO_FOR_FLOAT
 	case FLOAT_:
 	    UNARY(BOOLEAN_NEWNODE, (long)(! stk->u.dbl));
+	    break;
 #endif
 #ifdef NOT_ALSO_FOR_FILE
 	case FILE_:
 	    UNARY(BOOLEAN_NEWNODE, (long)(stk->u.fil != NULL));
+	    break;
 #endif
 	default:
 	    BADDATA("not"); }
@@ -2249,7 +2252,7 @@ USETOP( setundeferror_, "setundeferror", NUMERICTYPE, undeferror = stk->u.num )
 USETOP( settracegc_,"settracegc",NUMERICTYPE, tracegc = stk->u.num )
 USETOP( srand_,"srand",INTEGER, srand((unsigned int) stk->u.num) )
 USETOP( include_,"include",STRING, doinclude(stk->u.str) )
-USETOP( system_,"system",STRING, system(stk->u.str) )
+USETOP( system_,"system",STRING, (void)system(stk->u.str) )
 
 #if defined(SINGLE) || defined(ORIGINAL_JOY)
 PRIVATE void undefs_(void)
