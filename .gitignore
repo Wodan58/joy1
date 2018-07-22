@@ -1,6 +1,5 @@
 *.swp
 *.tar.gz
-joy*
 gc
 gc.fail
 gc.succ
