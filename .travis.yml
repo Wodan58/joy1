@@ -15,10 +15,11 @@ before_script:
 script:
   - git clone https://github.com/ivmai/bdwgc.git
   - cmake -G "Unix Makefiles"
-  - cmake --build . --config Release
+  - cmake --build . --config Debug
 
 after_success:
   - lcov --directory . --capture --output-file coverage.info # capture coverage info
   - lcov --remove coverage.info 'tests/*' '/usr/*' --output-file coverage.info # filter out system and test code
   - lcov --list coverage.info # debug before upload
   - coveralls-lcov coverage.info # uploads to coveralls
+  - bash <(curl -s https://codecov.io/bash)
