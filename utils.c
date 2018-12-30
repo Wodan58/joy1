@@ -1,3 +1,4 @@
+/* FILE: utils.c */
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
@@ -323,8 +324,7 @@ D(  printf("found field: %s\n",mod_fields->name); )
 	    stk =  SET_NEWNODE(set,stk); }
 	    return;
 	case LBRACK:
-	  { void readterm();
-	    getsym();
+	  { getsym();
 	    readterm();
 	    if (sym != RBRACK)
 		error("']' expected");

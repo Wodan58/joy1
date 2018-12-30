@@ -1,4 +1,4 @@
-/* file: main.c */
+/* FILE: main.c */
 
 /*
 I comment on the functions in main.c which are relevant to the
@@ -455,7 +455,7 @@ int main(int argc, char **argv)
     echoflag = INIECHOFLAG;
     tracegc = INITRACEGC;
     autoput = INIAUTOPUT;
-    ch = ' ';
+//  ch = ' ';
 #ifndef USE_ONLY_STDIN
     inilinebuffer();
 #endif

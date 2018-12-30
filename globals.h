@@ -1,4 +1,6 @@
-/* FILE : globals.h */
+/* FILE: globals.h */
+#ifndef GLOBALS_H
+#define GLOBALS_H
 
 #ifdef ORIGINAL_JOY
 #ifndef BIT_32
@@ -231,7 +233,7 @@ CLASS int autoput;
 CLASS int undeferror;
 CLASS int tracegc;
 CLASS int startclock,gc_clock;			/* main		*/
-CLASS int ch;					/* scanner	*/
+// CLASS int ch;				/* scanner	*/
 CLASS Symbol sym;
 #ifdef BIT_32
 CLASS long num;
@@ -339,3 +341,4 @@ PUBLIC void HashValue(char *str);
 #define LIST_NEWNODE(u,r)	(bucket.lis = u, newnode(LIST_, bucket, r))
 #define FLOAT_NEWNODE(u,r)	(bucket.dbl = u, newnode(FLOAT_, bucket, r))
 #define FILE_NEWNODE(u,r)	(bucket.fil = u, newnode(FILE_, bucket, r))
+#endif

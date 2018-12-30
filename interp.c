@@ -283,6 +283,7 @@ PUSH(dump_,LIST_NEWNODE,dump)				/* variables	*/
 PUSH(conts_,LIST_NEWNODE,LIST_NEWNODE(conts->u.lis->next,conts->next))
 #endif
 PUSH(symtabindex_,INTEGER_NEWNODE,(long)LOC2INT(symtabindex))
+// FIXME: Use /dev/random on Unix or CryptGenRandom on Windows
 PUSH(rand_, INTEGER_NEWNODE, (long)rand())
 /* this is now in utils.c
 PUSH(memoryindex_,INTEGER_NEWNODE,MEM2INT(memoryindex))
@@ -2252,7 +2253,7 @@ USETOP( setundeferror_, "setundeferror", NUMERICTYPE, undeferror = stk->u.num )
 USETOP( settracegc_,"settracegc",NUMERICTYPE, tracegc = stk->u.num )
 USETOP( srand_,"srand",INTEGER, srand((unsigned int) stk->u.num) )
 USETOP( include_,"include",STRING, doinclude(stk->u.str) )
-USETOP( system_,"system",STRING, (void)system(stk->u.str) )
+USETOP( system_,"system",STRING, system(stk->u.str) )
 
 #if defined(SINGLE) || defined(ORIGINAL_JOY)
 PRIVATE void undefs_(void)

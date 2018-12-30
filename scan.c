@@ -1,4 +1,4 @@
-/* FILE : scan.c */
+/* FILE: scan.c */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,6 +26,7 @@ static int linelength, currentcolumn = 0;
 #ifndef REMOVE_UNUSED_ERRORCOUNT
 static int errorcount = 0;
 #endif
+static int ch = ' ';
 #ifdef READ_NUMBER_AND_STOP
 static int unget1 = 0, unget2 = 0;
 #endif
@@ -78,7 +79,7 @@ PRIVATE void getch()
 #else
 	while ((c = getc(infile[ilevel])) != EOLN)
 #endif
-	  { linbuf[linelength++] = c;
+	  { linbuf[linelength++] = (char)c;
 #ifdef DONT_READ_PAST_EOF
 	    if (c == EOF) linelength--;
 #endif
