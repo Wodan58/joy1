@@ -1,4 +1,9 @@
 /* FILE: interp.c */
+/*
+ *  module  : interp.c
+ *  version : 1.9
+ *  date    : 01/05/19
+ */
 
 /*
 07-May-03 condnestrec
@@ -336,25 +341,25 @@ PRIVATE void intern_()
     ONEPARAM("intern");
     STRING("intern");
 #ifdef CORRECT_INTERN_STRCPY
-    strncpy(id, stk->u.str, ALEN);
-    id[ALEN-1] = 0;
+    strncpy(ident, stk->u.str, ALEN);
+    ident[ALEN-1] = 0;
 #else
-    strcpy(id, stk->u.str);
+    strcpy(ident, stk->u.str);
 #endif
 #if defined(RUNTIME_CHECKS) && defined(CORRECT_INTERN_LOOKUP)
     p = 0;
-    if (id[0] == '-' || !strchr("(#)[]{}.;'\"0123456789", id[0]))
-	for (p = id + 1; *p; p++)
+    if (ident[0] == '-' || !strchr("(#)[]{}.;'\"0123456789", ident[0]))
+	for (p = ident + 1; *p; p++)
 	    if (!isalnum((int)*p) && !strchr("=_-", *p))
 		break;
     if (!p || *p)
-	execerror("valid name", id);
+	execerror("valid name", ident);
 #endif
 #ifdef HASHVALUE_FUNCTION
-    HashValue(id);
+    HashValue(ident);
 #else
     hashvalue = 0;
-    for (p = id; *p; p++) hashvalue += *p;
+    for (p = ident; *p; p++) hashvalue += *p;
     hashvalue %= HASHSIZE;
 #endif
     lookup();

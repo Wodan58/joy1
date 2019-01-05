@@ -1,4 +1,9 @@
 /* FILE: globals.h */
+/*
+ *  module  : globals.h
+ *  version : 1.7
+ *  date    : 01/05/19
+ */
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
@@ -86,6 +91,7 @@
 #define CORRECT_FGETS
 #define REMOVE_UNUSED_ERRORCOUNT
 #define CORRECT_FSEEK_MANUAL
+#define RESPECT_INPLINEMAX
 #endif
 
 #define USE_SHELL_ESCAPE
@@ -234,14 +240,14 @@ CLASS int undeferror;
 CLASS int tracegc;
 CLASS int startclock,gc_clock;			/* main		*/
 // CLASS int ch;				/* scanner	*/
-CLASS Symbol sym;
+CLASS Symbol symb;
 #ifdef BIT_32
-CLASS long num;
+CLASS long numb;
 #else
-CLASS long long num;
+CLASS long long numb;
 #endif
-CLASS double dbl;
-CLASS char id[ALEN];
+CLASS double dblf;
+CLASS char ident[ALEN];
 CLASS int hashvalue;
 CLASS Types bucket;				/* used by NEWNODE defines */
 CLASS int display_enter;

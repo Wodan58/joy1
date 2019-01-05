@@ -1,4 +1,9 @@
 /* FILE: utils.c */
+/*
+ *  module  : utils.c
+ *  version : 1.6
+ *  date    : 01/05/19
+ */
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
@@ -272,7 +277,7 @@ D(  printf("found field: %s\n",p->name); )
 #endif
 PUBLIC void readfactor(void)	/* read a JOY factor		*/
 {
-    switch (sym)
+    switch (symb)
       { case ATOM:
 	    lookup();
 D(	    printf("readfactor: location = %p\n", (void *)location); )
@@ -285,16 +290,16 @@ D(	    printf("readfactor: location = %p\n", (void *)location); )
     Entry *mod_fields;
     mod_fields = location->u.module_fields;
     getsym();
-    if (sym != PERIOD)
+    if (symb != PERIOD)
 	error("period '.' expected after module name");
     else getsym();
-    if (sym != ATOM)
+    if (symb != ATOM)
       { error("atom expected as module field"); return; }
 #ifndef DONT_ADD_MODULE_NAMES
     lookup();
 #endif
 D(  printf("looking for field %s\n",id); )
-    while (mod_fields && strcmp(id,mod_fields->name) != 0)
+    while (mod_fields && strcmp(ident,mod_fields->name) != 0)
 	mod_fields = mod_fields->next;
     if (mod_fields == NULL)
       { error("no such field in module"); abortexecution_(); }
@@ -308,17 +313,17 @@ D(  printf("found field: %s\n",mod_fields->name); )
 		else stk =  USR_NEWNODE(location,stk);
 	    return;
 	case BOOLEAN_: case INTEGER_: case CHAR_: case STRING_:
-	    bucket.num = num;
-	    stk = newnode(sym,bucket,stk);
+	    bucket.num = numb;
+	    stk = newnode(symb,bucket,stk);
 	    return;
 	case FLOAT_:
-	    stk = FLOAT_NEWNODE(dbl,stk);
+	    stk = FLOAT_NEWNODE(dblf,stk);
 	    return;
 	case LBRACE:
 	  { long set = 0; getsym();
-	    while (sym != RBRACE)
-	      { if (sym == CHAR_ || sym == INTEGER_)
-		    set = set | (1 << num);
+	    while (symb != RBRACE)
+	      { if (symb == CHAR_ || symb == INTEGER_)
+		    set = set | (1 << numb);
 		  else error("numeric expected in set");
 		getsym(); }
 	    stk =  SET_NEWNODE(set,stk); }
@@ -326,7 +331,7 @@ D(  printf("found field: %s\n",mod_fields->name); )
 	case LBRACK:
 	  { getsym();
 	    readterm();
-	    if (sym != RBRACK)
+	    if (symb != RBRACK)
 		error("']' expected");
 	    return; }
 	case LPAREN:
@@ -346,7 +351,7 @@ PUBLIC void readterm(void)
 #ifdef SINGLE
     my_dump = &stk->u.lis;
 #endif
-    if (sym <= ATOM)
+    if (symb <= ATOM)
       { readfactor();
 #ifdef SINGLE
 	*my_dump = stk;
@@ -359,7 +364,7 @@ PUBLIC void readterm(void)
 	dump = newnode(LIST_,stk->u,dump);
 #endif
 	getsym();
-	while (sym <= ATOM)
+	while (symb <= ATOM)
 	  { readfactor();
 #ifdef SINGLE
 	    *my_dump = stk;

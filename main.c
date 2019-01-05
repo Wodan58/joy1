@@ -1,4 +1,9 @@
 /* FILE: main.c */
+/*
+ *  module  : main.c
+ *  version : 1.6
+ *  date    : 01/05/19
+ */
 
 /*
 I comment on the functions in main.c which are relevant to the
@@ -130,15 +135,15 @@ PRIVATE void enterglobal()
 	execerror("index", "symbols");
 #endif
     location = symtabindex++;
-D(  printf("getsym, new: '%s'\n",id); )
-    location->name = (char *) malloc(strlen(id) + 1);
-    strcpy(location->name,id);
+D(  printf("getsym, new: '%s'\n",ident); )
+    location->name = (char *) malloc(strlen(ident) + 1);
+    strcpy(location->name,ident);
     location->u.body = NULL; /* may be assigned in definition */
 #ifdef USE_UNKNOWN_SYMBOLS
     location->is_unknown = 1;
 #endif
     location->next = hashentry[hashvalue];
-D(  printf("entered %s at %p\n",id,(void *)LOC2INT(location)); )
+D(  printf("entered %s at %p\n",ident,(void *)LOC2INT(location)); )
     hashentry[hashvalue] = location;
 }
 
@@ -149,14 +154,14 @@ D(  printf("%s  hashes to %d\n",id,hashvalue); )
 
     for (i = display_lookup; i > 0; --i)
       { location = display[i];
-	while (location != NULL && strcmp(id,location->name) != 0)
+	while (location != NULL && strcmp(ident,location->name) != 0)
 	    location = location->next;
 	if (location != NULL) /* found in local table */
 	    return; }
 
     location = hashentry[hashvalue];
     while (location != symtab &&
-	   strcmp(id,location->name) != 0)
+	   strcmp(ident,location->name) != 0)
 	location = location->next;
 
     if (location == symtab) /* not found, enter in global */
@@ -194,9 +199,9 @@ PRIVATE void enteratom()
 		execerror("index", "symbols");
 #endif
 	    location = symtabindex++;
-D(	printf("hidden definition '%s' at %p\n",id,(void *)LOC2INT(location)); )
-	    location->name = (char *) malloc(strlen(id) + 1);
-	    strcpy(location->name, id);
+D(   printf("hidden definition '%s' at %p\n",ident,(void *)LOC2INT(location)); )
+	    location->name = (char *) malloc(strlen(ident) + 1);
+	    strcpy(location->name, ident);
 	    location->u.body = NULL; /* may be assigned later */
 	}
 #ifdef NO_HELP_LOCAL_SYMBOLS
@@ -215,9 +220,9 @@ D(	printf("hidden definition '%s' at %p\n",id,(void *)LOC2INT(location)); )
 #else
       { location = symtabindex++;
 #endif
-D(	printf("hidden definition '%s' at %p\n",id,(void *)LOC2INT(location)); )
-	location->name = (char *) malloc(strlen(id) + 1);
-	strcpy(location->name, id);
+D(   printf("hidden definition '%s' at %p\n",ident,(void *)LOC2INT(location)); )
+	location->name = (char *) malloc(strlen(ident) + 1);
+	strcpy(location->name, ident);
 	location->u.body = NULL; /* may be assigned later */
 #ifdef NO_HELP_LOCAL_SYMBOLS
 	location->is_local = 1;
@@ -234,26 +239,26 @@ PRIVATE void compound_def();		/* forward */
 PRIVATE void definition()
 {
     Entry *here = NULL;
-    if (sym == LIBRA || sym == JPRIVATE || sym == HIDE || sym == MODULE)
+    if (symb == LIBRA || symb == JPRIVATE || symb == HIDE || symb == MODULE)
       { compound_def();
-	if (sym == END || sym == PERIOD) getsym();
+	if (symb == END || symb == PERIOD) getsym();
 	    else error(" END or period '.' expected in compound definition");
 	return; }
 
-    if (sym != ATOM)
+    if (symb != ATOM)
 /*   NOW ALLOW EMPTY DEFINITION:
       { error("atom expected at start of definition");
 	abortexecution_(); }
 */
 	return;
 
-    /* sym == ATOM : */
+    /* symb == ATOM : */
     enteratom();
     if (location < firstlibra)
       { printf("warning: overwriting inbuilt '%s'\n",location->name);
 	enterglobal(); }
     here = location; getsym();
-    if (sym == EQDEF) getsym();
+    if (symb == EQDEF) getsym();
 	else error(" == expected in definition");
     readterm();
 D(  printf("assigned this body: "); )
@@ -267,17 +272,17 @@ D(  printf("\n"); )
 PRIVATE void defsequence()
 {
     definition();
-    while (sym == SEMICOL)
+    while (symb == SEMICOL)
       { getsym(); definition(); }
 }
 
 PRIVATE void compound_def()
 {
-    switch (sym)
+    switch (symb)
       { case MODULE :
 	  { Entry *here = NULL;
 	    getsym();
-	    if (sym != ATOM)
+	    if (symb != ATOM)
 	      { error("atom expected as name of module");
 		abortexecution_(); }
 	    enteratom(); here = location; getsym();
@@ -482,7 +487,7 @@ D(  printf("starting main loop\n"); )
 #endif
 	getsym();
 
-	if (sym == LIBRA || sym == HIDE || sym == MODULE )
+	if (symb == LIBRA || symb == HIDE || symb == MODULE )
 	  { inimem1();
 	    compound_def();
 	    inimem2(); }
@@ -514,10 +519,10 @@ D(	    printf("program is: "); writeterm(stk->u.lis, stdout); printf("\n"); )
 	    else if (autoput == 1 && stk != NULL)
 	      { writefactor(stk, stdout); printf("\n"); stk = stk->next; } }
 
-	 if (sym != END && sym != PERIOD)
+	 if (symb != END && symb != PERIOD)
 #ifdef NO_EXECUTE_ERROR
 	   { error(" END or period '.' expected");
-	     while (getsym(), sym != END && sym != PERIOD); } }
+	     while (getsym(), symb != END && symb != PERIOD); } }
 #else
 	     error(" END or period '.' expected"); }
 #endif
