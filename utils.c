@@ -1,8 +1,8 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.6
- *  date    : 01/05/19
+ *  version : 1.7
+ *  date    : 01/07/19
  */
 #include <stdio.h>
 #include <time.h>
@@ -298,7 +298,7 @@ D(	    printf("readfactor: location = %p\n", (void *)location); )
 #ifndef DONT_ADD_MODULE_NAMES
     lookup();
 #endif
-D(  printf("looking for field %s\n",id); )
+D(  printf("looking for field %s\n",ident); )
     while (mod_fields && strcmp(ident,mod_fields->name) != 0)
 	mod_fields = mod_fields->next;
     if (mod_fields == NULL)

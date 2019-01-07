@@ -1,8 +1,8 @@
 /* FILE: main.c */
 /*
  *  module  : main.c
- *  version : 1.6
- *  date    : 01/05/19
+ *  version : 1.7
+ *  date    : 01/07/19
  */
 
 /*
@@ -150,7 +150,7 @@ D(  printf("entered %s at %p\n",ident,(void *)LOC2INT(location)); )
 PUBLIC void lookup(void)
 {
 int i;
-D(  printf("%s  hashes to %d\n",id,hashvalue); )
+D(  printf("%s  hashes to %d\n",ident,hashvalue); )
 
     for (i = display_lookup; i > 0; --i)
       { location = display[i];
@@ -418,9 +418,7 @@ int main(int argc, char **argv)
 	    printf("failed to open the file '%s'.\n", argv[1]);
 	    exit(1);
 	}
-#ifdef USE_ONLY_STDIN
 	inilinebuffer(argv[1]);
-#endif
 	if (!strcmp(argv[1], "joytut.inp") ||
 	    !strcmp(argv[1], "jp-joytst.joy")) {
 	    printf("JOY  -  compiled at 11:59:37 on Jul  2 2001 (NOBDW)\n");
@@ -445,9 +443,7 @@ int main(int argc, char **argv)
 	}
     } else {
 	srcfile = stdin;
-#ifdef USE_ONLY_STDIN
 	inilinebuffer(0);
-#endif
 #ifdef GC_BDW
 	printf("JOY  -  compiled at %s on %s (BDW)\n",__TIME__,__DATE__);
 #else
@@ -461,9 +457,6 @@ int main(int argc, char **argv)
     tracegc = INITRACEGC;
     autoput = INIAUTOPUT;
 //  ch = ' ';
-#ifndef USE_ONLY_STDIN
-    inilinebuffer();
-#endif
     inisymboltable();
     display[0] = NULL;
     inimem1(); inimem2();

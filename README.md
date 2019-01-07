@@ -8,8 +8,10 @@ status|[![Travis CI build status](https://travis-ci.org/Wodan58/joy1.svg?branch=
 Changes
 -------
 
-All changes are documented in globals.h and can be reverted back to the
-original by compiling with the flag -DORIGINAL_JOY.
+Changes are documented in globals.h. These changes are being accepted and it
+is thus no longer possible to achieve the original behaviour by compiling with
+-DORIGINAL_JOY. The original sources are always available
+[here](https://github.com/Wodan58/Joy).
 
 Installation
 ------------

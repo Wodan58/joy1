@@ -1,8 +1,8 @@
 /* FILE: globals.h */
 /*
  *  module  : globals.h
- *  version : 1.7
- *  date    : 01/05/19
+ *  version : 1.8
+ *  date    : 01/07/19
  */
 #ifndef GLOBALS_H
 #define GLOBALS_H
@@ -15,27 +15,27 @@
 #ifdef GC_BDW
 #define SINGLE
 #endif
-#define USE_ONLY_STDIN
-#define NO_COMPILER_WARNINGS
+// #define USE_ONLY_STDIN
+// #define NO_COMPILER_WARNINGS
 #define CORRECT_FIVE_PARAMS
 #define GET_FROM_STDIN
-#define NO_BANG_AS_PERIOD
+// #define NO_BANG_AS_PERIOD
 #define CORRECT_TAKE_STRING
 #define CORRECT_FREAD_PARAM
-#define PROTECT_BUFFER_OVERFLOW
+// #define PROTECT_BUFFER_OVERFLOW
 #define CORRECT_NEG_INTEGER
-#define DONT_READ_PAST_EOF
+// #define DONT_READ_PAST_EOF
 #define CHECK_EMPTY_STACK
 #define CORRECT_GARBAGE_COLLECTOR
 #define CORRECT_FLOAT_BUFFER
-#define READ_NUMBER_AND_STOP
+// #define READ_NUMBER_AND_STOP
 #define HELP_CONDNESTREC
 #define SAMETYPE_BUILTIN
 #define CORRECT_HEADERS
 #define CORRECT_TIME_LIST
 #define CORRECT_HELP_FREMOVE
 #define CORRECT_BINREC_HELP
-#define READ_HEXADECIMAL_NUMBER
+// #define READ_HEXADECIMAL_NUMBER
 #define SECURE_PUTCHARS
 #define GETCH_AS_BUILTIN
 #define CORRECT_INTERN_STRCPY
@@ -71,7 +71,7 @@
 #define TREEGENREC_CHECK_QUOTES
 #define USE_NEW_FUNCTION_SYNTAX
 #define REST_OF_UNIX_ESCAPES
-#define CORRECT_OCTAL_NUMBER
+// #define CORRECT_OCTAL_NUMBER
 #define NO_EXECUTE_ERROR
 #define CORRECT_HELPDETAIL
 #define CORRECT_ALEN
@@ -91,7 +91,7 @@
 #define CORRECT_FGETS
 #define REMOVE_UNUSED_ERRORCOUNT
 #define CORRECT_FSEEK_MANUAL
-#define RESPECT_INPLINEMAX
+// #define RESPECT_INPLINEMAX
 #endif
 
 #define USE_SHELL_ESCAPE
@@ -308,11 +308,7 @@ PUBLIC void lookup(void);
 PUBLIC void abortexecution_(void);
 PUBLIC void execerror(char *message, char *op);
 PUBLIC void quit_(void);
-#ifdef USE_ONLY_STDIN
 PUBLIC void inilinebuffer(char *filnam);
-#else
-PUBLIC void inilinebuffer(void);
-#endif
 PUBLIC void putline(void);
 PUBLIC int endofbuffer(void);
 PUBLIC void error(char *message);
