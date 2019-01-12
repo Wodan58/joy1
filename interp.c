@@ -1,7 +1,7 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.10
+ *  version : 1.11
  *  date    : 01/12/19
  */
 
@@ -373,9 +373,11 @@ PRIVATE void intern_()
 
 PRIVATE void getenv_()
 {
+    char *str;
+
     ONEPARAM("getenv");
     STRING("getenv");
-    UNARY(STRING_NEWNODE, getenv(stk->u.str)); }
+    UNARY(STRING_NEWNODE, str = getenv(stk->u.str) ? str : ""); }
 
 PRIVATE void body_()
 {

@@ -1,8 +1,8 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.7
- *  date    : 01/07/19
+ *  version : 1.8
+ *  date    : 01/12/19
  */
 #include <stdio.h>
 #include <time.h>
@@ -396,7 +396,7 @@ PUBLIC void writefactor(Node *n, FILE *stm)
 	    fprintf(stm, "%s", n->u.num ? "true" : "false"); return;
 	case INTEGER_:
 #ifdef BIT_32
-	    fprintf(stm, "%ld",n->u.num); return;
+	    fprintf(stm, "%ld", n->u.num); return;
 #else
 	    fprintf(stm, "%lld", n->u.num); return;
 #endif
@@ -418,7 +418,7 @@ PUBLIC void writefactor(Node *n, FILE *stm)
 	case STRING_:
 #ifdef CORRECT_STRING_WRITE
 	    fputc('"', stm);
-	    for (p = n->u.str; *p; p++) {
+	    for (p = n->u.str; p && *p; p++) {
 		if (*p == '"' || *p == '\\' || *p == '\n')
 		    fputc('\\', stm);
 		fputc(*p == '\n' ? 'n' : *p, stm);

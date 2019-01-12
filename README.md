@@ -13,7 +13,7 @@ Changes are documented in globals.h. The original version is available [here](ht
 Installation
 ------------
 
-Build instructions are available in appveyor.yml or .travis.yml or .lgtm.yml
+Build instructions are available in appveyor.yml or .travis.yml or .lgtm.yml.
 Alternatively, omakefile or nmakefile from [Joy](https://github.com/Wodan58/Joy)
 can be used. Then:
 
