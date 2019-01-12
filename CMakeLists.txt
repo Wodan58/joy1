@@ -14,6 +14,7 @@ include_directories(bdwgc/include)
 add_subdirectory(bdwgc)
 add_executable(joy interp.c scan.c utils.c main.c)
 target_link_libraries(joy gc-lib)
+add_subdirectory(test)
 add_custom_target(demo01.txt ALL
 		  DEPENDS joy
 		  COMMAND joy gcd 24 54 >demo01.txt)

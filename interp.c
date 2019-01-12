@@ -1,8 +1,8 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.9
- *  date    : 01/05/19
+ *  version : 1.10
+ *  date    : 01/12/19
  */
 
 /*
@@ -53,7 +53,9 @@ PRIVATE void helpdetail_();		/* this file		*/
 PRIVATE void undefs_();
 PRIVATE void make_manual(int style /* 0=plain, 1=html, 2=latex */);
 PRIVATE void manual_list_();
+#if 0
 PRIVATE void manual_list_aux_();
+#endif
 
 #ifdef RUNTIME_CHECKS
 #define ONEPARAM(NAME)						\
@@ -4418,10 +4420,12 @@ PRIVATE void latex_manual_()
     make_manual(2);
 }
 
+#if 0
 PRIVATE void manual_list_aux_()
 {
     manual_list_();
 }
+#endif
 
 /* - - - - -   I N I T I A L I S A T I O N   - - - - - */
 
@@ -5121,7 +5125,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"__latex_manual",	latex_manual_,	"->",
 "Writes this manual of all Joy primitives to output file in Latex style but without the head and tail."},
 
-{"__manual_list",	manual_list_aux_, "->  L",
+{"__manual_list",	manual_list_,	"->  L",
 "Pushes a list L of lists (one per operator) of three documentation strings"},
 
 {"__settracegc",	settracegc_,	"I  ->",

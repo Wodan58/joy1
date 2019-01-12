@@ -1,8 +1,8 @@
 /* FILE: main.c */
 /*
  *  module  : main.c
- *  version : 1.7
- *  date    : 01/07/19
+ *  version : 1.8
+ *  date    : 01/12/19
  */
 
 /*
@@ -366,10 +366,13 @@ PUBLIC void execerror(char *message, char *op)
     abortexecution_();
 }
 
+#if 0
 static int quit_quiet = 1;
    /* was = 0;  but anything with "clock" needs revision */
+#endif
 PUBLIC void quit_(void)
 {
+#if 0
     long totaltime;
     if (quit_quiet) exit(0);
     totaltime = clock() - startclock;
@@ -379,6 +382,7 @@ PUBLIC void quit_(void)
     printf("time:  %ld CPU,  %d gc (= %ld%%)\n",
 	totaltime, gc_clock,
 	totaltime ? (1004*gc_clock)/(10*totaltime) : 0);
+#endif
 #endif
     exit(0);
 }

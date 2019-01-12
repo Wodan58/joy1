@@ -1,8 +1,8 @@
 /* FILE: scan.c */
 /*
  *  module  : scan.c
- *  version : 1.7
- *  date    : 01/07/19
+ *  version : 1.8
+ *  date    : 01/12/19
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,13 +56,15 @@ Again:
 	linenumber++;
 	if (fgets(linbuf, INPLINEMAX, srcfile))
 	    linelength = strlen(linbuf);
-	else if (--ilevel >= 0)
+	else if (ilevel > 0) {
+	    fclose(infile[ilevel--].fp);
 	    srcfile = infile[ilevel].fp;
-	else
+	} else
 	    quit_();
 	linbuf[linelength++] = ' ';  /* to help getsym for numbers */
 	linbuf[linelength++] = '\0';
-	if (echoflag) putline();
+	if (echoflag)
+	    putline();
 #ifdef USE_SHELL_ESCAPE
 	if (linbuf[0] == SHELLESCAPE) {
 	    system(&linbuf[1]);

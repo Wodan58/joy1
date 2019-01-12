@@ -8,12 +8,22 @@ status|[![Travis CI build status](https://travis-ci.org/Wodan58/joy1.svg?branch=
 Changes
 -------
 
-Changes are documented in globals.h. These changes are being accepted and it
-is thus no longer possible to achieve the original behaviour by compiling with
--DORIGINAL_JOY. The original sources are always available
-[here](https://github.com/Wodan58/Joy).
+Changes are documented in globals.h. The original version is available [here](https://github.com/Wodan58/Joy).
 
 Installation
 ------------
 
-See the build instructions in appveyor.yml or .travis.yml or .lgtm.yml
+Build instructions are available in appveyor.yml or .travis.yml or .lgtm.yml
+Alternatively, omakefile or nmakefile from [Joy](https://github.com/Wodan58/Joy)
+can be used. Then:
+
+make -f omakefile
+
+or:
+
+nmake -f nmakefile
+
+will build joy(.exe)
+
+The [BDW garbage collector](https://github.com/ivmai/bdwgc) needs to be
+installed and compiled separately, but this is optional.

@@ -1,20 +1,16 @@
 /* FILE: globals.h */
 /*
  *  module  : globals.h
- *  version : 1.8
- *  date    : 01/07/19
+ *  version : 1.9
+ *  date    : 01/12/19
  */
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#ifdef ORIGINAL_JOY
-#ifndef BIT_32
-#define BIT_32
-#endif
-#else
 #ifdef GC_BDW
 #define SINGLE
 #endif
+
 // #define USE_ONLY_STDIN
 // #define NO_COMPILER_WARNINGS
 #define CORRECT_FIVE_PARAMS
@@ -92,7 +88,7 @@
 #define REMOVE_UNUSED_ERRORCOUNT
 #define CORRECT_FSEEK_MANUAL
 // #define RESPECT_INPLINEMAX
-#endif
+// #define CLOSE_INCLUDE_FILES
 
 #define USE_SHELL_ESCAPE
 #define ENABLE_TRACEGC

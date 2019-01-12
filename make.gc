@@ -1,7 +1,7 @@
 # makefile for Joy 
 
 CC = gcc
-CFLAGS = -DGC_BDW -O3 -Wall -Wextra -Werror -pthread -lm
+CFLAGS = -DGC_BDW -Igc/include -O3 -Wall -Wextra -Werror -pthread
 
 HDRS = globals.h
 OBJS = interp.o scan.o utils.o main.o
