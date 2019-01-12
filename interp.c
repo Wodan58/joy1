@@ -1,7 +1,7 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.11
+ *  version : 1.12
  *  date    : 01/12/19
  */
 
@@ -571,8 +571,10 @@ PRIVATE void abs_()
         else { UNARY(INTEGER_NEWNODE, - stk->u.num); return; } }
 /* end new */
     FLOAT_U(fabs);
+#if 0
     INTEGER("abs");
     if (stk->u.num < 0) UNARY(INTEGER_NEWNODE, - stk->u.num);
+#endif
 }
 
 PRIVATE double fsgn(double f)
@@ -592,9 +594,11 @@ PRIVATE void sign_()
 	else { UNARY(INTEGER_NEWNODE, i > 0 ? 1 : -1); return; } }
 /* end new */
     FLOAT_U(fsgn);
+#if 0
     INTEGER("sign");
     if (stk->u.num < 0) UNARY(INTEGER_NEWNODE,-1L);
     else if (stk->u.num > 0) UNARY(INTEGER_NEWNODE,1L);
+#endif
 }
 
 PRIVATE void neg_()
@@ -610,8 +614,10 @@ PRIVATE void neg_()
 /* end new */
 #endif
     FLOAT_U(-);
+#if 0
     INTEGER("neg");
     UNARY(INTEGER_NEWNODE, -stk->u.num);
+#endif
 }
 
 /* probably no longer needed:

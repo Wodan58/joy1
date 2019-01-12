@@ -2,11 +2,11 @@ true .
 false .
 setsize .
 maxint .
-symtabmax .
-memorymax .
-dump .
+__symtabmax .
+__memorymax .
+__dump .
 conts .
-symtabindex .
+__symtabindex .
 rand .
 echo .
 autoput .
@@ -25,6 +25,8 @@ clock .
 -1 abs .
 -1.5 abs .
 1 sign.
+0.0 sign .
+-0.0 sign .
 1.5 sign.
 -1 sign .
 -1.5 sign .
@@ -56,10 +58,12 @@ gmtime mktime .
 1.5 frexp .
 1.5 modf .
 1 2.5 ldexp .
+1.5 2 ldexp .
+3 2 ldexp .
 1.5 trunc .
 1.5 2.5 max .
 1.5 2.5 min .
-1.5 2.5 neql .
+1.5 2.5 != .
 1.5 2.5 compare .
 1.5 2.5 sametype .
 "test" first .
@@ -109,6 +113,7 @@ _help .
 1 [ "integer\n" putchars ] [ "nee\n" putchars ] ifinteger .
 'A [ "char\n" putchars ] [ "nee\n" putchars ] ifchar .
 true [ "logical\n" putchars ] [ "nee\n" putchars ] iflogical .
+"test" [ "string\n" putchars ] [ "nee\n" putchars ] ifstring .
 { 1 2 3 } [ "set\n" putchars ] [ "nee\n" putchars ] ifset .
 1.5 [ "float\n" putchars ] [ "nee\n" putchars ] iffloat .
 stdin [ "file\n" putchars ] [ "nee\n" putchars ] iffile .
