@@ -1,8 +1,8 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.12
- *  date    : 01/12/19
+ *  version : 1.13
+ *  date    : 01/13/19
  */
 
 /*
@@ -273,10 +273,12 @@ PRIVATE void manual_list_aux_();
 #define PUSH(PROCEDURE,CONSTRUCTOR,VALUE)			\
 PRIVATE void PROCEDURE()					\
 {   NULLARY(CONSTRUCTOR,VALUE); }
+#if 0
 PUSH(true_,BOOLEAN_NEWNODE,1L)				/* constants	*/
 PUSH(false_,BOOLEAN_NEWNODE,0L)
-PUSH(setsize_,INTEGER_NEWNODE,(long)SETSIZE)
 PUSH(maxint_,INTEGER_NEWNODE,(long)MAXINT)
+#endif
+PUSH(setsize_,INTEGER_NEWNODE,(long)SETSIZE)
 PUSH(symtabmax_,INTEGER_NEWNODE,(long)SYMTABMAX)
 PUSH(memorymax_,INTEGER_NEWNODE,(long)MEMORYMAX)
 PUSH(stdin_, FILE_NEWNODE, stdin)
@@ -2496,7 +2498,7 @@ start:
     conts = LIST_NEWNODE(n,conts);
     while (conts->u.lis != NULL)
       {
-#ifdef ENABLE_TRACEGC
+#if defined(ENABLE_TRACEGC) && !defined(GC_BDW)
 	if (tracegc > 5)
 	  { printf("exeterm1: %p ", (void *)conts->u.lis);
 	    printnode(conts->u.lis); }
@@ -2524,7 +2526,7 @@ start:
 		break;
 	    case COPIED_: case ILLEGAL_:
 		printf("exeterm: attempting to execute bad node\n");
-#ifdef ENABLE_TRACEGC
+#if defined(ENABLE_TRACEGC) && !defined(GC_BDW)
 		printnode(stepper);
 #endif
 		break;
@@ -2535,7 +2537,7 @@ D(		writefactor(stepper, stdout); )
 		symtab[(int) stepper->op].is_used = 1;
 #endif
 		(*(stepper->u.proc))(); break; }
-#ifdef ENABLE_TRACEGC
+#if defined(ENABLE_TRACEGC) && !defined(GC_BDW)
 	if (tracegc > 5)
 	  { printf("exeterm2: %p ", (void *)stepper);
             printnode(stepper); }
@@ -4482,13 +4484,13 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 
 /* OPERANDS */
 
-{"false",		false_,		"->  false",
+{"false",		dummy_,		"->  false",
 "Pushes the value false."},
 
-{"true",		true_,		"->  true",
+{"true",		dummy_,		"->  true",
 "Pushes the value true."},
 
-{"maxint",		maxint_,	"->  maxint",
+{"maxint",		dummy_,		"->  maxint",
 "Pushes largest integer (platform dependent). Typically it is 32 bits."},
 
 {"setsize",		setsize_,	"->  setsize",

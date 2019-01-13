@@ -1,8 +1,8 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.8
- *  date    : 01/12/19
+ *  version : 1.9
+ *  date    : 01/13/19
  */
 #include <stdio.h>
 #include <time.h>
@@ -59,12 +59,9 @@ PUBLIC void inimem2(void)
 		(void *)mem_mid,(void *)MEM2INT(mem_mid)); }
 # endif
 }
+#ifndef GC_BDW
 PUBLIC void printnode(Node *p)
 {
-# ifdef GC_BDW
-    if (p) p = 0;
-# endif
-# ifndef GC_BDW
     printf("%10p:        %-10s %10p %10p\n",
 	(void *)MEM2INT(p),
 	symtab[(int) p->op].name,
@@ -74,8 +71,8 @@ PUBLIC void printnode(Node *p)
 	p->op == LIST_ ? MEM2INT(p->u.lis) : p->u.num,
 #endif
 	(void *)MEM2INT(p->next));
-# endif
 }
+#endif
 # ifndef GC_BDW
 #ifdef USE_NEW_FUNCTION_SYNTAX
 PRIVATE Node *copy(Node *n)
