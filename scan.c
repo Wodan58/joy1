@@ -1,8 +1,8 @@
 /* FILE: scan.c */
 /*
  *  module  : scan.c
- *  version : 1.8
- *  date    : 01/12/19
+ *  version : 1.9
+ *  date    : 01/13/19
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,10 +19,10 @@ static struct {
     FILE *fp;
     char *name;
 } infile[INPSTACKMAX];
-static int ilevel;
+static int ilevel = 0;
 static int linenumber = 0;
 static char linbuf[INPLINEMAX + 1];
-static int linelength, currentcolumn = 0;
+static int linelength = 0, currentcolumn = 0;
 #ifndef REMOVE_UNUSED_ERRORCOUNT
 static int errorcount = 0;
 #endif
@@ -100,11 +100,13 @@ PUBLIC void error(char *message)
 
 PUBLIC int doinclude(char *filnam)
 {
+    FILE *fp;
+
     if (ilevel+1 == INPSTACKMAX)
 	execerror("fewer include files", "include");
     infile[ilevel].fp = srcfile;
-    if ((srcfile = fopen(filnam, "r")) != 0) {
-	infile[++ilevel].fp = srcfile;
+    if ((fp = fopen(filnam, "r")) != 0) {
+	infile[++ilevel].fp = srcfile = fp;
 	infile[ilevel].name = filnam;
 	return 1;
     }
@@ -117,9 +119,9 @@ PUBLIC void redirect(FILE *fp)
 {
     if (infile[ilevel].fp != fp && !get_from_stdin) {
 	get_from_stdin = fp == stdin;
-	if (++ilevel == INPSTACKMAX)
+	if (ilevel+1 == INPSTACKMAX)
 	    execerror("fewer include files", "redirect");
-	infile[ilevel].fp = fp;
+	infile[++ilevel].fp = srcfile = fp;
 	infile[ilevel].name = 0;
     }
 }
