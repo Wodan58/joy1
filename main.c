@@ -1,8 +1,8 @@
 /* FILE: main.c */
 /*
  *  module  : main.c
- *  version : 1.8
- *  date    : 01/12/19
+ *  version : 1.9
+ *  date    : 01/13/19
  */
 
 /*
@@ -420,7 +420,7 @@ int main(int argc, char **argv)
 	srcfile = fopen(argv[1], "r");
 	if (!srcfile) {
 	    printf("failed to open the file '%s'.\n", argv[1]);
-	    exit(1);
+	    exit(0);
 	}
 	inilinebuffer(argv[1]);
 	if (!strcmp(argv[1], "joytut.inp") ||
