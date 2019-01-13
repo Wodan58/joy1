@@ -1,3 +1,12 @@
+1 'c 10 10 format .
+1.5 'c 10 10 formatf .
+"dummy" "r" fopen fclose .
+"dummy" "r" fopen fget .
+"dummy" "r" fopen 10 fput .
+"dummy" "r" fopen "test" fputchars .
+"test@" intern.
+[] unstack .
+( .
 MODULE m.
 MODULE 10.
 m.10.
