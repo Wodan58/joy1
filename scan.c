@@ -1,7 +1,7 @@
 /* FILE: scan.c */
 /*
  *  module  : scan.c
- *  version : 1.9
+ *  version : 1.10
  *  date    : 01/13/19
  */
 #include <stdio.h>
@@ -121,7 +121,7 @@ PUBLIC void redirect(FILE *fp)
 	get_from_stdin = fp == stdin;
 	if (ilevel+1 == INPSTACKMAX)
 	    execerror("fewer include files", "redirect");
-	infile[++ilevel].fp = srcfile = fp;
+	infile[++ilevel].fp = fp;
 	infile[ilevel].name = 0;
     }
 }
