@@ -1,8 +1,8 @@
 /* FILE: globals.h */
 /*
  *  module  : globals.h
- *  version : 1.9
- *  date    : 01/12/19
+ *  version : 1.10
+ *  date    : 01/19/19
  */
 #ifndef GLOBALS_H
 #define GLOBALS_H
@@ -89,6 +89,8 @@
 #define CORRECT_FSEEK_MANUAL
 // #define RESPECT_INPLINEMAX
 // #define CLOSE_INCLUDE_FILES
+// #define CORRECT_GETENV
+// #define RESUME_EARLIER_LINENUM
 
 #define USE_SHELL_ESCAPE
 #define ENABLE_TRACEGC
@@ -305,8 +307,8 @@ PUBLIC void abortexecution_(void);
 PUBLIC void execerror(char *message, char *op);
 PUBLIC void quit_(void);
 PUBLIC void inilinebuffer(char *filnam);
-PUBLIC void putline(void);
-PUBLIC int endofbuffer(void);
+// PUBLIC void putline(void);
+// PUBLIC int endofbuffer(void);
 PUBLIC void error(char *message);
 PUBLIC int doinclude(char *filnam);
 PUBLIC void getsym(void);

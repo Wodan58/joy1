@@ -1,8 +1,8 @@
 /* FILE: scan.c */
 /*
  *  module  : scan.c
- *  version : 1.10
- *  date    : 01/13/19
+ *  version : 1.11
+ *  date    : 01/19/19
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,10 +14,10 @@
 #define strdup GC_strdup
 #endif
 
-// FIXME: resume earlier line numbering
 static struct {
     FILE *fp;
     char *name;
+    int linenum;
 } infile[INPSTACKMAX];
 static int ilevel = 0;
 static int linenumber = 0;
@@ -31,19 +31,34 @@ static int ch = ' ';
 static int get_from_stdin = 0;
 #endif
 
+/*
+ *  inilinebuffer
+ *  error
+ *  doinclude
+ *  redirect
+ *  HashValue
+ *  getsym
+ */
+
 PUBLIC void inilinebuffer(char *str)
 {
     infile[0].fp = srcfile;
     infile[0].name = str;
 }
 
-PUBLIC void putline(void)
+PRIVATE void putline(void)
 {
+    int i;
+
+    if (!linenumber)
+	return;
     if (echoflag > 2)
 	printf("%4d", linenumber);
     if (echoflag > 1)
-	printf("\t");
-    printf("%s\n", linbuf);
+	putchar('\t');
+    for (i = 0; linbuf[i] && linbuf[i] != '\n'; i++)
+	putchar(linbuf[i]);
+    putchar('\n');
 }
 
 PRIVATE void getch()
@@ -59,6 +74,7 @@ Again:
 	else if (ilevel > 0) {
 	    fclose(infile[ilevel--].fp);
 	    srcfile = infile[ilevel].fp;
+	    linenumber = infile[ilevel].linenum;
 	} else
 	    quit_();
 	linbuf[linelength++] = ' ';  /* to help getsym for numbers */
@@ -75,7 +91,7 @@ Again:
     ch = linbuf[currentcolumn++];
 }
 
-PUBLIC int endofbuffer(void)
+PRIVATE int endofbuffer(void)
 {
     return currentcolumn == linelength;
 }
@@ -105,9 +121,12 @@ PUBLIC int doinclude(char *filnam)
     if (ilevel+1 == INPSTACKMAX)
 	execerror("fewer include files", "include");
     infile[ilevel].fp = srcfile;
+    infile[ilevel].linenum = linenumber;
+    linenumber = 0;
     if ((fp = fopen(filnam, "r")) != 0) {
 	infile[++ilevel].fp = srcfile = fp;
 	infile[ilevel].name = filnam;
+	infile[ilevel].linenum = 0;
 	return 1;
     }
     execerror("valid file name", "include");
@@ -123,6 +142,7 @@ PUBLIC void redirect(FILE *fp)
 	    execerror("fewer include files", "redirect");
 	infile[++ilevel].fp = fp;
 	infile[ilevel].name = 0;
+	infile[ilevel].linenum = 0;
     }
 }
 #endif
@@ -169,8 +189,6 @@ PUBLIC void HashValue(char *s)
 
 PRIVATE int peek(void)
 {
-    if (currentcolumn == linelength)
-	return 0;
     return linbuf[currentcolumn];
 }
 
@@ -308,7 +326,7 @@ Start:
 	    if (i < ALEN - 1)
 		ident[i++] = ch;
 	    getch();
-	} while (isalpha(ch) || isdigit(ch) || strchr("-=_", ch));
+	} while (isalnum(ch) || strchr("-=_", ch));
 	ident[i] = '\0';
 	/* ensure same algorithm in inisymtab */
 	HashValue(ident);
