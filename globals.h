@@ -1,7 +1,7 @@
 /* FILE: globals.h */
 /*
  *  module  : globals.h
- *  version : 1.10
+ *  version : 1.11
  *  date    : 01/19/19
  */
 #ifndef GLOBALS_H
@@ -22,7 +22,7 @@
 #define CORRECT_NEG_INTEGER
 // #define DONT_READ_PAST_EOF
 #define CHECK_EMPTY_STACK
-#define CORRECT_GARBAGE_COLLECTOR
+// #define CORRECT_GARBAGE_COLLECTOR
 #define CORRECT_FLOAT_BUFFER
 // #define READ_NUMBER_AND_STOP
 #define HELP_CONDNESTREC
@@ -36,26 +36,26 @@
 #define GETCH_AS_BUILTIN
 #define CORRECT_INTERN_STRCPY
 #define CORRECT_INTERN_LOOKUP
-#define CORRECT_STRING_WRITE
+// #define CORRECT_STRING_WRITE
 /* #define CORRECT_INHAS_COMPARE */
 #define CORRECT_TYPE_COMPARE
-#define BDW_ALSO_IN_MAIN
+// #define BDW_ALSO_IN_MAIN
 #define FGET_FROM_FILE
 #define CORRECT_STRFTIME_BUF
-#define SIGNAL_WRITE_PIPE
+// #define SIGNAL_WRITE_PIPE
 #ifndef BIT_32
 #define USE_SNPRINTF
 #endif
 #define CORRECT_MODF_CHECK
 #define CORRECT_APP1_DOC
-#define NO_JUMP_FAIL
+// #define NO_JUMP_FAIL
 #define CORRECT_GENREC_HELP
 #define CORRECT_TREEREC_HELP
 #define CORRECT_TREEGENREC_HELP
 #define CORRECT_TREEREC_AUX
 #define CORRECT_TREEGENREC_AUX
 #define CORRECT_PRIMREC
-#define NO_DUPLICATE_CH
+// #define NO_DUPLICATE_CH
 #define CORRECT_CASE_COMPARE
 #define CORRECT_CLOCK_SECONDS
 #define NOT_ALSO_FOR_FLOAT
@@ -65,19 +65,19 @@
 #define TAILREC_CHECK_QUOTES
 #define TREEREC_CHECK_QUOTES
 #define TREEGENREC_CHECK_QUOTES
-#define USE_NEW_FUNCTION_SYNTAX
+// #define USE_NEW_FUNCTION_SYNTAX
 #define REST_OF_UNIX_ESCAPES
 // #define CORRECT_OCTAL_NUMBER
-#define NO_EXECUTE_ERROR
+// #define NO_EXECUTE_ERROR
 #define CORRECT_HELPDETAIL
 #define CORRECT_ALEN
 #define NO_HELP_LOCAL_SYMBOLS
 #define USE_UNKNOWN_SYMBOLS
-#define DONT_ADD_MODULE_NAMES
-#define CHECK_SYMTABMAX
-#define CHECK_DISPLAYMAX
-#define HASHVALUE_FUNCTION
-#define NO_WASTE_FP
+// #define DONT_ADD_MODULE_NAMES
+// #define CHECK_SYMTABMAX
+// #define CHECK_DISPLAYMAX
+// #define HASHVALUE_FUNCTION
+// #define NO_WASTE_FP
 #define MAKE_CONTS_OBSOLETE
 /* #define TRACK_USED_SYMBOLS */
 #define TYPED_NODES
@@ -91,6 +91,8 @@
 // #define CLOSE_INCLUDE_FILES
 // #define CORRECT_GETENV
 // #define RESUME_EARLIER_LINENUM
+// #define CHECK_QUOTE_IN_SPLIT
+// #define CHECK_QUOTES_IN_PRIMREC
 
 #define USE_SHELL_ESCAPE
 #define ENABLE_TRACEGC
@@ -327,9 +329,7 @@ PUBLIC void writeterm(Node *n, FILE *stm);
 PUBLIC void redirect(FILE *);
 #endif
 
-#ifdef HASHVALUE_FUNCTION
 PUBLIC void HashValue(char *str);
-#endif
 
 #define USR_NEWNODE(u,r)	(bucket.ent = u, newnode(USR_, bucket, r))
 #define ANON_FUNCT_NEWNODE(u,r)	(bucket.proc= u, newnode(ANON_FUNCT_,bucket,r))

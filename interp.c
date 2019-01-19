@@ -1,8 +1,8 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.13
- *  date    : 01/13/19
+ *  version : 1.14
+ *  date    : 01/19/19
  */
 
 /*
@@ -339,7 +339,7 @@ PRIVATE void name_()
 
 PRIVATE void intern_()
 {
-#if defined(RUNTIME_CHECKS) || !defined(HASHVALUE_FUNCTION)
+#if defined(RUNTIME_CHECKS)
     char *p;
 #endif
     ONEPARAM("intern");
@@ -359,13 +359,7 @@ PRIVATE void intern_()
     if (!p || *p)
 	execerror("valid name", ident);
 #endif
-#ifdef HASHVALUE_FUNCTION
     HashValue(ident);
-#else
-    hashvalue = 0;
-    for (p = ident; *p; p++) hashvalue += *p;
-    hashvalue %= HASHSIZE;
-#endif
     lookup();
     if (location < firstlibra)
 	{ bucket.proc = location->u.proc;
@@ -645,14 +639,9 @@ PRIVATE void divide_()
 {
 #ifdef RUNTIME_CHECKS
     TWOPARAMS("/");
-#ifdef NO_COMPILER_WARNINGS
     if ((stk->op == FLOAT_   && stk->u.dbl == 0.0) ||
 	(stk->op == INTEGER_ && stk->u.num == 0))
-#else
-    if (stk->op == FLOAT_   && stk->u.dbl == 0.0  ||
-	stk->op == INTEGER_ && stk->u.num == 0)
-#endif
-      execerror("non-zero divisor","/");
+	execerror("non-zero divisor","/");
 #endif
     FLOAT_I(/);
     INTEGERS2("/");
@@ -1655,18 +1644,9 @@ PRIVATE void unswons_()
 	    BADAGGREGATE("unswons"); }
 }
 
-#ifdef USE_NEW_FUNCTION_SYNTAX
 PRIVATE long equal_aux(Node *n1,Node *n2); /* forward */
-#else
-PRIVATE long equal_aux(); /* forward */
-#endif
 
-#ifdef USE_NEW_FUNCTION_SYNTAX
 PRIVATE int equal_list_aux(Node *n1,Node *n2)
-#else
-PRIVATE int equal_list_aux(n1,n2)
-Node *n1, *n2;
-#endif
 {
     if (n1 == NULL && n2 == NULL) return 1;
     if (n1 == NULL || n2 == NULL) return 0;
@@ -1675,12 +1655,7 @@ Node *n1, *n2;
     else return 0;
 }
 
-#ifdef USE_NEW_FUNCTION_SYNTAX
 PRIVATE long equal_aux(Node *n1,Node *n2)
-#else
-PRIVATE long equal_aux(n1,n2)
-Node *n1, *n2;
-#endif
 {
 #ifdef CORRECT_TYPE_COMPARE
     int error;
@@ -1991,11 +1966,7 @@ PRIVATE void take_()
 	    POP(stk);
 	    /* do not swap the order of the next two statements ! ! ! */
 	    if (i < 0) i = 0;
-#ifdef NO_COMPILER_WARNINGS
 	    if ((size_t)i >= strlen(old)) return; /* the old string unchanged */
-#else
-	    if (i >= strlen(old)) return; /* the old string unchanged */
-#endif
 #ifdef CORRECT_TAKE_STRING
 	    p = result = (char *) malloc(i + 1);
 	    while (i-- > 0) *p++ = *old++;
@@ -3347,6 +3318,7 @@ PRIVATE void split_()
 		   *my_dump5 = 0;
 
     TWOPARAMS("split");
+    ONEQUOTE("split");
     program = stk->u.lis;
     stk = stk->next;
     save = stk->next;
@@ -3416,6 +3388,7 @@ PRIVATE void split_()
 PRIVATE void split_()
 {
     TWOPARAMS("split");
+    ONEQUOTE("split");
     SAVESTACK;
     switch (SAVED2->op)
       { case SET_ :
@@ -3588,6 +3561,7 @@ PRIVATE void primrec_()
     Node *data, *second, *third;
 
     THREEPARAMS("primrec");
+    TWOQUOTES("primrec");
     third = stk->u.lis;
     stk = stk->next;
     second = stk->u.lis;
@@ -3631,6 +3605,7 @@ PRIVATE void primrec_()
 {
     int n = 0; int i;
     THREEPARAMS("primrec");
+    TWOQUOTES("primrec");
     SAVESTACK;
     stk = stk->next->next->next;
     switch (SAVED3->op)
@@ -4209,12 +4184,7 @@ PRIVATE void treestepaux(Node *item, Node *program)
     }
 }
 #else
-#ifdef USE_NEW_FUNCTION_SYNTAX
 PRIVATE void treestepaux(Node *item)
-#else
-PRIVATE void treestepaux(item)
-    Node *item;
-#endif
 {
     if (item->op != LIST_)
       { GNULLARY(item->op,item->u);
@@ -5207,13 +5177,7 @@ PUBLIC void inisymboltable(void)		/* initialise		*/
 #endif
     for (i = 0; optable[i].name; i++)
       { char *s = optable[i].name;
-#ifdef HASHVALUE_FUNCTION
 	HashValue(s);
-#else
-	/* ensure same algorithm in getsym */
-	for (hashvalue = 0; *s != '\0';) hashvalue += *s++;
-	hashvalue %= HASHSIZE;
-#endif
 	symtabindex->name = optable[i].name;
 	symtabindex->u.proc = optable[i].proc;
 	symtabindex->next = hashentry[hashvalue];

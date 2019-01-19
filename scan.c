@@ -1,7 +1,7 @@
 /* FILE: scan.c */
 /*
  *  module  : scan.c
- *  version : 1.11
+ *  version : 1.12
  *  date    : 01/19/19
  */
 #include <stdio.h>
@@ -130,7 +130,6 @@ PUBLIC int doinclude(char *filnam)
 	return 1;
     }
     execerror("valid file name", "include");
-    return 0;
 }
 
 #if defined(GET_FROM_STDIN) || defined(FGET_FROM_FILE)
