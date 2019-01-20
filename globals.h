@@ -1,8 +1,8 @@
 /* FILE: globals.h */
 /*
  *  module  : globals.h
- *  version : 1.11
- *  date    : 01/19/19
+ *  version : 1.12
+ *  date    : 01/20/19
  */
 #ifndef GLOBALS_H
 #define GLOBALS_H
@@ -72,7 +72,7 @@
 #define CORRECT_HELPDETAIL
 #define CORRECT_ALEN
 #define NO_HELP_LOCAL_SYMBOLS
-#define USE_UNKNOWN_SYMBOLS
+/* #define USE_UNKNOWN_SYMBOLS */
 // #define DONT_ADD_MODULE_NAMES
 // #define CHECK_SYMTABMAX
 // #define CHECK_DISPLAYMAX

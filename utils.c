@@ -1,8 +1,8 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.10
- *  date    : 01/19/19
+ *  version : 1.11
+ *  date    : 01/20/19
  */
 #include <stdio.h>
 #include <time.h>
@@ -308,7 +308,6 @@ D(  printf("found field: %s\n",mod_fields->name); )
 	return;
     default:
 	error("a factor cannot begin with this symbol");
-	return;
     }
 }
 
@@ -401,9 +400,9 @@ PUBLIC void writefactor(Node *n, FILE *stm)
 	fputc('"', stm);
 	return;
     case LIST_:
-	fprintf(stm, "%s","[");
+	fprintf(stm, "%s", "[");
 	writeterm(n->u.lis, stm);
-	fprintf(stm, "%s","]");
+	fprintf(stm, "%s", "]");
 	return;
     case USR_:
 	fprintf(stm, "%s", n->u.ent->name);

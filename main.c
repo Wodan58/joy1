@@ -1,8 +1,8 @@
 /* FILE: main.c */
 /*
  *  module  : main.c
- *  version : 1.10
- *  date    : 01/19/19
+ *  version : 1.11
+ *  date    : 01/20/19
  */
 
 /*
@@ -276,6 +276,12 @@ PRIVATE void defsequence()
     }
 }
 
+PRIVATE void enterdisplay()
+{
+    if (++display_enter >= DISPLAYMAX)
+	execerror("index", "display");
+}
+
 PRIVATE void compound_def()
 {
     Entry *here = NULL, *oldplace;
@@ -291,8 +297,7 @@ PRIVATE void compound_def()
 	here = location;
 	getsym();
 	++display_lookup;
-	if (++display_enter >= DISPLAYMAX)
-	    execerror("index", "display");
+	enterdisplay();
 	display[display_enter] = NULL;
 	compound_def();
 	here->is_module = 1;
@@ -309,8 +314,7 @@ PRIVATE void compound_def()
 	    printf("lookup = %d\n", LOC2INT(display[display_lookup]));
 	    printf("enter = %d\n", LOC2INT(display[display_enter]));
 */
-	    if (++display_enter >= DISPLAYMAX)
-		execerror("index", "display");
+	    enterdisplay();
 	    defsequence();
 	    --display_enter;
 /*
@@ -321,8 +325,7 @@ PRIVATE void compound_def()
 	    display[display_lookup] = oldplace;
 	} else {
 	    ++display_lookup;
-	    if (++display_enter >= DISPLAYMAX)
-		execerror("index", "display");
+	    enterdisplay();
 	    display[display_enter] = NULL;
 	    defsequence();
 	    --display_enter;
