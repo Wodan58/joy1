@@ -34,3 +34,6 @@ add_custom_target(test11.txt ALL
 add_custom_target(test12.txt ALL
 		  DEPENDS joy
 		  COMMAND joy test12.joy >test12.txt)
+add_custom_target(test13.txt ALL
+		  DEPENDS joy
+		  COMMAND joy test13.joy >test13.txt)
