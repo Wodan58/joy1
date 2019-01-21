@@ -1,8 +1,8 @@
 /* FILE: main.c */
 /*
  *  module  : main.c
- *  version : 1.11
- *  date    : 01/20/19
+ *  version : 1.12
+ *  date    : 01/21/19
  */
 
 /*
@@ -30,7 +30,7 @@ tables. So, to lookup identifier id (string "foo"), start
 at the current highest level (display_lookup), do a linear
 search at that local table. If not found, go down one level
 and repeat. If found on a local level, return (global variable
-location now knows where "foo" is.
+location now knows where "foo" is).
 If "foo" was not found locally, search the global table which
 is hashed: another linear search through the list for this
 particular hash value. If not found enter into global table.
@@ -131,7 +131,7 @@ PRIVATE void enterglobal()
     if (symtabindex - symtab >= SYMTABMAX)
 	execerror("index", "symbols");
     location = symtabindex++;
-D(  printf("getsym, new: '%s'\n",ident); )
+D(  printf("getsym, new: '%s'\n", ident); )
     location->name = strdup(ident);
     location->u.body = NULL; /* may be assigned in definition */
 #ifdef USE_UNKNOWN_SYMBOLS
@@ -341,6 +341,7 @@ PRIVATE void compound_def()
 	break;
     default :
 	printf("warning: empty compound definition\n");
+	break;
     }
 }
 
@@ -367,9 +368,9 @@ PUBLIC void quit_(void)
 
 static int mustinclude = 1;
 
-#define CHECK(D,NAME)						\
+#define CHECK(D, NAME)						\
     if (D) {							\
-        printf("->  %s is not empty:\n",NAME);			\
+        printf("->  %s is not empty:\n", NAME);			\
 	writeterm(D, stdout); printf("\n"); }
 
 int main(int argc, char **argv)
@@ -418,9 +419,9 @@ int main(int argc, char **argv)
 	srcfile = stdin;
 	inilinebuffer(0);
 #ifdef GC_BDW
-	printf("JOY  -  compiled at %s on %s (BDW)\n",__TIME__,__DATE__);
+	printf("JOY  -  compiled at %s on %s (BDW)\n", __TIME__, __DATE__);
 #else
-	printf("JOY  -  compiled at %s on %s (NOBDW)\n",__TIME__,__DATE__);
+	printf("JOY  -  compiled at %s on %s (NOBDW)\n", __TIME__, __DATE__);
 #endif
 	printf("Copyright 2001 by Manfred von Thun\n");
     }

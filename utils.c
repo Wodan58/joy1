@@ -1,8 +1,8 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.11
- *  date    : 01/20/19
+ *  version : 1.12
+ *  date    : 01/21/19
  */
 #include <stdio.h>
 #include <time.h>
@@ -20,7 +20,7 @@ static Node
     *mem_low = memory,
     *mem_mid;
 #define MEM_HIGH (MEMORYMAX-1)
-static int direction = +1;
+static int direction = 1;
 static int nodesinspected, nodescopied;
 static int start_gc_clock;
 #endif
@@ -33,7 +33,7 @@ PUBLIC void inimem1(void)
     stk = conts = dump = dump1 = dump2 = dump3 = dump4 = dump5 = NULL;
 #endif
 #ifndef GC_BDW
-    direction = +1;
+    direction = 1;
     memoryindex = mem_low;
 #endif
 }
@@ -146,19 +146,19 @@ PRIVATE void gc1(char *mess)
 */
     nodesinspected = nodescopied = 0;
 
-#define COP(X,NAME)						\
+#define COP(X, NAME)						\
     if (X != NULL) {						\
 	if (tracegc > 2) {					\
 	    printf("old %s = ", NAME);				\
 	    writeterm(X, stdout); printf("\n"); }		\
 	X = copy(X);						\
 	if (tracegc > 2) {					\
-	    printf("new %s = ",NAME);				\
+	    printf("new %s = ", NAME);				\
 	    writeterm(X, stdout); printf("\n"); } }
 
-    COP(stk,"stk"); COP(prog,"prog"); COP(conts,"conts");
-    COP(dump,"dump"); COP(dump1,"dump1"); COP(dump2,"dump2");
-    COP(dump3,"dump3"); COP(dump4,"dump4"); COP(dump5,"dump5");
+    COP(stk, "stk"); COP(prog, "prog"); COP(conts, "conts");
+    COP(dump, "dump"); COP(dump1, "dump1"); COP(dump2, "dump2");
+    COP(dump3, "dump3"); COP(dump4, "dump4"); COP(dump5, "dump5");
 }
 
 PRIVATE void gc2(char *mess)
@@ -212,7 +212,7 @@ PUBLIC Node *newnode(Operator o, Types u, Node *r)
 	    u.lis = copy(u.lis);
 	r = copy(r);
 	gc2("automatic");
-	if ((direction == +1 && memoryindex >= mem_mid) ||
+	if ((direction ==  1 && memoryindex >= mem_mid) ||
 	    (direction == -1 && memoryindex <= mem_mid))
 	    execerror("memory", "copying"); }
     p = memoryindex;
@@ -268,7 +268,7 @@ D(  printf("looking for field %s\n", ident); )
 		error("no such field in module");
 		abortexecution_();
 	    }
-D(  printf("found field: %s\n",mod_fields->name); )
+D(  printf("found field: %s\n", mod_fields->name); )
 	    location = mod_fields;
 	}
 /* end of replacement */
@@ -276,7 +276,7 @@ D(  printf("found field: %s\n",mod_fields->name); )
 	    bucket.proc = location->u.proc;
 	    stk = newnode(LOC2INT(location), bucket, stk);
 	} else
-	    stk = USR_NEWNODE(location,stk);
+	    stk = USR_NEWNODE(location, stk);
 	return;
     case BOOLEAN_:
     case INTEGER_:
@@ -316,7 +316,7 @@ PUBLIC void readterm(void)
 #ifdef SINGLE
     Node **my_dump;
 #endif
-    stk = LIST_NEWNODE(0L,stk);
+    stk = LIST_NEWNODE(0L, stk);
 #ifdef SINGLE
     my_dump = &stk->u.lis;
 #endif
@@ -330,7 +330,7 @@ PUBLIC void readterm(void)
 	stk->next->u.lis = stk;
 	stk = stk->next;
 	stk->u.lis->next = NULL;
-	dump = newnode(LIST_,stk->u,dump);
+	dump = newnode(LIST_, stk->u, dump);
 #endif
 	while (getsym(), symb <= ATOM) {
 	    readfactor();
@@ -380,7 +380,7 @@ PUBLIC void writefactor(Node *n, FILE *stm)
 	fprintf(stm, "{");
 	for (i = 0; i < SETSIZE; i++)
 	    if (set & (1 << i)) {
-		fprintf(stm, "%d",i);
+		fprintf(stm, "%d", i);
 		set = set & ~(1 << i);
 		if (set != 0)
 		    fprintf(stm, " ");

@@ -1,8 +1,8 @@
 /* FILE: scan.c */
 /*
  *  module  : scan.c
- *  version : 1.12
- *  date    : 01/19/19
+ *  version : 1.13
+ *  date    : 01/21/19
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -108,7 +108,7 @@ PUBLIC void error(char *message)
 	    putchar(linbuf[i]);
 	else
 	    putchar(' ');
-    printf("^\n\t%s\n",message);
+    printf("^\n\t%s\n", message);
 #ifndef REMOVE_UNUSED_ERRORCOUNT
     errorcount++;
 #endif
@@ -288,10 +288,12 @@ Start:
 		    do
 		        getch();
 		    while (isxdigit(ch));
+		    goto done;
 		} else if (isdigit(next)) {
 		    do
 			getch();
 		    while (ch >= '0' && ch <= '7');
+		    goto done;
 		}
 	    }
 	    while (isdigit(ch))
@@ -311,6 +313,7 @@ Start:
 		symb = FLOAT_;
 		return;
 	    }
+done:
 #ifdef BIT_32
 	    numb = strtol(&linbuf[start], NULL, 0);
 #else
