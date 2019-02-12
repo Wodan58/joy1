@@ -130,6 +130,7 @@ PUBLIC int doinclude(char *filnam)
 	return 1;
     }
     execerror("valid file name", "include");
+    return -1; // not reached
 }
 
 #if defined(GET_FROM_STDIN) || defined(FGET_FROM_FILE)

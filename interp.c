@@ -1393,6 +1393,7 @@ PRIVATE void fput_()
 {   FILE *stm;
 #ifdef RUNTIME_CHECKS
     TWOPARAMS("fput");
+    stm = NULL;
     if (stk->next->op != FILE_ || (stm = stk->next->u.fil) == NULL)
 	execerror("file", "fput");
 #else
@@ -1433,6 +1434,7 @@ PRIVATE void fputchars_() /* suggested by Heiko Kuhrt, as "fputstring_" */
 {   FILE *stm;
 #ifdef RUNTIME_CHECKS
     TWOPARAMS("fputchars");
+    stm = NULL;
     if (stk->next->op != FILE_ || (stm = stk->next->u.fil) == NULL)
         execerror("file", "fputchars");
 #else
