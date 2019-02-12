@@ -373,7 +373,7 @@ PRIVATE void getenv_()
 
     ONEPARAM("getenv");
     STRING("getenv");
-    UNARY(STRING_NEWNODE, str = getenv(stk->u.str) ? str : ""); }
+    UNARY(STRING_NEWNODE, (str = getenv(stk->u.str)) ? str : ""); }
 
 PRIVATE void body_()
 {
