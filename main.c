@@ -1,8 +1,8 @@
 /* FILE: main.c */
 /*
  *  module  : main.c
- *  version : 1.12
- *  date    : 01/21/19
+ *  version : 1.13
+ *  date    : 02/24/19
  */
 
 /*
@@ -124,6 +124,9 @@ Manfred von Thun, 2006
 #ifdef GC_BDW
 #include <gc.h>
 #define strdup GC_strdup
+#else
+char *my_strdup(char *str);
+#define strdup my_strdup
 #endif
 
 PRIVATE void enterglobal()

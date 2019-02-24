@@ -1,8 +1,8 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.14
- *  date    : 01/19/19
+ *  version : 1.15
+ *  date    : 02/24/19
  */
 
 /*
@@ -292,7 +292,7 @@ PUSH(dump_,LIST_NEWNODE,dump)				/* variables	*/
 PUSH(conts_,LIST_NEWNODE,LIST_NEWNODE(conts->u.lis->next,conts->next))
 #endif
 PUSH(symtabindex_,INTEGER_NEWNODE,(long)LOC2INT(symtabindex))
-// FIXME: Use /dev/random on Unix or CryptGenRandom on Windows
+/* FIXME: Use /dev/random on Unix or CryptGenRandom on Windows */
 PUSH(rand_, INTEGER_NEWNODE, (long)rand())
 /* this is now in utils.c
 PUSH(memoryindex_,INTEGER_NEWNODE,MEM2INT(memoryindex))
@@ -2421,17 +2421,18 @@ void exeterm(Node * n)
 	printf("\n");
 #endif
 	switch (n->op) {
-	case COPIED_:
 	case ILLEGAL_:
+	case COPIED_:
 	    printf("exeterm: attempting to execute bad node\n");
 	    break;
 	case BOOLEAN_:
 	case CHAR_:
 	case INTEGER_:
-	case FLOAT_:
 	case SET_:
 	case STRING_:
 	case LIST_:
+	case FLOAT_:
+	case FILE_:
 	    stk = newnode(n->op, n->u, stk);
 	    break;
 	case USR_:
@@ -2444,9 +2445,9 @@ void exeterm(Node * n)
 	    exeterm(n->u.ent->u.body);
 	    break;
 	default:
-	    (*n->u.proc) ();
+	    (*n->u.proc)();
 #ifdef TRACK_USED_SYMBOLS
-	    symtab[(int) n->op].is_used = 1;
+	    symtab[(int)n->op].is_used = 1;
 #endif
 	    break;
 	}
@@ -3797,6 +3798,7 @@ PRIVATE void branch_()
 #ifdef SINGLE
 PRIVATE void while_()
 {
+    int num;
     Node *body, *test, *save;
 
     TWOPARAMS("while");
@@ -3808,7 +3810,7 @@ PRIVATE void while_()
     for (;;) {
 	save = stk;
 	exeterm(test);
-	int num = stk->u.num;
+	num = stk->u.num;
 	stk = save;
 	if (!num)
 	    return;

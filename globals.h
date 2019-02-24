@@ -1,8 +1,8 @@
 /* FILE: globals.h */
 /*
  *  module  : globals.h
- *  version : 1.12
- *  date    : 01/20/19
+ *  version : 1.13
+ *  date    : 02/24/19
  */
 #ifndef GLOBALS_H
 #define GLOBALS_H
@@ -11,51 +11,82 @@
 #define SINGLE
 #endif
 
-// #define USE_ONLY_STDIN
-// #define NO_COMPILER_WARNINGS
+/*
+    The following #defines are not present in the source code.
+    They have been accepted.
+
+USE_ONLY_STDIN
+NO_COMPILER_WARNINGS
+NO_BANG_AS_PERIOD
+PROTECT_BUFFER_OVERFLOW
+DONT_READ_PAST_EOF
+CORRECT_GARBAGE_COLLECTOR
+READ_NUMBER_AND_STOP
+READ_HEXADECIMAL_NUMBER
+CORRECT_STRING_WRITE
+BDW_ALSO_IN_MAIN
+SIGNAL_WRITE_PIPE
+NO_JUMP_FAIL
+NO_DUPLICATE_CH
+USE_NEW_FUNCTION_SYNTAX
+CORRECT_OCTAL_NUMBER
+NO_EXECUTE_ERROR
+DONT_ADD_MODULE_NAMES
+CHECK_SYMTABMAX
+CHECK_DISPLAYMAX
+HASHVALUE_FUNCTION
+NO_WASTE_FP
+RESPECT_INPLINEMAX
+CLOSE_INCLUDE_FILES
+CORRECT_GETENV
+RESUME_EARLIER_LINENUM
+CHECK_QUOTE_IN_SPLIT
+CHECK_QUOTES_IN_PRIMREC
+*/
+/*
+    The following #defines are present in the source code.
+    They have not been accepted.
+
+CORRECT_INHAS_COMPARE
+USE_UNKNOWN_SYMBOLS
+TRACK_USED_SYMBOLS
+MAKE_CONTS_OBSOLETE
+*/
+/*
+    The following #defines are present in the source code.
+    They have been accepted.
+*/
 #define CORRECT_FIVE_PARAMS
 #define GET_FROM_STDIN
-// #define NO_BANG_AS_PERIOD
 #define CORRECT_TAKE_STRING
 #define CORRECT_FREAD_PARAM
-// #define PROTECT_BUFFER_OVERFLOW
 #define CORRECT_NEG_INTEGER
-// #define DONT_READ_PAST_EOF
 #define CHECK_EMPTY_STACK
-// #define CORRECT_GARBAGE_COLLECTOR
 #define CORRECT_FLOAT_BUFFER
-// #define READ_NUMBER_AND_STOP
 #define HELP_CONDNESTREC
 #define SAMETYPE_BUILTIN
 #define CORRECT_HEADERS
 #define CORRECT_TIME_LIST
 #define CORRECT_HELP_FREMOVE
 #define CORRECT_BINREC_HELP
-// #define READ_HEXADECIMAL_NUMBER
 #define SECURE_PUTCHARS
 #define GETCH_AS_BUILTIN
 #define CORRECT_INTERN_STRCPY
 #define CORRECT_INTERN_LOOKUP
-// #define CORRECT_STRING_WRITE
-/* #define CORRECT_INHAS_COMPARE */
 #define CORRECT_TYPE_COMPARE
-// #define BDW_ALSO_IN_MAIN
 #define FGET_FROM_FILE
 #define CORRECT_STRFTIME_BUF
-// #define SIGNAL_WRITE_PIPE
 #ifndef BIT_32
 #define USE_SNPRINTF
 #endif
 #define CORRECT_MODF_CHECK
 #define CORRECT_APP1_DOC
-// #define NO_JUMP_FAIL
 #define CORRECT_GENREC_HELP
 #define CORRECT_TREEREC_HELP
 #define CORRECT_TREEGENREC_HELP
 #define CORRECT_TREEREC_AUX
 #define CORRECT_TREEGENREC_AUX
 #define CORRECT_PRIMREC
-// #define NO_DUPLICATE_CH
 #define CORRECT_CASE_COMPARE
 #define CORRECT_CLOCK_SECONDS
 #define NOT_ALSO_FOR_FLOAT
@@ -65,21 +96,10 @@
 #define TAILREC_CHECK_QUOTES
 #define TREEREC_CHECK_QUOTES
 #define TREEGENREC_CHECK_QUOTES
-// #define USE_NEW_FUNCTION_SYNTAX
 #define REST_OF_UNIX_ESCAPES
-// #define CORRECT_OCTAL_NUMBER
-// #define NO_EXECUTE_ERROR
 #define CORRECT_HELPDETAIL
 #define CORRECT_ALEN
 #define NO_HELP_LOCAL_SYMBOLS
-/* #define USE_UNKNOWN_SYMBOLS */
-// #define DONT_ADD_MODULE_NAMES
-// #define CHECK_SYMTABMAX
-// #define CHECK_DISPLAYMAX
-// #define HASHVALUE_FUNCTION
-// #define NO_WASTE_FP
-#define MAKE_CONTS_OBSOLETE
-/* #define TRACK_USED_SYMBOLS */
 #define TYPED_NODES
 #define CORRECT_STRING_CONCAT
 #define CORRECT_SIZE_CHECK
@@ -87,13 +107,10 @@
 #define CORRECT_FGETS
 #define REMOVE_UNUSED_ERRORCOUNT
 #define CORRECT_FSEEK_MANUAL
-// #define RESPECT_INPLINEMAX
-// #define CLOSE_INCLUDE_FILES
-// #define CORRECT_GETENV
-// #define RESUME_EARLIER_LINENUM
-// #define CHECK_QUOTE_IN_SPLIT
-// #define CHECK_QUOTES_IN_PRIMREC
-
+/*
+    The following #defines are present in the source code.
+    They have been accepted.
+*/
 #define USE_SHELL_ESCAPE
 #define ENABLE_TRACEGC
 #define RUNTIME_CHECKS
@@ -239,7 +256,7 @@ CLASS int autoput;
 CLASS int undeferror;
 CLASS int tracegc;
 CLASS int startclock,gc_clock;			/* main		*/
-// CLASS int ch;				/* scanner	*/
+/* CLASS int ch; */				/* scanner	*/
 CLASS Symbol symb;
 #ifdef BIT_32
 CLASS long numb;
@@ -309,8 +326,8 @@ PUBLIC void abortexecution_(void);
 PUBLIC void execerror(char *message, char *op);
 PUBLIC void quit_(void);
 PUBLIC void inilinebuffer(char *filnam);
-// PUBLIC void putline(void);
-// PUBLIC int endofbuffer(void);
+/* PUBLIC void putline(void); */
+/* PUBLIC int endofbuffer(void); */
 PUBLIC void error(char *message);
 PUBLIC int doinclude(char *filnam);
 PUBLIC void getsym(void);

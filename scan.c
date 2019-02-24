@@ -1,8 +1,8 @@
 /* FILE: scan.c */
 /*
  *  module  : scan.c
- *  version : 1.13
- *  date    : 01/21/19
+ *  version : 1.14
+ *  date    : 02/24/19
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,6 +12,8 @@
 #ifdef GC_BDW
 #include <gc.h>
 #define strdup GC_strdup
+#else
+#define strdup my_strdup
 #endif
 
 static struct {
@@ -144,6 +146,19 @@ PUBLIC void redirect(FILE *fp)
 	infile[ilevel].name = 0;
 	infile[ilevel].linenum = 0;
     }
+}
+#endif
+
+#ifndef GC_BDW
+char *my_strdup(char *str)
+{
+    char *ptr;
+    size_t leng;
+
+    leng = strlen(str);
+    if ((ptr = malloc(leng + 1)) != 0)
+	strcpy(ptr, str);
+    return ptr;
 }
 #endif
 

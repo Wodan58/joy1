@@ -25,5 +25,7 @@ nmake -f nmakefile
 
 will build joy(.exe)
 
-The [BDW garbage collector](https://github.com/ivmai/bdwgc) needs to be
-installed and compiled separately, but this is optional.
+Then run: make -f regres.mak
+
+The [BDW garbage collector](https://github.com/ivmai/bdwgc) can be
+installed and compiled separately: this is optional.
