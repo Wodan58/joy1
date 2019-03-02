@@ -1,14 +1,1 @@
-*.swp
-*.tar.gz
-gc
-gc.fail
-gc.succ
-make.gc
-make.nogc
-Makefile
-*.o
-CmakeCache.txt
-CmakeFiles
-cmake_install.cmake
-fib.joy
 Makefile

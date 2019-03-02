@@ -1,8 +1,8 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.15
- *  date    : 02/24/19
+ *  version : 1.16
+ *  date    : 03/02/19
  */
 
 /*
@@ -2487,7 +2487,7 @@ start:
 #endif
 	switch (stepper->op)
 	  { case BOOLEAN_: case CHAR_: case INTEGER_: case FLOAT_:
-	    case SET_: case STRING_: case LIST_:
+	    case SET_: case STRING_: case LIST_: case FILE_:
 		stk = newnode(stepper->op, stepper->u, stk); break;
 	    case USR_:
               if (stepper->u.ent->u.body == NULL && undeferror)

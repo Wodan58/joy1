@@ -1,14 +1,25 @@
 /* FILE: globals.h */
 /*
  *  module  : globals.h
- *  version : 1.13
- *  date    : 02/24/19
+ *  version : 1.14
+ *  date    : 03/02/19
  */
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
 #ifdef GC_BDW
+/*
+    The following #defines are only available when GC_BDW is also defined.
+*/
 #define SINGLE
+#define MAKE_CONTS_OBSOLETE
+#endif
+
+#ifndef BIT_32
+/*
+    The following #defines are not available in the oldest ANSI standard.
+*/
+#define USE_SNPRINTF
 #endif
 
 /*
@@ -50,7 +61,6 @@ CHECK_QUOTES_IN_PRIMREC
 CORRECT_INHAS_COMPARE
 USE_UNKNOWN_SYMBOLS
 TRACK_USED_SYMBOLS
-MAKE_CONTS_OBSOLETE
 */
 /*
     The following #defines are present in the source code.
@@ -76,9 +86,6 @@ MAKE_CONTS_OBSOLETE
 #define CORRECT_TYPE_COMPARE
 #define FGET_FROM_FILE
 #define CORRECT_STRFTIME_BUF
-#ifndef BIT_32
-#define USE_SNPRINTF
-#endif
 #define CORRECT_MODF_CHECK
 #define CORRECT_APP1_DOC
 #define CORRECT_GENREC_HELP

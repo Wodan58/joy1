@@ -13,19 +13,13 @@ Changes are documented in globals.h. The original version is available [here](ht
 Installation
 ------------
 
-Build instructions are available in appveyor.yml or .travis.yml or .lgtm.yml.
-Alternatively, omakefile or nmakefile from [Joy](https://github.com/Wodan58/Joy)
-can be used. Then:
+Build with the [BDW garbage collector](https://github.com/ivmai/bdwgc):
 
-make -f omakefile
+    cmake -G "Unix Makefiles" .
+    cmake --build . --config Release
 
-or:
+or without:
 
-nmake -f nmakefile
-
-will build joy(.exe)
+    make -f make.nogc
 
 Then run: make -f regres.mak
-
-The [BDW garbage collector](https://github.com/ivmai/bdwgc) can be
-installed and compiled separately: this is optional.

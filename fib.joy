@@ -1,0 +1,6 @@
+(*
+    Fibonacci, only for benchmarking.
+*)
+0 __settracegc.
+
+46 [small] [] [pred dup pred] [+] binrec.
