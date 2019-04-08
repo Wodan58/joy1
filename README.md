@@ -15,11 +15,14 @@ Installation
 
 Build with the [BDW garbage collector](https://github.com/ivmai/bdwgc):
 
-    cmake -G "Unix Makefiles" .
-    cmake --build . --config Release
+    ln -s ../bdwgc
+    cmake .
+    cmake --build .
 
 or without:
 
     make -f make.nogc
 
-Then run: make -f regres.mak
+Then run:
+
+    make -f regres.mak
