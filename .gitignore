@@ -1,1 +1,9 @@
+bdwgc
+*.cmake
+CMakeFiles
+CMakeCache.txt
 Makefile
+demo*.txt
+*.o
+test
+SCCS

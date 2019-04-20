@@ -2,10 +2,14 @@
 /*
  *  module  : globals.h
  *  version : 1.14
- *  date    : 03/02/19
+ *  date    : 04/20/19
  */
 #ifndef GLOBALS_H
 #define GLOBALS_H
+
+#ifdef _MSC_VER
+#pragma warning( disable : 4267 )
+#endif
 
 #ifdef GC_BDW
 /*
