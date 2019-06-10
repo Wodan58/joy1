@@ -1,8 +1,8 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.16
- *  date    : 03/02/19
+ *  version : 1.20
+ *  date    : 05/30/19
  */
 
 /*
@@ -73,21 +73,12 @@ PRIVATE void manual_list_aux_();
 	    || stk->next->next == NULL				\
 	    || stk->next->next->next == NULL)			\
 	execerror("four parameters",NAME)
-#ifdef CORRECT_FIVE_PARAMS
 #define FIVEPARAMS(NAME)					\
     if (stk == NULL || stk->next == NULL			\
 	    || stk->next->next == NULL				\
 	    || stk->next->next->next == NULL			\
 	    || stk->next->next->next->next == NULL)		\
 	execerror("five parameters",NAME)
-#else
-#define FIVEPARAMS(NAME)					\
-    if (stk == NULL || stk->next == NULL			\
-	    || stk->next->next == NULL				\
-	    || stk->next->next->next == NULL			\
-	    || stk->next->next->next->next == NULL)		\
-	execerror("four parameters",NAME)
-#endif
 #define ONEQUOTE(NAME)						\
     if (stk->op != LIST_)					\
 	execerror("quotation as top parameter",NAME)
@@ -304,7 +295,7 @@ PUSH(clock_,INTEGER_NEWNODE,(long)(clock() - startclock))
 PUSH(time_,INTEGER_NEWNODE,(long)time(NULL))
 PUSH(argc_,INTEGER_NEWNODE,(long)g_argc)
 
-PUBLIC void stack_(void)
+PUBLIC void stack_()
 { NULLARY(LIST_NEWNODE, stk); }
 
 /* - - - - -   O P E R A T O R S   - - - - - */
@@ -333,8 +324,7 @@ PRIVATE void newstack_()
 PRIVATE void name_()
 {
     ONEPARAM("name");
-    UNARY(STRING_NEWNODE, stk->op == USR_ ?
-		   stk->u.ent->name : opername(stk->op));
+    UNARY(STRING_NEWNODE, stk->op == USR_ ? stk->u.ent->name : opername(stk->op));
 }
 
 PRIVATE void intern_()
@@ -344,12 +334,8 @@ PRIVATE void intern_()
 #endif
     ONEPARAM("intern");
     STRING("intern");
-#ifdef CORRECT_INTERN_STRCPY
     strncpy(ident, stk->u.str, ALEN);
     ident[ALEN-1] = 0;
-#else
-    strcpy(ident, stk->u.str);
-#endif
 #if defined(RUNTIME_CHECKS) && defined(CORRECT_INTERN_LOOKUP)
     p = 0;
     if (ident[0] == '-' || !strchr("(#)[]{}.;'\"0123456789", ident[0]))
@@ -373,7 +359,8 @@ PRIVATE void getenv_()
 
     ONEPARAM("getenv");
     STRING("getenv");
-    UNARY(STRING_NEWNODE, (str = getenv(stk->u.str)) ? str : ""); }
+    UNARY(STRING_NEWNODE, (str = getenv(stk->u.str)) ? str : "");
+}
 
 PRIVATE void body_()
 {
@@ -584,10 +571,12 @@ PRIVATE void sign_()
     ONEPARAM("sign");
 /* start new */
     FLOAT("sign");
-    if (stk->op == INTEGER_)
-      { long i = stk->u.num;
-	if (i == 0 || i == 1) return;
-	else { UNARY(INTEGER_NEWNODE, i > 0 ? 1 : -1); return; } }
+    if (stk->op == INTEGER_) {
+	if (stk->u.num == 0 || stk->u.num == 1)
+	    return;
+	UNARY(INTEGER_NEWNODE, stk->u.num > 0 ? 1 : -1);
+	return;
+    }
 /* end new */
     FLOAT_U(fsgn);
 #if 0
@@ -600,15 +589,14 @@ PRIVATE void sign_()
 PRIVATE void neg_()
 {
     ONEPARAM("neg");
-#ifdef CORRECT_NEG_INTEGER
 /* start new */
     FLOAT("neg");
-    if (stk->op == INTEGER_)
-      { long i = stk->u.num;
-	if (i == 0) return;
-	else { UNARY(INTEGER_NEWNODE, -stk->u.num); return; } }
+    if (stk->op == INTEGER_) {
+	if (stk->u.num)
+	    UNARY(INTEGER_NEWNODE, -stk->u.num);
+	return;
+    }
 /* end new */
-#endif
     FLOAT_U(-);
 #if 0
     INTEGER("neg");
@@ -627,6 +615,7 @@ PRIVATE void PROCEDURE()					\
 MULDIV(mul_,"*",*,)
 MULDIV(divide_,"/",/,CHECKZERO("/"))
 */
+
 PRIVATE void mul_()
 {
     TWOPARAMS("*");
@@ -654,8 +643,8 @@ PRIVATE void rem_()
     FLOAT_P(fmod);
     INTEGERS2("rem");
     CHECKZERO("rem");
-    BINARY(INTEGER_NEWNODE,stk->next->u.num % stk->u.num); }
-
+    BINARY(INTEGER_NEWNODE,stk->next->u.num % stk->u.num);
+}
 
 PRIVATE void div_()
 {
@@ -673,7 +662,8 @@ PRIVATE void div_()
     result = lldiv(stk->next->u.num, stk->u.num);
 #endif
     BINARY(INTEGER_NEWNODE, result.quot);
-    NULLARY(INTEGER_NEWNODE, result.rem); }
+    NULLARY(INTEGER_NEWNODE, result.rem);
+}
 
 #ifdef SINGLE
 PRIVATE void strtol_()
@@ -710,7 +700,8 @@ PRIVATE void strtod_()
 {
     ONEPARAM("strtod");
     STRING("strtod");
-    UNARY(FLOAT_NEWNODE, strtod(stk->u.str, NULL)); }
+    UNARY(FLOAT_NEWNODE, strtod(stk->u.str, NULL));
+}
 
 PRIVATE void format_()
 {   int width, prec;
@@ -749,7 +740,7 @@ PRIVATE void format_()
     sprintf(result, format, width, prec, stk->u.num);
 #endif
     UNARY(STRING_NEWNODE, result);
-    return; }
+}
 
 PRIVATE void formatf_()
 {   int width, prec;
@@ -759,33 +750,19 @@ PRIVATE void formatf_()
 #ifdef USE_SNPRINTF
     int leng;
 #endif
-#ifdef CORRECT_FORMATF_MESSAGE
     FOURPARAMS("formatf");
     INTEGER("formatf");
     INTEGER2("formatf");
-#else
-    FOURPARAMS("format");
-    INTEGER("format");
-    INTEGER2("format");
-#endif
     prec = stk->u.num;
     POP(stk);
     width = stk->u.num;
     POP(stk);
-#ifdef CORRECT_FORMATF_MESSAGE
     CHARACTER("formatf");
-#else
-    CHARACTER("format");
-#endif
     spec = (char)stk->u.num;
     POP(stk);
 #ifdef RUNTIME_CHECKS
     if (!strchr("eEfgG", spec))
-#ifdef CORRECT_FORMATF_MESSAGE
 	execerror("one of: e E f g G", "formatf");
-#else
-	execerror("one of: e E f g G", "format");
-#endif
 #endif
     strcpy(format, "%*.*lg");
     format[5] = spec;
@@ -793,24 +770,16 @@ PRIVATE void formatf_()
     leng = snprintf(0, 0, format, width, prec, stk->u.num) + 1;
     result = malloc(leng + 1);
 #else
-#ifdef CORRECT_FLOAT_BUFFER
-    result = malloc(FLOAT_BUFFER);		/* should be sufficient */
-#else
     result = malloc(INPLINEMAX);		/* should be sufficient */
 #endif
-#endif
-#ifdef CORRECT_FORMATF_MESSAGE
     FLOAT("formatf");
-#else
-    FLOAT("format");
-#endif
 #ifdef USE_SNPRINTF
     snprintf(result, leng, format, width, prec, stk->u.dbl);
 #else
     sprintf(result, format, width, prec, stk->u.dbl);
 #endif
     UNARY(STRING_NEWNODE, result);
-    return; }
+}
 
 /* - - -   TIME   - - - */
 
@@ -837,7 +806,7 @@ PRIVATE void PROCEDURE()					\
     my_dump = INTEGER_NEWNODE((long)(t->tm_mon + 1), my_dump);	\
     my_dump = INTEGER_NEWNODE((long)(t->tm_year + 1900), my_dump);	\
     UNARY(LIST_NEWNODE, my_dump);				\
-    return; }
+}
 #else
 #define UNMKTIME(PROCEDURE,NAME,FUNC)				\
 PRIVATE void PROCEDURE()					\
@@ -862,7 +831,7 @@ PRIVATE void PROCEDURE()					\
     DMP1 = INTEGER_NEWNODE((long)(t->tm_year + 1900), DMP1);	\
     UNARY(LIST_NEWNODE, DMP1);					\
     POP(dump1);							\
-    return; }
+}
 #endif
 UNMKTIME(localtime_,"localtime",localtime)
 UNMKTIME(gmtime_,"gmtime",gmtime)
@@ -891,7 +860,7 @@ PRIVATE void decode_time(struct tm *t)
 	{ t->tm_yday = p->u.num; POP(p); }
     if (p && p->op == INTEGER_)
 	{ t->tm_wday = p->u.num; POP(p); }
-    return; }
+}
 
 PRIVATE void mktime_()
 {   struct tm t;
@@ -899,7 +868,7 @@ PRIVATE void mktime_()
     LIST("mktime");
     decode_time(&t);
     UNARY(INTEGER_NEWNODE, (long)mktime(&t));
-    return; }
+}
 
 PRIVATE void strftime_()
 {   struct tm t;
@@ -912,15 +881,11 @@ PRIVATE void strftime_()
     POP(stk);
     LIST("strftime");
     decode_time(&t);
-#ifdef CORRECT_STRFTIME_BUF
     length = INPLINEMAX;
-#else
-    length = strlen(fmt) * 3 + 1;		/* should be sufficient */
-#endif
     result = malloc(length);
     strftime(result, length, fmt, &t);
     UNARY(STRING_NEWNODE, result);
-    return; }
+}
 
 /* - - -   FLOAT   - - - */
 
@@ -929,7 +894,7 @@ PRIVATE void PROCEDURE()					\
 {   ONEPARAM(NAME);						\
     FLOAT(NAME);						\
     UNARY(FLOAT_NEWNODE, FUNC(FLOATVAL));			\
-    return; }
+}
 UFLOAT(acos_,"acos",acos)
 UFLOAT(asin_,"asin",asin)
 UFLOAT(atan_,"atan",atan)
@@ -951,7 +916,7 @@ PRIVATE void PROCEDURE()					\
 {   TWOPARAMS(NAME);						\
     FLOAT2(NAME);						\
     BINARY(FLOAT_NEWNODE, FUNC(FLOATVAL2, FLOATVAL));		\
-    return; }
+}
 BFLOAT(atan2_,"atan2",atan2)
 BFLOAT(pow_,"pow",pow)
 
@@ -961,20 +926,15 @@ PRIVATE void frexp_()
     FLOAT("frexp");
     UNARY(FLOAT_NEWNODE, frexp(FLOATVAL, &exp));
     NULLARY(INTEGER_NEWNODE, (long)exp);
-    return; }
+}
 
 PRIVATE void modf_()
 {   double exp;
-#ifdef CORRECT_MODF_CHECK
     ONEPARAM("modf");
     FLOAT("modf");
-#else
-    ONEPARAM("frexp");
-    FLOAT("frexp");
-#endif
     UNARY(FLOAT_NEWNODE, modf(FLOATVAL, &exp));
     NULLARY(FLOAT_NEWNODE, exp);
-    return; }
+}
 
 PRIVATE void ldexp_()
 {   long exp;
@@ -984,7 +944,7 @@ PRIVATE void ldexp_()
     POP(stk);
     FLOAT("ldexp");
     UNARY(FLOAT_NEWNODE, ldexp(FLOATVAL, (int)exp));
-    return; }
+}
 
 PRIVATE void trunc_()
 {
@@ -1037,7 +997,7 @@ PRIVATE void PROCEDURE()					\
 MAXMIN(max_,"max",<)
 MAXMIN(min_,"min",>)
 
-#if defined(CORRECT_INHAS_COMPARE) || defined(CORRECT_TYPE_COMPARE)
+#if defined(CORRECT_INHAS_COMPARE) || defined(CORRECT_TYPE_COMPARE) || defined(CORRECT_CASE_COMPARE)
 PRIVATE double Compare(Node *first, Node *second, int *error)
 {
     *error = 0;
@@ -1315,7 +1275,7 @@ PRIVATE void fopen_()
     STRING("fopen");
     STRING2("fopen");
     BINARY(FILE_NEWNODE, fopen(stk->next->u.str, stk->u.str));
-    return; }
+}
 
 PRIVATE void fclose_()
 {
@@ -1325,21 +1285,21 @@ PRIVATE void fclose_()
     FILE("fclose");
     fclose(stk->u.fil);
     POP(stk);
-    return; }
+}
 
 PRIVATE void fflush_()
 {
     ONEPARAM("fflush");
     FILE("fflush");
     fflush(stk->u.fil);
-    return; }
+}
 
 PRIVATE void fremove_()
 {
     ONEPARAM("fremove");
     STRING("fremove");
     UNARY(BOOLEAN_NEWNODE, (long)!remove(stk->u.str));
-    return; }
+}
 
 PRIVATE void frename_()
 {
@@ -1347,14 +1307,14 @@ PRIVATE void frename_()
     STRING("frename");
     STRING2("frename");
     BINARY(BOOLEAN_NEWNODE, (long)!rename(stk->next->u.str, stk->u.str));
-    return; }
+}
 
 #define FILEGET(PROCEDURE,NAME,CONSTRUCTOR,EXPR)		\
 PRIVATE void PROCEDURE()					\
 {   ONEPARAM(NAME);						\
     FILE(NAME);							\
     NULLARY(CONSTRUCTOR,EXPR);					\
-    return; }
+}
 FILEGET(feof_,"feof",BOOLEAN_NEWNODE,(long)feof(stk->u.fil))
 FILEGET(ferror_,"ferror",BOOLEAN_NEWNODE,(long)ferror(stk->u.fil))
 FILEGET(fgetch_,"fgetch",CHAR_NEWNODE,(long)getc(stk->u.fil))
@@ -1380,14 +1340,10 @@ PRIVATE void fgets_()
 	if (fgets(buff + length, size - length, stk->u.fil) == NULL)
 	    { buff[length] = 0; break; }
 	if (strchr(buff, '\n')) break;
-#ifdef CORRECT_FGETS
 	length = strlen(buff);
-#else
-	length += strlen(buff);
-#endif
 	size = size * 2; }
     NULLARY(STRING_NEWNODE, buff);
-    return; }
+}
 
 PRIVATE void fput_()
 {   FILE *stm;
@@ -1402,7 +1358,7 @@ PRIVATE void fput_()
     writefactor(stk, stm);
     fprintf(stm, " ");
     POP(stk);
-    return; }
+}
 
 #ifdef FGET_FROM_FILE
 PRIVATE void fget_()
@@ -1428,7 +1384,7 @@ PRIVATE void fputch_()
     POP(stk);
     FILE("fputch");
     putc(ch, stk->u.fil);
-    return; }
+}
 
 PRIVATE void fputchars_() /* suggested by Heiko Kuhrt, as "fputstring_" */
 {   FILE *stm;
@@ -1446,7 +1402,7 @@ PRIVATE void fputchars_() /* suggested by Heiko Kuhrt, as "fputstring_" */
     fprintf(stm,stk->u.str);
 #endif
     POP(stk);
-    return; }
+}
 
 PRIVATE void fread_()
 {   unsigned char *buf;
@@ -1485,7 +1441,7 @@ PRIVATE void fread_()
 #endif
     POP(dump1);
 #endif
-    return; }
+}
 
 PRIVATE void fwrite_()
 {   int length;
@@ -1507,7 +1463,7 @@ PRIVATE void fwrite_()
     FILE("fwrite");
     fwrite(buff, (size_t)length, (size_t)1, stk->u.fil);
     free(buff);
-    return; }
+}
 
 PRIVATE void fseek_()
 {   long pos;
@@ -1521,7 +1477,7 @@ PRIVATE void fseek_()
     POP(stk);
     FILE("fseek");
     NULLARY(BOOLEAN_NEWNODE, (long)!!fseek(stk->u.fil, pos, whence));
-    return; }
+}
 
 /* - - -   AGGREGATES   - - - */
 
@@ -1748,7 +1704,7 @@ PRIVATE void PROCEDURE()					\
 INHAS(in_,"in",stk,stk->next)
 INHAS(has_,"has",stk->next,stk)
 
-#if defined(RUNTIME_CHECKS) && !defined(ORIGINAL_JOY)
+#ifdef RUNTIME_CHECKS
 #define OF_AT(PROCEDURE,NAME,AGGR,INDEX)			\
 PRIVATE void PROCEDURE()					\
 {   TWOPARAMS(NAME);						\
@@ -1862,11 +1818,10 @@ PRIVATE void opcase_()
 	    n->u.lis->op != stk->next->op )
 	n = n->next;
     CHECKLIST(n->op,"opcase");
-    UNARY(LIST_NEWNODE,
-	n->next != NULL ? n->u.lis->next : n->u.lis);
+    UNARY(LIST_NEWNODE, n->next != NULL ? n->u.lis->next : n->u.lis);
 }
 
-#if defined(RUNTIME_CHECKS) && !defined(ORIGINAL_JOY)
+#ifdef RUNTIME_CHECKS
 #define CONS_SWONS(PROCEDURE,NAME,AGGR,ELEM)			\
 PRIVATE void PROCEDURE()					\
 {   TWOPARAMS(NAME);						\
@@ -1969,14 +1924,9 @@ PRIVATE void take_()
 	    /* do not swap the order of the next two statements ! ! ! */
 	    if (i < 0) i = 0;
 	    if ((size_t)i >= strlen(old)) return; /* the old string unchanged */
-#ifdef CORRECT_TAKE_STRING
 	    p = result = (char *) malloc(i + 1);
 	    while (i-- > 0) *p++ = *old++;
 	    *p = 0;
-#else
-	    p = result = (char *) malloc(strlen(old) - i + 1);
-	    while (i-- > 0) *p++ = *old++;
-#endif
 	    UNARY(STRING_NEWNODE,result);
 	    return; }
 	case LIST_:
@@ -2032,14 +1982,8 @@ PRIVATE void concat_()
 	  { char *s, *p;
 	    s = p = (char *)malloc(strlen(stk->next->u.str) +
 				   strlen(stk->u.str) + 1);
-#ifdef CORRECT_STRING_CONCAT
 	    strcpy(s, stk->next->u.str);
 	    strcat(s, stk->u.str);
-#else
-	    while ((*p++ = *(stk->next->u.str)++) != '\0');
-	    --p; /* don't want terminating null */
-	    while ((*p++ = *(stk->u.str)++) != '\0');
-#endif
 	    BINARY(STRING_NEWNODE,s);
 	    return; }
 	case LIST_:
@@ -2108,7 +2052,6 @@ PRIVATE void null_()
 	case FILE_:
 	    UNARY(BOOLEAN_NEWNODE, (long)(stk->u.fil == NULL));
 	    break;
-#ifdef CORRECT_NULL_CASES
 	case LIST_:
 	    UNARY(BOOLEAN_NEWNODE, (long)(! stk->u.lis));
 	    break;
@@ -2120,10 +2063,6 @@ PRIVATE void null_()
 	    break;
 	default:
 	    BADDATA("null"); }
-#else
-	default:
-	    UNARY(BOOLEAN_NEWNODE, (long)(! stk->u.num)); }
-#endif
 }
 
 PRIVATE void not_()
@@ -2131,19 +2070,18 @@ PRIVATE void not_()
     ONEPARAM("not");
     switch (stk->op)
       { case SET_:
-	    UNARY(SET_NEWNODE,~ stk->u.set);
+	    UNARY(SET_NEWNODE, ~stk->u.set);
 	    break;
+#ifndef ONLY_LOGICAL_NOT
 	case STRING_:
-	    UNARY(BOOLEAN_NEWNODE,(long)(*(stk->u.str) != '\0'));
+	    UNARY(BOOLEAN_NEWNODE, (long)(*(stk->u.str) != '\0'));
 	    break;
-#ifdef CORRECT_NOT_FOR_LIST
 	case LIST_:
 	    UNARY(BOOLEAN_NEWNODE, (long)(! stk->u.lis));
 	    break;
-	case BOOLEAN_: case CHAR_: case INTEGER_:
-#else
-	case BOOLEAN_: case CHAR_: case INTEGER_: case LIST_:
+	case CHAR_: case INTEGER_:
 #endif
+	case BOOLEAN_:
 	    UNARY(BOOLEAN_NEWNODE, (long)(! stk->u.num));
 	    break;
 #ifdef NOT_ALSO_FOR_FLOAT
@@ -2160,7 +2098,7 @@ PRIVATE void not_()
 	    BADDATA("not"); }
 }
 
-PRIVATE void size_()
+PRIVATE void size_( )
 {
     long siz = 0;
     ONEPARAM("size");
@@ -2178,11 +2116,7 @@ PRIVATE void size_()
 	    while (e != NULL) {e = e->next; siz++;};
 	    break; }
 	default :
-#ifdef CORRECT_SIZE_CHECK
 	    BADAGGREGATE("size"); }
-#else
-	    BADDATA("size"); }
-#endif
     UNARY(INTEGER_NEWNODE,siz);
 }
 
@@ -2232,11 +2166,7 @@ TYPE(user_,"user",==,USR_)
     { ONEPARAM(NAME); TYPE(NAME); BODY; POP(stk); }
 USETOP( put_,"put",ONEPARAM, writefactor(stk, stdout);printf(" "))
 USETOP( putch_,"putch",NUMERICTYPE, printf("%c", (char) stk->u.num) )
-#ifdef SECURE_PUTCHARS
 USETOP( putchars_,"putchars",STRING, printf("%s", stk->u.str) )
-#else
-USETOP( putchars_,"putchars",STRING, printf(stk->u.str) )
-#endif
 USETOP( setecho_,"setecho",NUMERICTYPE, echoflag = stk->u.num )
 USETOP( setautoput_,"setautoput",NUMERICTYPE, autoput = stk->u.num )
 USETOP( setundeferror_, "setundeferror", NUMERICTYPE, undeferror = stk->u.num )
@@ -2245,8 +2175,8 @@ USETOP( srand_,"srand",INTEGER, srand((unsigned int) stk->u.num) )
 USETOP( include_,"include",STRING, doinclude(stk->u.str) )
 USETOP( system_,"system",STRING, system(stk->u.str) )
 
-#if defined(SINGLE) || defined(ORIGINAL_JOY)
-PRIVATE void undefs_(void)
+#ifdef SINGLE
+PRIVATE void undefs_()
 {
     Entry *i = symtabindex;
     Node *n = 0;
@@ -2257,7 +2187,7 @@ PRIVATE void undefs_(void)
     stk = LIST_NEWNODE(n,stk);
 }
 #else
-PRIVATE void undefs_(void)
+PRIVATE void undefs_()
 {
     Entry *i = symtabindex;
     dump1 = LIST_NEWNODE(NULL, dump1);
@@ -2296,14 +2226,11 @@ PRIVATE void argv_()
 
 PRIVATE void get_()
 {
-#ifdef GET_FROM_STDIN
-    redirect(stdin);
-#endif
     getsym();
     readfactor();
 }
 
-PUBLIC void dummy_(void)
+PUBLIC void dummy_()
 {
     /* never called */
 }
@@ -2370,7 +2297,7 @@ PUBLIC void printfactor(Node *n, FILE *stm)
 #endif
 
 #ifdef TRACK_USED_SYMBOLS
-static void report_symbols(void)
+static void report_symbols()
 {
     Entry *n;
 
@@ -2383,7 +2310,7 @@ static void report_symbols(void)
 #ifdef STATS
 static double calls, opers;
 
-static void report_stats(void)
+static void report_stats()
 {
     fprintf(stderr, "%.0f calls to joy interpreter\n", calls);
     fprintf(stderr, "%.0f operations executed\n", opers);
@@ -2946,7 +2873,7 @@ PRIVATE void map_()
 	    while (my_dump1 != NULL)
 	      { stk = newnode(my_dump1->op,my_dump1->u,save);
 		exeterm(program);
-#if defined(RUNTIME_CHECKS) && defined(CHECK_EMPTY_STACK)
+#if defined(RUNTIME_CHECKS)
 		if (stk == NULL)
 		    execerror("non-empty stack", "map");
 #endif
@@ -2999,7 +2926,7 @@ PRIVATE void map_()
 			      DMP1->u,SAVED3);
 		exeterm(SAVED1->u.lis);
 D(		printf("map: "); writefactor(stk, stdout); printf("\n"); )
-#if defined(RUNTIME_CHECKS) && defined(CHECK_EMPTY_STACK)
+#if defined(RUNTIME_CHECKS)
 		if (stk == NULL)
 		    execerror("non-empty stack", "map");
 #endif
@@ -3125,7 +3052,7 @@ PRIVATE void cond_()
     Node *my_dump, *save;
 
     ONEPARAM("cond");
-				/* must check for QUOTES in list */
+/* FIXME: must check for QUOTES in list */
     LIST("cond");
     CHECKEMPTYLIST(stk->u.lis,"cond");
     my_dump = stk->u.lis;
@@ -3146,7 +3073,7 @@ PRIVATE void cond_()
 {
     int result = 0;
     ONEPARAM("cond");
-				/* must check for QUOTES in list */
+/* FIXME: must check for QUOTES in list */
     LIST("cond");
     CHECKEMPTYLIST(stk->u.lis,"cond");
     SAVESTACK;
@@ -3613,21 +3540,12 @@ PRIVATE void primrec_()
     stk = stk->next->next->next;
     switch (SAVED3->op)
       { case LIST_:
-#ifdef CORRECT_PRIMREC
 	  { dump1 = newnode(LIST_,SAVED3->u,dump1);
 	    while (DMP1 != NULL)
 	      { stk = newnode(DMP1->op,DMP1->u,stk);
 		DMP1 = DMP1->next;
-#else
-	  { Node *current = SAVED3->u.lis;
-	    while (current != NULL)
-	      { stk = newnode(current->op,current->u,stk);
-		current = current->next;
-#endif
 		n++; }
-#ifdef CORRECT_PRIMREC
 	    POP(dump1);
-#endif
 	    break; }
 	case STRING_:
 	  { char *s;
@@ -3696,9 +3614,7 @@ PRIVATE void tailrec_()
     Node *first, *second, *third;
 
     THREEPARAMS("tailrec");
-#ifdef TAILREC_CHECK_QUOTES
     THREEQUOTES("tailrec");
-#endif
     third = stk->u.lis;
     stk = stk->next;
     second = stk->u.lis;
@@ -3711,9 +3627,7 @@ PRIVATE void tailrec_()
 PRIVATE void tailrec_()
 {
     THREEPARAMS("tailrec");
-#ifdef TAILREC_CHECK_QUOTES
     THREEQUOTES("tailrec");
-#endif
     SAVESTACK;
     stk = SAVED4;
     tailrecaux();
@@ -4251,27 +4165,17 @@ D(	printf("treerecaux: stack = "); )
 D(	writeterm(stk, stdout); printf("\n"); )
 	exeterm(stk->u.lis->u.lis->next); }
     else
-#ifdef CORRECT_TREEREC_AUX
       { dump1 = newnode(LIST_,stk->u,dump1);
-#else
-      { Node *n = stk;
-#endif
 	POP(stk);
-#ifdef CORRECT_TREEREC_AUX
 	exeterm(DMP1->u.lis);
 	POP(dump1); }
-#else
-	exeterm(n->u.lis->u.lis); }
-#endif
 }
 #endif
 
 PRIVATE void treerec_()
 {
     THREEPARAMS("treerec");
-#ifdef TREEREC_CHECK_QUOTES
     TWOQUOTES("treerec");
-#endif
     cons_();
 D(  printf("deep: stack = "); writeterm(stk, stdout); printf("\n"); )
     treerecaux();
@@ -4363,27 +4267,17 @@ D(  writeterm(stk, stdout); printf("\n"); )
 	cons_();
 	exeterm(stk->u.lis->u.lis->next->next); } /*	[C]	*/
     else
-#ifdef CORRECT_TREEGENREC_AUX
       { dump1 = newnode(LIST_,stk->u,dump1);
-#else
-      { Node *n = stk;
-#endif
 	POP(stk);
-#ifdef CORRECT_TREEGENREC_AUX
 	exeterm(DMP1->u.lis);
 	POP(dump1); }
-#else
-	exeterm(n->u.lis->u.lis); }		/*	[O1]	*/
-#endif
 }
 #endif
 
 PRIVATE void treegenrec_()
 {					/* T [O1] [O2] [C]	*/
     FOURPARAMS("treegenrec");
-#ifdef TREEGENREC_CHECK_QUOTES
     THREEQUOTES("treegenrec");
-#endif
     cons_(); cons_();
 D(  printf("treegenrec: stack = "); writeterm(stk, stdout); printf("\n"); )
     treegenrecaux();
@@ -4498,11 +4392,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 "Pushes value of echo flag, I = 0..3."},
 
 {"clock",		clock_,		"->  I",
-#ifdef CORRECT_CLOCK_SECONDS
 "Pushes the integer value of current CPU usage in milliseconds."},
-#else
-"Pushes the integer value of current CPU usage in hundreds of a second."},
-#endif
 
 {"time",		time_,		"->  I",
 "Pushes the current time (in seconds since the Epoch)."},
@@ -4521,7 +4411,6 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 
 {"stderr",		stderr_,	"->  S",
 "Pushes the standard error stream."},
-
 
 /* OPERATORS */
 
@@ -4676,18 +4565,10 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 "I is an integer equal to the float F truncated toward zero."},
 
 {"localtime",		localtime_,	"I  ->  T",
-#ifdef CORRECT_TIME_LIST
 "Converts a time I into a list T representing local time:\n[year month day hour minute second isdst yearday weekday].\nMonth is 1 = January ... 12 = December;\nisdst is a Boolean flagging daylight savings/summer time;\nweekday is 1 = Monday ... 7 = Sunday."},
-#else
-"Converts a time I into a list T representing local time:\n[year month day hour minute second isdst yearday weekday].\nMonth is 1 = January ... 12 = December;\nisdst is a Boolean flagging daylight savings/summer time;\nweekday is 0 = Monday ... 7 = Sunday."},
-#endif
 
 {"gmtime",		gmtime_,	"I  ->  T",
-#ifdef CORRECT_TIME_LIST
 "Converts a time I into a list T representing universal time:\n[year month day hour minute second isdst yearday weekday].\nMonth is 1 = January ... 12 = December;\nisdst is false; weekday is 1 = Monday ... 7 = Sunday."},
-#else
-"Converts a time I into a list T representing universal time:\n[year month day hour minute second isdst yearday weekday].\nMonth is 1 = January ... 12 = December;\nisdst is false; weekday is 0 = Monday ... 7 = Sunday."},
-#endif
 
 {"mktime",		mktime_,	"T  ->  I",
 "Converts a list T representing local time into a time I.\nT is in the format generated by localtime."},
@@ -4755,11 +4636,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 "A list of integers are written as bytes to the current position of stream S."},
 
 {"fremove",		fremove_,	"P  ->  B",
-#ifdef CORRECT_HELP_FREMOVE
 "The file system object with pathname P is removed from the file system.\nB is a boolean indicating success or failure."},
-#else
-"The file system object with pathname P is removed from the file system.\n is a boolean indicating success or failure."},
-#endif
 
 {"frename",		frename_,	"P1 P2  ->  B",
 "The file system object with pathname P1 is renamed to P2.\nB is a boolean indicating success or failure."},
@@ -4776,11 +4653,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"fputstring",		fputchars_,	"S \"abc..\"  ->  S",
 "== fputchars, as a temporary alternative."},
 
-#ifdef CORRECT_FSEEK_MANUAL
 {"fseek",		fseek_,		"S P W  ->  S B",
-#else
-{"fseek",		fseek_,		"S P W  ->  S",
-#endif
 "Stream S is repositioned to position P relative to whence-point W,\nwhere W = 0, 1, 2 for beginning, current position, end respectively."},
 
 {"ftell",		ftell_,		"S  ->  S I",
@@ -4928,11 +4801,7 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 "Saves X, executes P, pushes X back."},
 
 {"app1",		app1_,		"X [P]  ->  R",
-#ifdef CORRECT_APP1_DOC
-"Executes P, pushes result R on stack with X."},
-#else
-"Executes P, pushes result R on stack without X."},
-#endif
+"Executes P, pushes result R on stack."},
 
 {"app11",		app11_,		"X Y [P]  ->  R",
 "Executes P, pushes result R on stack."},
@@ -5018,26 +4887,14 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {"tailrec",		tailrec_,	"[P] [T] [R1]  ->  ...",
 "Executes P. If that yields true, executes T.\nElse executes R1, recurses."},
 
-#ifdef CORRECT_BINREC_HELP
 {"binrec",		binrec_,	"[P] [T] [R1] [R2]  ->  ...",
-#else
-{"binrec",		binrec_,	"[B] [T] [R1] [R2]  ->  ...",
-#endif
 "Executes P. If that yields true, executes T.\nElse uses R1 to produce two intermediates, recurses on both,\nthen executes R2 to combines their results."},
 
 {"genrec",		genrec_,	"[B] [T] [R1] [R2]  ->  ...",
-#ifdef CORRECT_GENREC_HELP
 "Executes B, if that yields true executes T.\nElse executes R1 and then [[[B] [T] [R1] R2] genrec] R2."},
-#else
-"Executes B, if that yields true executes T.\nElse executes R1 and then [[B] [T] [R1] [R2] genrec] R2."},
-#endif
 
 {"condnestrec",		condnestrec_,	"[ [C1] [C2] .. [D] ]  ->  ...",
-#ifdef HELP_CONDNESTREC
 "A generalisation of condlinrec.\nEach [Ci] is of the form [[B] [R1] [R2] .. [Rn]] and [D] is of the form\n[[R1] [R2] .. [Rn]]. Tries each B, or if all fail, takes the default [D].\nFor the case taken, executes each [Ri] but recurses between any two\nconsecutive [Ri]. (n > 3 would be exceptional.)"},
-#else
-"A generalisation of condlinrec. Each [Ci] is of the form [[B] [R1] [R2] .. [Rn]] and [D] is of the form [[R1] [R2] .. [Rn]]. Tries each B, or if all fail, takes the default [D]. For the case taken, executes each [Ri] but recurses between any two consecutive [Ri]. (n > 3 would be exceptional.)"},
-#endif
 
 {"condlinrec",		condlinrec_,	"[ [C1] [C2] .. [D] ]  ->  ...",
 "Each [Ci] is of the forms [[B] [T]] or [[B] [R1] [R2]].\nTries each B. If that yields true and there is just a [T], executes T and exit.\nIf there are [R1] and [R2], executes R1, recurses, executes R2.\nSubsequent cases are ignored. If no B yields true, then [D] is used.\nIt is then of the forms [[T]] or [[R1] [R2]]. For the former, executes T.\nFor the latter executes R1, recurses, executes R2."},
@@ -5076,18 +4933,10 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 "Recursively traverses leaves of tree T, executes P for each leaf."},
 
 {"treerec",		treerec_,	"T [O] [C]  ->  ...",
-#ifdef CORRECT_TREEREC_HELP
 "T is a tree. If T is a leaf, executes O. Else executes [[[O] C] treerec] C."},
-#else
-"T is a tree. If T is a leaf, executes O. Else executes [[O] [C] treerec] C."},
-#endif
 
 {"treegenrec",		treegenrec_,	"T [O1] [O2] [C]  ->  ...",
-#ifdef CORRECT_TREEGENREC_HELP
 "T is a tree. If T is a leaf, executes O1.\nElse executes O2 and then [[[O1] [O2] C] treegenrec] C."},
-#else
-"T is a tree. If T is a leaf, executes O1.\nElse executes O2 and then [[O1] [O2] [C] treegenrec] C."},
-#endif
 
 /* MISCELLANEOUS */
 
@@ -5171,12 +5020,12 @@ static struct {char *name; void (*proc) (); char *messg1, *messg2 ; }
 {0, dummy_, "->","->"}
 };
 
-PUBLIC void inisymboltable(void)		/* initialise		*/
+PUBLIC void inisymboltable()		/* initialise		*/
 {
     int i;
     symtabindex = symtab;
     for (i = 0; i < HASHSIZE; hashentry[i++] = symtab) ;
-#ifdef ORIGINAL_JOY
+#if 0
     localentry = symtab;
 #endif
     for (i = 0; optable[i].name; i++)
@@ -5206,7 +5055,6 @@ PRIVATE void helpdetail_()
 	    writeterm(n->u.ent->u.body, stdout);
 	    printf("\n"); break; }
 	else
-#ifdef CORRECT_HELPDETAIL
 	{ Operator op;
 	  if ((op = n->op) == BOOLEAN_)
 	      op = n->u.num ? TRUE_ : FALSE_;
@@ -5217,12 +5065,6 @@ PRIVATE void helpdetail_()
 		optable[ (int) op].messg1,
 		optable[ (int) op].messg2);
 	}
-#else
-	    printf("%s        :   %s.\n%s\n",
-		optable[ (int) n->op].name,
-		optable[ (int) n->op].messg1,
-		optable[ (int) n->op].messg2);
-#endif
 	printf("\n");
 	n = n->next; }
     POP(stk);
@@ -5230,7 +5072,6 @@ PRIVATE void helpdetail_()
 #define PLAIN (style == 0)
 #define HTML (style == 1)
 #define LATEX (style == 2)
-#ifdef CORRECT_HEADERS
 #define HEADER(N,NAME,HEAD)					\
     if (strcmp(N,NAME) == 0)					\
       { printf("\n\n");						\
@@ -5240,15 +5081,6 @@ PRIVATE void helpdetail_()
 	if (LATEX) printf("} ---] \\verb# #");			\
 	if (HTML) printf("</B><BR><BR>");			\
 	printf("\n\n"); }
-#else
-#define HEADER(N,NAME,HEAD)					\
-    if (strcmp(N,NAME) == 0)					\
-      { printf("\n\n");						\
-        if (LATEX) printf("\\item[--- \\BX{");			\
-	printf("%s",HEAD);					\
-	if (LATEX) printf("} ---] \\verb# #");			\
-	printf("\n\n"); }
-#endif
 
 PRIVATE void make_manual(int style /* 0=plain, 1=HTML, 2=Latex */)
 {
@@ -5285,7 +5117,7 @@ PRIVATE void make_manual(int style /* 0=plain, 1=HTML, 2=Latex */)
     if (HTML) printf("\n</DL>\n</HTML>\n");
 }
 
-#if defined(SINGLE) || defined(ORIGINAL_JOY)
+#ifdef SINGLE
 PRIVATE void manual_list_()
 {
     int i = -1;

@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(Joy VERSION 1.0)
 set(CMAKE_BUILD_TYPE Debug)
-add_definitions(-DGC_NOT_DLL -D_CRT_SECURE_NO_WARNINGS -DGC_BDW -DBIT_32)
+add_definitions(-DGC_NOT_DLL -D_CRT_SECURE_NO_WARNINGS -DGC_BDW)
 if(WIN32)
 else()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 --coverage -fprofile-arcs -ftest-coverage") # debug, no optimization

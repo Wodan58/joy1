@@ -2,7 +2,7 @@
 /*
  *  module  : scan.c
  *  version : 1.15
- *  date    : 02/24/19
+ *  date    : 05/30/19
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,13 +25,10 @@ static int ilevel = 0;
 static int linenumber = 0;
 static char linbuf[INPLINEMAX + 1];
 static int linelength = 0, currentcolumn = 0;
-#ifndef REMOVE_UNUSED_ERRORCOUNT
+#if 0
 static int errorcount = 0;
 #endif
 static int ch = ' ';
-#if defined(GET_FROM_STDIN) || defined(FGET_FROM_FILE)
-static int get_from_stdin = 0;
-#endif
 
 /*
  *  inilinebuffer
@@ -63,7 +60,7 @@ PRIVATE void putline(void)
     putchar('\n');
 }
 
-PRIVATE void getch()
+PRIVATE void getch(void)
 {
     if (currentcolumn == linelength) {
 #ifdef USE_SHELL_ESCAPE
@@ -111,7 +108,7 @@ PUBLIC void error(char *message)
 	else
 	    putchar(' ');
     printf("^\n\t%s\n", message);
-#ifndef REMOVE_UNUSED_ERRORCOUNT
+#if 0
     errorcount++;
 #endif
 }
@@ -135,17 +132,14 @@ PUBLIC int doinclude(char *filnam)
     return -1; /* not reached */
 }
 
-#if defined(GET_FROM_STDIN) || defined(FGET_FROM_FILE)
+#ifdef FGET_FROM_FILE
 PUBLIC void redirect(FILE *fp)
 {
-    if (infile[ilevel].fp != fp && !get_from_stdin) {
-	get_from_stdin = fp == stdin;
-	if (ilevel+1 == INPSTACKMAX)
-	    execerror("fewer include files", "redirect");
-	infile[++ilevel].fp = fp;
-	infile[ilevel].name = 0;
-	infile[ilevel].linenum = 0;
-    }
+    if (ilevel+1 == INPSTACKMAX)
+	execerror("fewer include files", "redirect");
+    infile[++ilevel].fp = fp;
+    infile[ilevel].name = 0;
+    infile[ilevel].linenum = 0;
 }
 #endif
 
@@ -162,7 +156,7 @@ char *my_strdup(char *str)
 }
 #endif
 
-PRIVATE int specialchar()
+PRIVATE int specialchar(void)
 {
     getch();
     switch (ch) {

@@ -1,11 +1,13 @@
 /* FILE: globals.h */
 /*
  *  module  : globals.h
- *  version : 1.14
- *  date    : 04/20/19
+ *  version : 1.16
+ *  date    : 05/31/19
  */
 #ifndef GLOBALS_H
 #define GLOBALS_H
+
+#define BIT_32
 
 #ifdef _MSC_VER
 #pragma warning( disable : 4267 )
@@ -17,6 +19,11 @@
 */
 #define SINGLE
 #define MAKE_CONTS_OBSOLETE
+#else
+/*
+    The following #defines are only available when GC_BDW is not defined.
+*/
+#define ENABLE_TRACEGC
 #endif
 
 #ifndef BIT_32
@@ -56,7 +63,48 @@ CLOSE_INCLUDE_FILES
 CORRECT_GETENV
 RESUME_EARLIER_LINENUM
 CHECK_QUOTE_IN_SPLIT
+CORRECT_HELPDETAIL
 CHECK_QUOTES_IN_PRIMREC
+CORRECT_HEADERS
+HELP_CONDNESTREC
+CORRECT_BINREC_HELP
+CORRECT_FSEEK_MANUAL
+CORRECT_HELP_FREMOVE
+CORRECT_CLOCK_SECONDS
+CORRECT_TIME_LIST
+CORRECT_APP1_DOC
+CORRECT_GENREC_HELP
+CORRECT_TREEREC_HELP
+CORRECT_TREEGENREC_HELP
+CORRECT_MODF_CHECK
+CORRECT_FORMATF_MESSAGE
+TAILREC_CHECK_QUOTES
+TREEREC_CHECK_QUOTES
+TREEGENREC_CHECK_QUOTES
+CORRECT_FIVE_PARAMS
+CORRECT_INTERN_STRCPY
+CORRECT_NEG_INTEGER
+CORRECT_STRFTIME_BUF
+CORRECT_FGETS
+CORRECT_TAKE_STRING
+CORRECT_STRING_CONCAT
+CORRECT_NOT_FOR_LIST
+CORRECT_SIZE_CHECK
+SECURE_PUTCHARS
+CORRECT_PRIMREC
+CORRECT_TREEGENREC_AUX
+CORRECT_TREEREC_AUX
+CHECK_EMPTY_STACK
+CORRECT_NULL_CASES
+*/
+/*
+    The following #defines are not present in the source code.
+    They have not been accepted.
+
+CORRECT_FLOAT_BUFFER
+GET_FROM_STDIN
+ORIGINAL_JOY
+REMOVE_UNUSED_ERRORCOUNT
 */
 /*
     The following #defines are present in the source code.
@@ -65,71 +113,35 @@ CHECK_QUOTES_IN_PRIMREC
 CORRECT_INHAS_COMPARE
 USE_UNKNOWN_SYMBOLS
 TRACK_USED_SYMBOLS
+NOT_ALSO_FOR_FLOAT
+NOT_ALSO_FOR_FILE
+CHECK_END_SYMBOL
 */
 /*
     The following #defines are present in the source code.
     They have been accepted.
 */
-#define CORRECT_FIVE_PARAMS
-#define GET_FROM_STDIN
-#define CORRECT_TAKE_STRING
-#define CORRECT_FREAD_PARAM
-#define CORRECT_NEG_INTEGER
-#define CHECK_EMPTY_STACK
-#define CORRECT_FLOAT_BUFFER
-#define HELP_CONDNESTREC
-#define SAMETYPE_BUILTIN
-#define CORRECT_HEADERS
-#define CORRECT_TIME_LIST
-#define CORRECT_HELP_FREMOVE
-#define CORRECT_BINREC_HELP
-#define SECURE_PUTCHARS
-#define GETCH_AS_BUILTIN
-#define CORRECT_INTERN_STRCPY
-#define CORRECT_INTERN_LOOKUP
-#define CORRECT_TYPE_COMPARE
 #define FGET_FROM_FILE
-#define CORRECT_STRFTIME_BUF
-#define CORRECT_MODF_CHECK
-#define CORRECT_APP1_DOC
-#define CORRECT_GENREC_HELP
-#define CORRECT_TREEREC_HELP
-#define CORRECT_TREEGENREC_HELP
-#define CORRECT_TREEREC_AUX
-#define CORRECT_TREEGENREC_AUX
-#define CORRECT_PRIMREC
+#define SAMETYPE_BUILTIN
+#define GETCH_AS_BUILTIN
+#define CORRECT_TYPE_COMPARE
 #define CORRECT_CASE_COMPARE
-#define CORRECT_CLOCK_SECONDS
-#define NOT_ALSO_FOR_FLOAT
-#define NOT_ALSO_FOR_FILE
-#define CORRECT_NOT_FOR_LIST
-#define CORRECT_NULL_CASES
-#define TAILREC_CHECK_QUOTES
-#define TREEREC_CHECK_QUOTES
-#define TREEGENREC_CHECK_QUOTES
+#define ONLY_LOGICAL_NOT
+#define CORRECT_FREAD_PARAM
+#define CORRECT_INTERN_LOOKUP
 #define REST_OF_UNIX_ESCAPES
-#define CORRECT_HELPDETAIL
 #define CORRECT_ALEN
 #define NO_HELP_LOCAL_SYMBOLS
-#define TYPED_NODES
-#define CORRECT_STRING_CONCAT
-#define CORRECT_SIZE_CHECK
-#define CORRECT_FORMATF_MESSAGE
-#define CORRECT_FGETS
-#define REMOVE_UNUSED_ERRORCOUNT
-#define CORRECT_FSEEK_MANUAL
 /*
     The following #defines are present in the source code.
     They have been accepted.
 */
 #define USE_SHELL_ESCAPE
-#define ENABLE_TRACEGC
 #define RUNTIME_CHECKS
 				/* configure			*/
 #define SHELLESCAPE	'$'
 #define INPSTACKMAX	10
 #define INPLINEMAX	1024
-#define FLOAT_BUFFER	320
 #ifdef CORRECT_ALEN
 #define ALEN		22
 #else
@@ -167,11 +179,9 @@ TRACK_USED_SYMBOLS
 #define LIST_		9
 #define FLOAT_		10
 #define FILE_		11
-#ifdef CORRECT_HELPDETAIL
 #define FALSE_		12
 #define TRUE_		13
 #define MAXINT_		14
-#endif
 #define LBRACK		900
 #define LBRACE		901
 #define LPAREN		902
@@ -196,7 +206,7 @@ TRACK_USED_SYMBOLS
 #    define D(x)
 #endif
 
-#ifdef ORIGINAL_JOY
+#if 0
 #define PRIVATE		static
 #else
 #define PRIVATE
@@ -226,9 +236,6 @@ typedef union
 typedef struct Node
   { Types u;
     Operator op;
-#ifdef TYPED_NODES
-    Operator type;
-#endif
     struct Node *next; } Node;
 
 typedef struct Entry
@@ -284,7 +291,7 @@ CLASS int display_lookup;
 CLASS Entry					/* symbol table	*/
     symtab[SYMTABMAX],
     *hashentry[HASHSIZE],
-#ifdef ORIGINAL_JOY
+#if 0
     *localentry,
 #endif
     *symtabindex,
@@ -325,7 +332,7 @@ CLASS Node				/* dynamic memory	*/
 */
 
 /* Public procedures: */
-#ifdef ORIGINAL_JOY
+#if 0
 PUBLIC void stack_(void);
 PUBLIC void dummy_(void);
 #endif
@@ -353,7 +360,7 @@ PUBLIC void readterm(void);
 PUBLIC void writefactor(Node *n, FILE *stm);
 PUBLIC void writeterm(Node *n, FILE *stm);
 
-#if defined(GET_FROM_STDIN) || defined(FGET_FROM_FILE)
+#ifdef FGET_FROM_FILE
 PUBLIC void redirect(FILE *);
 #endif
 

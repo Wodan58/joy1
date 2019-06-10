@@ -1,8 +1,8 @@
 /* FILE: main.c */
 /*
  *  module  : main.c
- *  version : 1.13
- *  date    : 02/24/19
+ *  version : 1.14
+ *  date    : 05/30/19
  */
 
 /*
@@ -129,7 +129,7 @@ char *my_strdup(char *str);
 #define strdup my_strdup
 #endif
 
-PRIVATE void enterglobal()
+PRIVATE void enterglobal(void)
 {
     if (symtabindex - symtab >= SYMTABMAX)
 	execerror("index", "symbols");
@@ -167,7 +167,7 @@ D(  printf("%s  hashes to %d\n", ident, hashvalue); )
 }
 
 #ifdef USE_UNKNOWN_SYMBOLS
-PRIVATE void detachatom()
+PRIVATE void detachatom(void)
 {
     Entry *cur, *prev;
 
@@ -184,7 +184,7 @@ PRIVATE void detachatom()
 }
 #endif
 
-PRIVATE void enteratom()
+PRIVATE void enteratom(void)
 {
 #ifdef USE_UNKNOWN_SYMBOLS
     lookup();
@@ -224,10 +224,10 @@ D(  printf("hidden definition '%s' at %p\n",ident,(void *)LOC2INT(location)); )
 #endif
 }
 
-PRIVATE void defsequence();		/* forward */
-PRIVATE void compound_def();		/* forward */
+PRIVATE void defsequence(void);		/* forward */
+PRIVATE void compound_def(void);	/* forward */
 
-PRIVATE void definition()
+PRIVATE void definition(void)
 {
     Entry *here = NULL;
 
@@ -270,7 +270,7 @@ D(  printf("\n"); )
     stk = stk->next;
 }
 
-PRIVATE void defsequence()
+PRIVATE void defsequence(void)
 {
     definition();
     while (symb == SEMICOL) {
@@ -279,13 +279,13 @@ PRIVATE void defsequence()
     }
 }
 
-PRIVATE void enterdisplay()
+PRIVATE void enterdisplay(void)
 {
     if (++display_enter >= DISPLAYMAX)
 	execerror("index", "display");
 }
 
-PRIVATE void compound_def()
+PRIVATE void compound_def(void)
 {
     Entry *here = NULL, *oldplace;
 
@@ -486,11 +486,9 @@ D(  printf("program is: "); writeterm(stk->u.lis, stdout); printf("\n"); )
 		stk = stk->next;
 	    }
 	}
-	if (symb != END && symb != PERIOD) {
+#ifdef CHECK_END_SYMBOL
+	if (symb != END && symb != PERIOD)
 	    error(" END or period '.' expected");
-	    do
-		getsym();
-	    while (symb != END && symb != PERIOD);
-	}
+#endif
     }
 }
