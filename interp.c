@@ -1,7 +1,7 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.21
+ *  version : 1.22
  *  date    : 06/10/19
  */
 
@@ -2727,7 +2727,7 @@ PRIVATE void app11_(void)
 {
     THREEPARAMS("app11");
     ONEQUOTE("app11");
-    app1_(void);
+    app1_();
     stk->next = stk->next->next;
 }
 
@@ -2881,7 +2881,7 @@ PRIVATE void app12_(void)
 {
     /*   X  Y  Z  [P]  app12  */
     THREEPARAMS("app12");
-    unary2_(void);
+    unary2_();
     stk->next->next = stk->next->next->next;	/* delete X */
 }
 
@@ -3071,8 +3071,8 @@ PRIVATE void step_(void)
 PRIVATE void fold_(void)
 {
     THREEPARAMS("fold");
-    swapd_(void);
-    step_(void);
+    swapd_();
+    step_();
 }
 
 #ifdef SINGLE
@@ -4176,7 +4176,7 @@ PRIVATE void treerecaux(void)
 {
     if (stk->next->op == LIST_)
       { NULLARY(LIST_NEWNODE,ANON_FUNCT_NEWNODE(treerecaux,NULL));
-	cons_(void);		/*  D  [[[O] C] ANON_FUNCT_]	*/
+	cons_();		/*  D  [[[O] C] ANON_FUNCT_]	*/
 D(	printf("treerecaux: stack = "); )
 D(	writeterm(stk, stdout); printf("\n"); )
 	exeterm(stk->u.lis->u.lis->next); }
@@ -4190,7 +4190,7 @@ PRIVATE void treerecaux(void)
 {
     if (stk->next->op == LIST_)
       { NULLARY(LIST_NEWNODE,ANON_FUNCT_NEWNODE(treerecaux,NULL));
-	cons_(void);		/*  D  [[[O] C] ANON_FUNCT_]	*/
+	cons_();		/*  D  [[[O] C] ANON_FUNCT_]	*/
 D(	printf("treerecaux: stack = "); )
 D(	writeterm(stk, stdout); printf("\n"); )
 	exeterm(stk->u.lis->u.lis->next); }
@@ -4206,7 +4206,7 @@ PRIVATE void treerec_(void)
 {
     THREEPARAMS("treerec");
     TWOQUOTES("treerec");
-    cons_(void);
+    cons_();
 D(  printf("deep: stack = "); writeterm(stk, stdout); printf("\n"); )
     treerecaux();
 }
@@ -4230,7 +4230,7 @@ D(  writeterm(stk, stdout); printf("\n"); )
       { exeterm(program->u.lis->next->next->u.lis); /*	[R1]	*/
 	NULLARY(LIST_NEWNODE,program->u.lis);
 	NULLARY(LIST_NEWNODE,ANON_FUNCT_NEWNODE(genrecaux,NULL));
-	cons_(void);
+	cons_();
 	exeterm(program->u.lis->next->next->next); } /*   [R2]	*/
 }
 #else
@@ -4250,7 +4250,7 @@ D(  writeterm(stk, stdout); printf("\n"); )
       { exeterm(SAVED1->u.lis->next->next->u.lis); /*	[R1]	*/
 	NULLARY(LIST_NEWNODE,SAVED1->u.lis);
 	NULLARY(LIST_NEWNODE,ANON_FUNCT_NEWNODE(genrecaux,NULL));
-	cons_(void);
+	cons_();
 	exeterm(SAVED1->u.lis->next->next->next); } /*   [R2]	*/
     POP(dump);
 }
@@ -4277,7 +4277,7 @@ D(  writeterm(stk, stdout); printf("\n"); )
 	exeterm(save->u.lis->next->u.lis);	/*	[O2]	*/
 	GNULLARY(save->op,save->u);
 	NULLARY(LIST_NEWNODE,ANON_FUNCT_NEWNODE(treegenrecaux,NULL));
-	cons_(void);
+	cons_();
 	exeterm(stk->u.lis->u.lis->next->next); /*	[C]	*/
     } else
 	exeterm(save->u.lis->u.lis);		/*	[O1]	*/
@@ -4294,7 +4294,7 @@ D(  writeterm(stk, stdout); printf("\n"); )
 	GNULLARY(SAVED1->op,SAVED1->u);
 	POP(dump);				/*   end DIP	*/
 	NULLARY(LIST_NEWNODE,ANON_FUNCT_NEWNODE(treegenrecaux,NULL));
-	cons_(void);
+	cons_();
 	exeterm(stk->u.lis->u.lis->next->next); } /*	[C]	*/
     else
       { dump1 = newnode(LIST_,stk->u,dump1);

@@ -1,10 +1,8 @@
-2do
+*.o
+SCCS
 bdwgc
 *.cmake
-CMakeFiles
-CMakeCache.txt
 Makefile
 demo*.txt
-*.o
-test
-SCCS
+CMakeFiles
+CMakeCache.txt
