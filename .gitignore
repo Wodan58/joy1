@@ -1,8 +1,9 @@
-*.o
-SCCS
 bdwgc
-*.cmake
-Makefile
-demo*.txt
-CMakeFiles
 CMakeCache.txt
+CMakeFiles
+cmake_install.cmake
+demo*.txt
+joy
+Makefile
+SCCS
+test*.txt

@@ -1,8 +1,8 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.22
- *  date    : 06/10/19
+ *  version : 1.23
+ *  date    : 07/13/19
  */
 
 /*
@@ -47,7 +47,6 @@
 #    define realloc GC_realloc
 #    define free(X)
 # endif
-
 
 PRIVATE void helpdetail_(void);		/* this file		*/
 PRIVATE void undefs_(void);
@@ -284,7 +283,7 @@ PUSH(conts_,LIST_NEWNODE,LIST_NEWNODE(conts->u.lis->next,conts->next))
 #endif
 PUSH(symtabindex_,INTEGER_NEWNODE,(long)LOC2INT(symtabindex))
 /* FIXME: Use /dev/random on Unix or CryptGenRandom on Windows */
-PUSH(rand_, INTEGER_NEWNODE, (long)rand())
+PUSH(rand_,INTEGER_NEWNODE,(long)rand())
 /* this is now in utils.c
 PUSH(memoryindex_,INTEGER_NEWNODE,MEM2INT(memoryindex))
 */
@@ -1184,7 +1183,7 @@ PRIVATE double Compare(Node *first, Node *second, int *error)
 	case LIST_    :
 	case FLOAT_   :
 	case FILE_    : break;
-	default       : return strcmp(opername(first->op),opername(second->op));
+	default       : return strcmp(opername(first->op), opername(second->op));
 	}
 	break;
     }
@@ -4705,7 +4704,7 @@ static struct {char *name; void (*proc)(void); char *messg1, *messg2 ; }
 "R is the non-empty aggregate A with its first member removed."},
 
 {"compare",		compare_,	"A B  ->  I",
-"I (=-1,0,+1) is the comparison of aggregates A and B.\nThe values correspond to the predicates <=, =, >=."},
+"I (=-1,0,+1) is the comparison of aggregates A and B.\nThe values correspond to the predicates <, =, >."},
 
 {"at",			at_,		"A I  ->  X",
 "X (= A[I]) is the member of A at position I."},
@@ -4719,7 +4718,7 @@ static struct {char *name; void (*proc)(void); char *messg1, *messg2 ; }
 {"opcase",		opcase_,	"X [..[X Xs]..]  ->  [Xs]",
 "Indexing on type of X, returns the list [Xs]."},
 
-{"case",		case_,		"X [..[X Y]..]  ->  Y i",
+{"case",		case_,		"X [..[X Y]..]  ->  [Y] i",
 "Indexing on the value of X, execute the matching Y."},
 
 {"uncons",		uncons_,	"A  ->  F R",
@@ -5185,6 +5184,6 @@ PRIVATE void manual_list_(void)
 
 PUBLIC char *opername(int o)
 {
-    return optable[(short)o].name;
+    return optable[o].name;
 }
 /* END of INTERP.C */

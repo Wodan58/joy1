@@ -1,7 +1,7 @@
 # makefile for Joy without BDW gc
 
 CC = gcc
-CFLAGS = -Ofast -Wall -Wextra -Werror -ansi -pedantic -D_C_SOURCE=1
+CFLAGS = -O3 -Wall -Wextra -Werror -ansi -pedantic
 
 HDRS = globals.h
 OBJS = interp.o scan.o utils.o main.o
@@ -9,4 +9,4 @@ OBJS = interp.o scan.o utils.o main.o
 joy:	$(OBJS)
 	$(CC) -o$@ $(OBJS) -lm
 
-$(OBJS):$(HDRS)
+$(OBJS): $(HDRS)

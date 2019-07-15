@@ -1,8 +1,8 @@
 /* FILE: main.c */
 /*
  *  module  : main.c
- *  version : 1.14
- *  date    : 05/30/19
+ *  version : 1.15
+ *  date    : 07/12/19
  */
 
 /*
@@ -121,6 +121,9 @@ Manfred von Thun, 2006
 #include <time.h>
 #define ALLOC
 #include "globals.h"
+#ifdef strdup
+#undef strdup
+#endif
 #ifdef GC_BDW
 #include <gc.h>
 #define strdup GC_strdup
