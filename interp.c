@@ -1,8 +1,8 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.23
- *  date    : 07/13/19
+ *  version : 1.24
+ *  date    : 07/15/19
  */
 
 /*
@@ -2202,7 +2202,7 @@ USETOP( setundeferror_, "setundeferror", NUMERICTYPE, undeferror = stk->u.num )
 USETOP( settracegc_,"settracegc",NUMERICTYPE, tracegc = stk->u.num )
 USETOP( srand_,"srand",INTEGER, srand((unsigned int) stk->u.num) )
 USETOP( include_,"include",STRING, doinclude(stk->u.str) )
-USETOP( system_,"system",STRING, system(stk->u.str) )
+USETOP( system_,"system",STRING, (void)system(stk->u.str) )
 
 #ifdef SINGLE
 PRIVATE void undefs_(void)

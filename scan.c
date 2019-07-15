@@ -1,14 +1,17 @@
 /* FILE: scan.c */
 /*
  *  module  : scan.c
- *  version : 1.15
- *  date    : 05/30/19
+ *  version : 1.16
+ *  date    : 07/15/19
  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include "globals.h"
+#ifdef strdup
+#undef strdup
+#endif
 #ifdef GC_BDW
 #include <gc.h>
 #define strdup GC_strdup
@@ -29,15 +32,6 @@ static int linelength = 0, currentcolumn = 0;
 static int errorcount = 0;
 #endif
 static int ch = ' ';
-
-/*
- *  inilinebuffer
- *  error
- *  doinclude
- *  redirect
- *  HashValue
- *  getsym
- */
 
 PUBLIC void inilinebuffer(char *str)
 {
