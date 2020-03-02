@@ -11,8 +11,8 @@ undefs.
 
 10 [small] [] [pred dup pred] [+] binrec.
 
-true ["true"] ["false"] branch putchars.
-false ["true"] ["false"] branch putchars.
+true ["true\n"] ["false\n"] branch putchars.
+false ["true\n"] ["false\n"] branch putchars.
 
 treesample treeflatten.
 

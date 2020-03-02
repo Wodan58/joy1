@@ -1,15 +1,15 @@
 # makefile for Joy 
 
 CC = gcc
-CFLAGS = -DGC_BDW -Igc/include -O3 -Wall -Wextra -Werror -pthread
+CFLAGS = -DGC_BDW -Ibdwgc/include -O3 -Wall -Wextra -Werror
 
 HDRS = globals.h
 OBJS = interp.o scan.o utils.o main.o
 
-joy:	$(OBJS) gc/libgcmt-lib.a
-	$(CC) -o$@ $(OBJS) -Lgc -lgcmt-lib
+joy:	$(OBJS) bdwgc/libgcmt-lib.a
+	$(CC) -o$@ $(OBJS) -Lbdwgc -lgcmt-lib -lm -pthread
 
 $(OBJS):$(HDRS)
 
-gc/libgcmt-lib.a:
-	cd gc; $(MAKE)
+bdwgc/libgcmt-lib.a:
+	cd bdwgc; $(MAKE)

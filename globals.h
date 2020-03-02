@@ -1,8 +1,8 @@
 /* FILE: globals.h */
 /*
  *  module  : globals.h
- *  version : 1.16
- *  date    : 05/31/19
+ *  version : 1.21
+ *  date    : 03/02/20
  */
 #ifndef GLOBALS_H
 #define GLOBALS_H
@@ -151,7 +151,7 @@ CHECK_END_SYMBOL
 #define SYMTABMAX	1000
 #define DISPLAYMAX	10	/* nesting in HIDE & MODULE	*/
 # ifndef GC_BDW
-#    define MEMORYMAX	20000
+#    define MEMORYMAX	20006
 # else
 #    define MEMORYMAX	0
 # endif
@@ -162,9 +162,11 @@ CHECK_END_SYMBOL
 #ifdef BIT_32
 #define SETSIZE		32
 #define MAXINT		2147483647
+typedef int long_t;
 #else
 #define SETSIZE		64
 #define MAXINT		9223372036854775807LL
+typedef long long long_t;
 #endif
 				/* symbols from getsym		*/
 #define ILLEGAL_	0
@@ -219,13 +221,8 @@ typedef int Symbol;
 typedef short Operator;
 
 typedef union
-#ifdef BIT_32
-      { long num;
-	long set;
-#else
-      {	long long num;
-	long long set;
-#endif
+      { long_t num;
+	long_t set;
 	char *str;
 	double dbl;
 	FILE *fil;
@@ -276,11 +273,7 @@ CLASS int tracegc;
 CLASS int startclock,gc_clock;			/* main		*/
 /* CLASS int ch; */				/* scanner	*/
 CLASS Symbol symb;
-#ifdef BIT_32
-CLASS long numb;
-#else
-CLASS long long numb;
-#endif
+CLASS long_t numb;
 CLASS double dblf;
 CLASS char ident[ALEN];
 CLASS int hashvalue;
@@ -366,14 +359,15 @@ PUBLIC void redirect(FILE *);
 
 PUBLIC void HashValue(char *str);
 
-#define USR_NEWNODE(u,r)	(bucket.ent = u, newnode(USR_, bucket, r))
-#define ANON_FUNCT_NEWNODE(u,r)	(bucket.proc= u, newnode(ANON_FUNCT_,bucket,r))
-#define BOOLEAN_NEWNODE(u,r)	(bucket.num = u, newnode(BOOLEAN_, bucket, r))
-#define CHAR_NEWNODE(u,r)	(bucket.num = u, newnode(CHAR_, bucket, r))
-#define INTEGER_NEWNODE(u,r)	(bucket.num = u, newnode(INTEGER_, bucket, r))
-#define SET_NEWNODE(u,r)	(bucket.num = u, newnode(SET_, bucket, r))
-#define STRING_NEWNODE(u,r)	(bucket.str = u, newnode(STRING_, bucket, r))
-#define LIST_NEWNODE(u,r)	(bucket.lis = u, newnode(LIST_, bucket, r))
-#define FLOAT_NEWNODE(u,r)	(bucket.dbl = u, newnode(FLOAT_, bucket, r))
-#define FILE_NEWNODE(u,r)	(bucket.fil = u, newnode(FILE_, bucket, r))
+#define NEWNODE(o,u,r)		(bucket.lis = newnode(o,u,r), bucket.lis)
+#define USR_NEWNODE(u,r)	(bucket.ent = u, NEWNODE(USR_, bucket, r))
+#define ANON_FUNCT_NEWNODE(u,r)	(bucket.proc= u, NEWNODE(ANON_FUNCT_,bucket,r))
+#define BOOLEAN_NEWNODE(u,r)	(bucket.num = u, NEWNODE(BOOLEAN_, bucket, r))
+#define CHAR_NEWNODE(u,r)	(bucket.num = u, NEWNODE(CHAR_, bucket, r))
+#define INTEGER_NEWNODE(u,r)	(bucket.num = u, NEWNODE(INTEGER_, bucket, r))
+#define SET_NEWNODE(u,r)	(bucket.num = u, NEWNODE(SET_, bucket, r))
+#define STRING_NEWNODE(u,r)	(bucket.str = u, NEWNODE(STRING_, bucket, r))
+#define LIST_NEWNODE(u,r)	(bucket.lis = u, NEWNODE(LIST_, bucket, r))
+#define FLOAT_NEWNODE(u,r)	(bucket.dbl = u, NEWNODE(FLOAT_, bucket, r))
+#define FILE_NEWNODE(u,r)	(bucket.fil = u, NEWNODE(FILE_, bucket, r))
 #endif

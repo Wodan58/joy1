@@ -1,8 +1,8 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.24
- *  date    : 07/15/19
+ *  version : 1.26
+ *  date    : 02/28/20
  */
 
 /*
@@ -266,11 +266,11 @@ PRIVATE void PROCEDURE(void)					\
 #if 0
 PUSH(true_,BOOLEAN_NEWNODE,1L)				/* constants	*/
 PUSH(false_,BOOLEAN_NEWNODE,0L)
-PUSH(maxint_,INTEGER_NEWNODE,(long)MAXINT)
+PUSH(maxint_,INTEGER_NEWNODE,(long_t)MAXINT)
 #endif
-PUSH(setsize_,INTEGER_NEWNODE,(long)SETSIZE)
-PUSH(symtabmax_,INTEGER_NEWNODE,(long)SYMTABMAX)
-PUSH(memorymax_,INTEGER_NEWNODE,(long)MEMORYMAX)
+PUSH(setsize_,INTEGER_NEWNODE,(long_t)SETSIZE)
+PUSH(symtabmax_,INTEGER_NEWNODE,(long_t)SYMTABMAX)
+PUSH(memorymax_,INTEGER_NEWNODE,(long_t)MEMORYMAX)
 PUSH(stdin_, FILE_NEWNODE, stdin)
 PUSH(stdout_, FILE_NEWNODE, stdout)
 PUSH(stderr_, FILE_NEWNODE, stderr)
@@ -281,18 +281,18 @@ PUSH(conts_,LIST_NEWNODE,0)
 PUSH(dump_,LIST_NEWNODE,dump)				/* variables	*/
 PUSH(conts_,LIST_NEWNODE,LIST_NEWNODE(conts->u.lis->next,conts->next))
 #endif
-PUSH(symtabindex_,INTEGER_NEWNODE,(long)LOC2INT(symtabindex))
+PUSH(symtabindex_,INTEGER_NEWNODE,(long_t)LOC2INT(symtabindex))
 /* FIXME: Use /dev/random on Unix or CryptGenRandom on Windows */
-PUSH(rand_,INTEGER_NEWNODE,(long)rand())
+PUSH(rand_,INTEGER_NEWNODE,(long_t)rand())
 /* this is now in utils.c
 PUSH(memoryindex_,INTEGER_NEWNODE,MEM2INT(memoryindex))
 */
-PUSH(echo_,INTEGER_NEWNODE,(long)echoflag)
-PUSH(autoput_,INTEGER_NEWNODE,(long)autoput)
-PUSH(undeferror_,INTEGER_NEWNODE,(long)undeferror)
-PUSH(clock_,INTEGER_NEWNODE,(long)(clock() - startclock))
-PUSH(time_,INTEGER_NEWNODE,(long)time(NULL))
-PUSH(argc_,INTEGER_NEWNODE,(long)g_argc)
+PUSH(echo_,INTEGER_NEWNODE,(long_t)echoflag)
+PUSH(autoput_,INTEGER_NEWNODE,(long_t)autoput)
+PUSH(undeferror_,INTEGER_NEWNODE,(long_t)undeferror)
+PUSH(clock_,INTEGER_NEWNODE,(long_t)(clock() - startclock))
+PUSH(time_,INTEGER_NEWNODE,(long_t)time(NULL))
+PUSH(argc_,INTEGER_NEWNODE,(long_t)g_argc)
 
 PUBLIC void stack_(void)
 { NULLARY(LIST_NEWNODE, stk); }
@@ -523,10 +523,10 @@ PRIVATE void PROCEDURE(void)					\
     SAME2TYPES(NAME);						\
     switch (stk->next->op)					\
       { case SET_:						\
-	    BINARY(SET_NEWNODE,(long)(stk->next->u.set OPER1 stk->u.set)); \
+	    BINARY(SET_NEWNODE,(long_t)(stk->next->u.set OPER1 stk->u.set)); \
 	    return;						\
 	case BOOLEAN_: case CHAR_: case INTEGER_: case LIST_:	\
-	    BINARY(BOOLEAN_NEWNODE,(long)(stk->next->u.num OPER2 stk->u.num)); \
+	    BINARY(BOOLEAN_NEWNODE,(long_t)(stk->next->u.num OPER2 stk->u.num)); \
 	    return;						\
 	default:						\
 	    BADDATA(NAME); } }
@@ -802,14 +802,14 @@ PRIVATE void PROCEDURE(void)					\
     wday = t->tm_wday;						\
     if (wday == 0) wday = 7;					\
     my_dump = INTEGER_NEWNODE(wday, 0);				\
-    my_dump = INTEGER_NEWNODE((long)t->tm_yday, my_dump);	\
-    my_dump = BOOLEAN_NEWNODE((long)t->tm_isdst, my_dump);	\
-    my_dump = INTEGER_NEWNODE((long)t->tm_sec, my_dump);	\
-    my_dump = INTEGER_NEWNODE((long)t->tm_min, my_dump);	\
-    my_dump = INTEGER_NEWNODE((long)t->tm_hour, my_dump);	\
-    my_dump = INTEGER_NEWNODE((long)t->tm_mday, my_dump);	\
-    my_dump = INTEGER_NEWNODE((long)(t->tm_mon + 1), my_dump);	\
-    my_dump = INTEGER_NEWNODE((long)(t->tm_year + 1900), my_dump);	\
+    my_dump = INTEGER_NEWNODE((long_t)t->tm_yday, my_dump);	\
+    my_dump = BOOLEAN_NEWNODE((long_t)t->tm_isdst, my_dump);	\
+    my_dump = INTEGER_NEWNODE((long_t)t->tm_sec, my_dump);	\
+    my_dump = INTEGER_NEWNODE((long_t)t->tm_min, my_dump);	\
+    my_dump = INTEGER_NEWNODE((long_t)t->tm_hour, my_dump);	\
+    my_dump = INTEGER_NEWNODE((long_t)t->tm_mday, my_dump);	\
+    my_dump = INTEGER_NEWNODE((long_t)(t->tm_mon + 1), my_dump);	\
+    my_dump = INTEGER_NEWNODE((long_t)(t->tm_year + 1900), my_dump);	\
     UNARY(LIST_NEWNODE, my_dump);				\
 }
 #else
@@ -826,14 +826,14 @@ PRIVATE void PROCEDURE(void)					\
     if (wday == 0) wday = 7;					\
     dump1 = LIST_NEWNODE(NULL, dump1);				\
     DMP1 = INTEGER_NEWNODE(wday, DMP1);				\
-    DMP1 = INTEGER_NEWNODE((long)t->tm_yday, DMP1);		\
-    DMP1 = BOOLEAN_NEWNODE((long)t->tm_isdst, DMP1);		\
-    DMP1 = INTEGER_NEWNODE((long)t->tm_sec, DMP1);		\
-    DMP1 = INTEGER_NEWNODE((long)t->tm_min, DMP1);		\
-    DMP1 = INTEGER_NEWNODE((long)t->tm_hour, DMP1);		\
-    DMP1 = INTEGER_NEWNODE((long)t->tm_mday, DMP1);		\
-    DMP1 = INTEGER_NEWNODE((long)(t->tm_mon + 1), DMP1);	\
-    DMP1 = INTEGER_NEWNODE((long)(t->tm_year + 1900), DMP1);	\
+    DMP1 = INTEGER_NEWNODE((long_t)t->tm_yday, DMP1);		\
+    DMP1 = BOOLEAN_NEWNODE((long_t)t->tm_isdst, DMP1);		\
+    DMP1 = INTEGER_NEWNODE((long_t)t->tm_sec, DMP1);		\
+    DMP1 = INTEGER_NEWNODE((long_t)t->tm_min, DMP1);		\
+    DMP1 = INTEGER_NEWNODE((long_t)t->tm_hour, DMP1);		\
+    DMP1 = INTEGER_NEWNODE((long_t)t->tm_mday, DMP1);		\
+    DMP1 = INTEGER_NEWNODE((long_t)(t->tm_mon + 1), DMP1);	\
+    DMP1 = INTEGER_NEWNODE((long_t)(t->tm_year + 1900), DMP1);	\
     UNARY(LIST_NEWNODE, DMP1);					\
     POP(dump1);							\
 }
@@ -874,7 +874,7 @@ PRIVATE void mktime_(void)
     ONEPARAM("mktime");
     LIST("mktime");
     decode_time(&t);
-    UNARY(INTEGER_NEWNODE, (long)mktime(&t));
+    UNARY(INTEGER_NEWNODE, (long_t)mktime(&t));
 }
 
 PRIVATE void strftime_(void)
@@ -935,7 +935,7 @@ PRIVATE void frexp_(void)
     ONEPARAM("frexp");
     FLOAT("frexp");
     UNARY(FLOAT_NEWNODE, frexp(FLOATVAL, &exp));
-    NULLARY(INTEGER_NEWNODE, (long)exp);
+    NULLARY(INTEGER_NEWNODE, (long_t)exp);
 }
 
 PRIVATE void modf_(void)
@@ -964,7 +964,7 @@ PRIVATE void trunc_(void)
 {
     ONEPARAM("trunc");
     FLOAT("trunc");
-    UNARY(INTEGER_NEWNODE, (long)FLOATVAL);
+    UNARY(INTEGER_NEWNODE, (long_t)FLOATVAL);
 }
 
 /* - - -   NUMERIC   - - - */
@@ -1236,11 +1236,11 @@ PRIVATE void PROCEDURE(void)					\
 	case SET_:						\
 	  { int i = 0;						\
 	    while ( i < SETSIZE &&				\
-		    ( (stk->next->u.set & 1 << i) ==		\
-		      (stk->u.set & 1 << i) )  )		\
+		    ( (stk->next->u.set & ((long_t)1 << i)) ==	\
+		      (stk->u.set & ((long_t)1 << i)) )  )	\
 		++i;						\
 	    if (i == SETSIZE) i = 0; else ++i;			\
-	    if (!(stk->u.set & 1 << i)) i = -i;			\
+	    if (!(stk->u.set & ((long_t)1 << i))) i = -i;	\
 	    comp = i OPR 0;					\
 	    break; }						\
 	case LIST_:						\
@@ -1312,7 +1312,7 @@ PRIVATE void fremove_(void)
 {
     ONEPARAM("fremove");
     STRING("fremove");
-    UNARY(BOOLEAN_NEWNODE, (long)!remove(stk->u.str));
+    UNARY(BOOLEAN_NEWNODE, (long_t)!remove(stk->u.str));
 }
 
 PRIVATE void frename_(void)
@@ -1320,7 +1320,7 @@ PRIVATE void frename_(void)
     TWOPARAMS("frename");
     STRING("frename");
     STRING2("frename");
-    BINARY(BOOLEAN_NEWNODE, (long)!rename(stk->next->u.str, stk->u.str));
+    BINARY(BOOLEAN_NEWNODE, (long_t)!rename(stk->next->u.str, stk->u.str));
 }
 
 #define FILEGET(PROCEDURE,NAME,CONSTRUCTOR,EXPR)		\
@@ -1329,15 +1329,15 @@ PRIVATE void PROCEDURE(void)					\
     FILE(NAME);							\
     NULLARY(CONSTRUCTOR,EXPR);					\
 }
-FILEGET(feof_,"feof",BOOLEAN_NEWNODE,(long)feof(stk->u.fil))
-FILEGET(ferror_,"ferror",BOOLEAN_NEWNODE,(long)ferror(stk->u.fil))
-FILEGET(fgetch_,"fgetch",CHAR_NEWNODE,(long)getc(stk->u.fil))
+FILEGET(feof_,"feof",BOOLEAN_NEWNODE,(long_t)feof(stk->u.fil))
+FILEGET(ferror_,"ferror",BOOLEAN_NEWNODE,(long_t)ferror(stk->u.fil))
+FILEGET(fgetch_,"fgetch",CHAR_NEWNODE,(long_t)getc(stk->u.fil))
 FILEGET(ftell_,"ftell",INTEGER_NEWNODE,ftell(stk->u.fil))
 
 #ifdef GETCH_AS_BUILTIN
 PRIVATE void getch_(void)
 {
-    NULLARY(CHAR_NEWNODE,(long)getchar());
+    NULLARY(CHAR_NEWNODE,(long_t)getchar());
 }
 #endif
 
@@ -1447,9 +1447,9 @@ PRIVATE void fread_(void)
     for (count = fread(buf, (size_t)1, (size_t)count, stk->u.fil) - 1;
 	     count >= 0; count--)
 #ifdef SINGLE
-	my_dump = INTEGER_NEWNODE((long)buf[count], my_dump);
+	my_dump = INTEGER_NEWNODE((long_t)buf[count], my_dump);
 #else
-	DMP1 = INTEGER_NEWNODE((long)buf[count], DMP1);
+	DMP1 = INTEGER_NEWNODE((long_t)buf[count], DMP1);
 #endif
     free(buf);
 #ifdef SINGLE
@@ -1504,7 +1504,7 @@ PRIVATE void fseek_(void)
     pos = stk->u.num;
     POP(stk);
     FILE("fseek");
-    NULLARY(BOOLEAN_NEWNODE, (long)!!fseek(stk->u.fil, pos, whence));
+    NULLARY(BOOLEAN_NEWNODE, (long_t)!!fseek(stk->u.fil, pos, whence));
 }
 
 /* - - -   AGGREGATES   - - - */
@@ -1519,12 +1519,12 @@ PRIVATE void first_(void)
 	    return;
 	case STRING_:
 	    CHECKEMPTYSTRING(stk->u.str,"first");
-	    UNARY(CHAR_NEWNODE,(long)*(stk->u.str));
+	    UNARY(CHAR_NEWNODE,(long_t)*(stk->u.str));
 	    return;
 	case SET_:
 	  { long i = 0;
 	    CHECKEMPTYSET(stk->u.set,"first");
-	    while (!(stk->u.set & (1 << i))) i++;
+	    while (!(stk->u.set & ((long_t)1 << i))) i++;
 	    UNARY(INTEGER_NEWNODE,i);
 	    return; }
 	default:
@@ -1538,8 +1538,8 @@ PRIVATE void rest_(void)
       { case SET_:
 	  { int i = 0;
 	    CHECKEMPTYSET(stk->u.set,"rest");
-	    while (!(stk->u.set & (1 << i))) i++;
-	    UNARY(SET_NEWNODE,stk->u.set & ~(1 << i));
+	    while (!(stk->u.set & ((long_t)1 << i))) i++;
+	    UNARY(SET_NEWNODE,stk->u.set & ~((long_t)1 << i));
 	    break; }
 	case STRING_:
 	  { char *s = stk->u.str;
@@ -1564,14 +1564,14 @@ PRIVATE void uncons_(void)
       { case SET_:
 	  { long i = 0; long set = stk->u.set;
 	    CHECKEMPTYSET(set,"uncons");
-	    while (!(set & (1 << i))) i++;
+	    while (!(set & ((long_t)1 << i))) i++;
 	    UNARY(INTEGER_NEWNODE,i);
-	    NULLARY(SET_NEWNODE,set & ~(1 << i));
+	    NULLARY(SET_NEWNODE,set & ~((long_t)1 << i));
 	    break; }
 	case STRING_:
 	  { char *s = stk->u.str;
 	    CHECKEMPTYSTRING(s,"uncons");
-	    UNARY(CHAR_NEWNODE,(long)*s);
+	    UNARY(CHAR_NEWNODE,(long_t)*s);
 	    NULLARY(STRING_NEWNODE,++s);
 	    break; }
 	case LIST_:
@@ -1602,15 +1602,15 @@ PRIVATE void unswons_(void)
       { case SET_:
 	  { long i = 0; long set = stk->u.set;
 	    CHECKEMPTYSET(set,"unswons");
-	    while (!(set & (1 << i))) i++;
-	    UNARY(SET_NEWNODE,set & ~(1 << i));
+	    while (!(set & ((long_t)1 << i))) i++;
+	    UNARY(SET_NEWNODE,set & ~((long_t)1 << i));
 	    NULLARY(INTEGER_NEWNODE,i);
 	    break; }
 	case STRING_:
 	  { char *s = stk->u.str;
 	    CHECKEMPTYSTRING(s,"unswons");
 	    UNARY(STRING_NEWNODE,++s);
-	    NULLARY(CHAR_NEWNODE,(long)*(--s));
+	    NULLARY(CHAR_NEWNODE,(long_t)*(--s));
 	    break; }
 	case LIST_:
 #ifdef SINGLE
@@ -1683,7 +1683,7 @@ PRIVATE void PROCEDURE(void)					\
     TWOPARAMS(NAME);						\
     switch (AGGR->op)						\
       { case SET_:						\
-	    found = ((AGGR->u.set) & (1 << ELEM->u.num)) > 0;	\
+	    found = ((AGGR->u.set) & ((long_t)1 << ELEM->u.num)) > 0;	\
 	    break;						\
 	case STRING_:						\
 	  { char *s;						\
@@ -1700,7 +1700,7 @@ PRIVATE void PROCEDURE(void)					\
 	    break; }						\
 	default:						\
 	    BADAGGREGATE(NAME); }				\
-    BINARY(BOOLEAN_NEWNODE,(long)found);			\
+    BINARY(BOOLEAN_NEWNODE,(long_t)found);			\
 }
 #else
 #define INHAS(PROCEDURE,NAME,AGGR,ELEM)				\
@@ -1709,7 +1709,7 @@ PRIVATE void PROCEDURE(void)					\
     TWOPARAMS(NAME);						\
     switch (AGGR->op)						\
       { case SET_:						\
-	    found = ((AGGR->u.set) & (1 << ELEM->u.num)) > 0;	\
+	    found = ((AGGR->u.set) & ((long_t)1 << ELEM->u.num)) > 0;	\
 	    break;						\
 	case STRING_:						\
 	  { char *s;						\
@@ -1726,7 +1726,7 @@ PRIVATE void PROCEDURE(void)					\
 	    break; }						\
 	default:						\
 	    BADAGGREGATE(NAME); }				\
-    BINARY(BOOLEAN_NEWNODE,(long)found);			\
+    BINARY(BOOLEAN_NEWNODE,(long_t)found);			\
 }
 #endif
 INHAS(in_,"in",stk,stk->next)
@@ -1743,7 +1743,7 @@ PRIVATE void PROCEDURE(void)					\
 	  { long i; int indx = INDEX->u.num;			\
 	    CHECKEMPTYSET(AGGR->u.set,NAME);			\
 	    for (i = 0; i < SETSIZE; i++)			\
-	      { if (AGGR->u.set & (1 << i))			\
+	      { if (AGGR->u.set & ((long_t)1 << i))		\
 		  { if (indx == 0)				\
 			{BINARY(INTEGER_NEWNODE,i); return;}	\
 		    indx--; } }					\
@@ -1752,7 +1752,7 @@ PRIVATE void PROCEDURE(void)					\
 	case STRING_:						\
 	    if (strlen(AGGR->u.str) < (size_t)INDEX->u.num)	\
 		INDEXTOOLARGE(NAME);				\
-	    BINARY(CHAR_NEWNODE,(long)AGGR->u.str[INDEX->u.num]);	\
+	    BINARY(CHAR_NEWNODE,(long_t)AGGR->u.str[INDEX->u.num]);	\
 	    return;						\
 	case LIST_:						\
 	  { Node *n = AGGR->u.lis;  int i  = INDEX->u.num;	\
@@ -1773,13 +1773,13 @@ PRIVATE void PROCEDURE(void)					\
       { case SET_:						\
 	  { long i; int indx = INDEX->u.num;			\
 	    for (i = 0; i < SETSIZE; i++)			\
-	      { if (AGGR->u.set & (1 << i))			\
+	      { if (AGGR->u.set & ((long_t)1 << i))		\
 		  { if (indx == 0)				\
 			{BINARY(INTEGER_NEWNODE,i); return;}	\
 		    indx--; } }					\
 	    return; }						\
 	case STRING_:						\
-	    BINARY(CHAR_NEWNODE,(long)AGGR->u.str[INDEX->u.num]);	\
+	    BINARY(CHAR_NEWNODE,(long_t)AGGR->u.str[INDEX->u.num]);	\
 	    return;						\
 	case LIST_:						\
 	  { Node *n = AGGR->u.lis;  int i  = INDEX->u.num;	\
@@ -1861,7 +1861,7 @@ PRIVATE void PROCEDURE(void)					\
 	    break;						\
 	case SET_:						\
 	    CHECKSETMEMBER(ELEM,NAME);				\
-	    BINARY(SET_NEWNODE,AGGR->u.set | (1 << ELEM->u.num));	\
+	    BINARY(SET_NEWNODE,AGGR->u.set | ((long_t)1 << ELEM->u.num)); \
 	    break;						\
 	case STRING_:						\
 	  { char *s;						\
@@ -1885,7 +1885,7 @@ PRIVATE void PROCEDURE(void)					\
 				 ELEM->u,AGGR->u.lis));		\
 	    break;						\
 	case SET_:						\
-	    BINARY(SET_NEWNODE,AGGR->u.set | (1 << ELEM->u.num));	\
+	    BINARY(SET_NEWNODE,AGGR->u.set | ((long_t)1 << ELEM->u.num)); \
 	    break;						\
 	case STRING_:						\
 	  { char *s;						\
@@ -1908,8 +1908,8 @@ PRIVATE void drop_(void)
       { case SET_:
 	  { int i; long result = 0;
 	    for (i = 0; i < SETSIZE; i++)
-		if (stk->next->u.set & (1 << i))
-		  { if (n < 1) result = result | (1 << i);
+		if (stk->next->u.set & ((long_t)1 << i))
+		  { if (n < 1) result |= ((long_t)1 << i);
 		    else n--; }
 	    BINARY(SET_NEWNODE,result);
 	    return; }
@@ -1939,9 +1939,9 @@ PRIVATE void take_(void)
       { case SET_:
 	  { int i; long result = 0;
 	    for (i = 0; i < SETSIZE; i++)
-		if (stk->next->u.set & (1 << i))
+		if (stk->next->u.set & ((long_t)1 << i))
 		  { if (n > 0)
-		      { --n;  result = result | (1 << i); }
+		      { --n;  result |= ((long_t)1 << i); }
 		    else break; }
 	    BINARY(SET_NEWNODE,result);
 	    return; }
@@ -1979,10 +1979,10 @@ PRIVATE void take_(void)
 	    dump3 = LIST_NEWNODE(0L, dump3);		/* last */
 	    while (DMP1 != NULL && i-- > 0)
 	      { if (DMP2 == NULL)			/* first */
-		  { DMP2 = newnode(DMP1->op,DMP1->u,NULL);
+		  { DMP2 = NEWNODE(DMP1->op,DMP1->u,NULL);
 		    DMP3 = DMP2; }
 		else					/* further */
-		  { DMP3->next = newnode(DMP1->op,DMP1->u,NULL);
+		  { DMP3->next = NEWNODE(DMP1->op,DMP1->u,NULL);
 		    DMP3 = DMP3->next; }
 		DMP1 = DMP1->next; }
 	    DMP3->next = NULL;
@@ -2041,12 +2041,12 @@ PRIVATE void concat_(void)
 	    while (DMP1 != NULL)
 	      { if (DMP2 == NULL)			/* first */
 		  { DMP2 =
-			newnode(DMP1->op,
+			NEWNODE(DMP1->op,
 			    DMP1->u,NULL);
 		    DMP3 = DMP2; }
 		else					/* further */
 		  { DMP3->next =
-			newnode(DMP1->op,
+			NEWNODE(DMP1->op,
 			    DMP1->u,NULL);
 		    DMP3 = DMP3->next; };
 		DMP1 = DMP1->next; }
@@ -2073,22 +2073,22 @@ PRIVATE void null_(void)
     ONEPARAM("null");
     switch (stk->op)
       { case STRING_:
-	    UNARY(BOOLEAN_NEWNODE, (long)(*(stk->u.str) == '\0'));
+	    UNARY(BOOLEAN_NEWNODE, (long_t)(*(stk->u.str) == '\0'));
 	    break;
 	case FLOAT_:
-	    UNARY(BOOLEAN_NEWNODE, (long)(stk->u.dbl == 0.0));
+	    UNARY(BOOLEAN_NEWNODE, (long_t)(stk->u.dbl == 0.0));
 	    break;
 	case FILE_:
-	    UNARY(BOOLEAN_NEWNODE, (long)(stk->u.fil == NULL));
+	    UNARY(BOOLEAN_NEWNODE, (long_t)(stk->u.fil == NULL));
 	    break;
 	case LIST_:
-	    UNARY(BOOLEAN_NEWNODE, (long)(! stk->u.lis));
+	    UNARY(BOOLEAN_NEWNODE, (long_t)(! stk->u.lis));
 	    break;
 	case SET_:
-	    UNARY(BOOLEAN_NEWNODE, (long)(! stk->u.set));
+	    UNARY(BOOLEAN_NEWNODE, (long_t)(! stk->u.set));
 	    break;
 	case BOOLEAN_: case CHAR_: case INTEGER_:
-	    UNARY(BOOLEAN_NEWNODE, (long)(! stk->u.num));
+	    UNARY(BOOLEAN_NEWNODE, (long_t)(! stk->u.num));
 	    break;
 	default:
 	    BADDATA("null"); }
@@ -2103,24 +2103,24 @@ PRIVATE void not_(void)
 	    break;
 #ifndef ONLY_LOGICAL_NOT
 	case STRING_:
-	    UNARY(BOOLEAN_NEWNODE, (long)(*(stk->u.str) != '\0'));
+	    UNARY(BOOLEAN_NEWNODE, (long_t)(*(stk->u.str) != '\0'));
 	    break;
 	case LIST_:
-	    UNARY(BOOLEAN_NEWNODE, (long)(! stk->u.lis));
+	    UNARY(BOOLEAN_NEWNODE, (long_t)(! stk->u.lis));
 	    break;
 	case CHAR_: case INTEGER_:
 #endif
 	case BOOLEAN_:
-	    UNARY(BOOLEAN_NEWNODE, (long)(! stk->u.num));
+	    UNARY(BOOLEAN_NEWNODE, (long_t)(! stk->u.num));
 	    break;
 #ifdef NOT_ALSO_FOR_FLOAT
 	case FLOAT_:
-	    UNARY(BOOLEAN_NEWNODE, (long)(! stk->u.dbl));
+	    UNARY(BOOLEAN_NEWNODE, (long_t)(! stk->u.dbl));
 	    break;
 #endif
 #ifdef NOT_ALSO_FOR_FILE
 	case FILE_:
-	    UNARY(BOOLEAN_NEWNODE, (long)(stk->u.fil != NULL));
+	    UNARY(BOOLEAN_NEWNODE, (long_t)(stk->u.fil != NULL));
 	    break;
 #endif
 	default:
@@ -2135,7 +2135,7 @@ PRIVATE void size_(void)
       { case SET_:
 	  { int i;
 	    for (i = 0; i < SETSIZE; i++)
-		if (stk->u.set & (1 << i)) siz++;
+		if (stk->u.set & ((long_t)1 << i)) siz++;
 	    break; }
 	case STRING_:
 	    siz = strlen(stk->u.str);
@@ -2160,9 +2160,9 @@ PRIVATE void small_(void)
 	case SET_:
 	    if (stk->u.set == 0) sml = 1; else
 	      { int i = 0;
-		while  (!(stk->u.set & (1 << i))) i++;
+		while  (!(stk->u.set & ((long_t)1 << i))) i++;
 D(		printf("small: first member found is %d\n",i); )
-		sml = (stk->u.set & ~(1 << i)) == 0; }
+		sml = (stk->u.set & ~((long_t)1 << i)) == 0; }
 	    break;
 	case STRING_:
 	    sml = stk->u.str[0] == '\0' || stk->u.str[1] == '\0';
@@ -2178,7 +2178,7 @@ D(		printf("small: first member found is %d\n",i); )
 #define TYPE(PROCEDURE,NAME,REL,TYP)				\
     PRIVATE void PROCEDURE(void)				\
     {   ONEPARAM(NAME);						\
-	UNARY(BOOLEAN_NEWNODE,(long)(stk->op REL TYP)); }
+	UNARY(BOOLEAN_NEWNODE,(long_t)(stk->op REL TYP)); }
 TYPE(integer_,"integer",==,INTEGER_)
 TYPE(char_,"char",==,CHAR_)
 TYPE(logical_,"logical",==,BOOLEAN_)
@@ -2781,7 +2781,7 @@ PRIVATE void unary3_(void)
     stk = stk->next;				/* just X on top */
     save = stk->next;
     exeterm(program);				/* execute P */
-    result[0] = stk;				/* save p(X) */
+    result[0] = stk;				/* save P(X) */
     stk = second;
     stk->next = save;				/* just Y on top */
     exeterm(program);				/* execute P */
@@ -2802,7 +2802,7 @@ PRIVATE void unary3_(void)
     SAVESTACK;
     stk = SAVED3->next;				/* just X on top */
     exeterm(SAVED1->u.lis);			/* execute P */
-    dump1 = newnode(stk->op,stk->u,dump1);	/* save p(X) */
+    dump1 = newnode(stk->op,stk->u,dump1);	/* save P(X) */
     stk = newnode(SAVED3->op,SAVED3->u,
 	  SAVED4->next);			/* just Y on top */
     exeterm(SAVED1->u.lis);			/* execute P */
@@ -2922,18 +2922,19 @@ PRIVATE void map_(void)
 	    resultstring =
 		(char *) malloc(strlen(stk->u.str) + 1);
 	    for (s = stk->u.str; *s != '\0'; s++)
-	      { stk = CHAR_NEWNODE((long)*s,save);
+	      { stk = CHAR_NEWNODE((long_t)*s,save);
 		exeterm(program);
 		resultstring[j++] = (char)stk->u.num; }
+	    resultstring[j] = '\0';
 	    stk = STRING_NEWNODE(resultstring,save);
 	    break; }
 	case SET_:
 	  { long i; long set = stk->u.set, resultset = 0;
 	    for (i = 0; i < SETSIZE; i++)
-		if (set & (1 << i))
+		if (set & ((long_t)1 << i))
 		  { stk = INTEGER_NEWNODE(i,save);
 		    exeterm(program);
-		    resultset = resultset | (1 << stk->u.num); }
+		    resultset |= ((long_t)1 << stk->u.num); }
 	    stk = SET_NEWNODE(resultset,save);
 	    break; }
 	default:
@@ -2961,11 +2962,11 @@ D(		printf("map: "); writefactor(stk, stdout); printf("\n"); )
 #endif
 		if (DMP2 == NULL)			/* first */
 		  { DMP2 =
-			newnode(stk->op,stk->u,NULL);
+			NEWNODE(stk->op,stk->u,NULL);
 		    DMP3 = DMP2; }
 		else					/* further */
 		  { DMP3->next =
-			newnode(stk->op,stk->u,NULL);
+			NEWNODE(stk->op,stk->u,NULL);
 		    DMP3 = DMP3->next; }
 		DMP1 = DMP1->next; }
 	    stk = LIST_NEWNODE(DMP2,SAVED3);
@@ -2978,18 +2979,19 @@ D(		printf("map: "); writefactor(stk, stdout); printf("\n"); )
 	    resultstring =
 		(char *) malloc(strlen(SAVED2->u.str) + 1);
 	    for (s = SAVED2->u.str; *s != '\0'; s++)
-	      { stk = CHAR_NEWNODE((long)*s,SAVED3);
+	      { stk = CHAR_NEWNODE((long_t)*s,SAVED3);
 		exeterm(SAVED1->u.lis);
 		resultstring[j++] = stk->u.num; }
+	    resultstring[j] = '\0';
 	    stk = STRING_NEWNODE(resultstring,SAVED3);
 	    break; }
 	case SET_:
 	  { long i; long resultset = 0;
 	    for (i = 0; i < SETSIZE; i++)
-		if (SAVED2->u.set & (1 << i))
+		if (SAVED2->u.set & ((long_t)1 << i))
 		  { stk = INTEGER_NEWNODE(i,SAVED3);
 		    exeterm(SAVED1->u.lis);
-		    resultset = resultset | (1 << stk->u.num); }
+		    resultset |= ((long_t)1 << stk->u.num); }
 	    stk = SET_NEWNODE(resultset,SAVED3);
 	    break; }
 	default:
@@ -3019,13 +3021,13 @@ PRIVATE void step_(void)
 	case STRING_:
 	  { char *s;
 	    for (s = data->u.str; *s != '\0'; s++)
-	      { stk = CHAR_NEWNODE((long)*s,stk);
+	      { stk = CHAR_NEWNODE((long_t)*s,stk);
 		exeterm(program); }
 	    break; }
 	case SET_:
 	  { long i, set = data->u.set;
 	    for (i = 0; i < SETSIZE; i++)
-		if (set & (1 << i))
+		if (set & ((long_t)1 << i))
 		  { stk = INTEGER_NEWNODE(i,stk);
 		    exeterm(program); }
 	    break; }
@@ -3051,13 +3053,13 @@ PRIVATE void step_(void)
 	case STRING_:
 	  { char *s;
 	    for (s = SAVED2->u.str; *s != '\0'; s++)
-	      { stk = CHAR_NEWNODE((long)*s,stk);
+	      { stk = CHAR_NEWNODE((long_t)*s,stk);
 		exeterm(SAVED1->u.lis); }
 	    break; }
 	case SET_:
 	  { long i;
 	    for (i = 0; i < SETSIZE; i++)
-		if (SAVED2->u.set & (1 << i))
+		if (SAVED2->u.set & ((long_t)1 << i))
 		  { stk = INTEGER_NEWNODE(i,stk);
 		    exeterm(SAVED1->u.lis); }
 	    break; }
@@ -3168,11 +3170,11 @@ PRIVATE void filter_(void)
       { case SET_ :
 	  { long j, set = stk->u.set, resultset = 0;
 	    for (j = 0; j < SETSIZE; j++)
-	      { if (set & (1 << j))
+	      { if (set & ((long_t)1 << j))
 		  { stk = INTEGER_NEWNODE(j,save);
 		    exeterm(program);
 		    if (stk->u.num)
-			resultset = resultset | (1 << j); } }
+			resultset |= ((long_t)1 << j); } }
 	    stk = SET_NEWNODE(resultset,save);
 	    break; }
 	case STRING_ :
@@ -3180,7 +3182,7 @@ PRIVATE void filter_(void)
 	    resultstring =
 		(char *) malloc(strlen(stk->u.str) + 1);
 	    for (s = stk->u.str; *s != '\0'; s++)
-	      { stk = CHAR_NEWNODE((long)*s, save);
+	      { stk = CHAR_NEWNODE((long_t)*s, save);
 		exeterm(program);
 		if (stk->u.num) resultstring[j++] = *s; }
 	    resultstring[j] = '\0';
@@ -3218,11 +3220,11 @@ PRIVATE void filter_(void)
       { case SET_ :
 	  { long j; long resultset = 0;
 	    for (j = 0; j < SETSIZE; j++)
-	      { if (SAVED2->u.set & (1 << j))
+	      { if (SAVED2->u.set & ((long_t)1 << j))
 		  { stk = INTEGER_NEWNODE(j,SAVED3);
 		    exeterm(SAVED1->u.lis);
 		    if (stk->u.num)
-			resultset = resultset | (1 << j); } }
+			resultset |= ((long_t)1 << j); } }
 	    stk = SET_NEWNODE(resultset,SAVED3);
 	    break; }
 	case STRING_ :
@@ -3230,7 +3232,7 @@ PRIVATE void filter_(void)
 	    resultstring =
 		(char *) malloc(strlen(SAVED2->u.str) + 1);
 	    for (s = SAVED2->u.str; *s != '\0'; s++)
-	      { stk = CHAR_NEWNODE((long)*s, SAVED3);
+	      { stk = CHAR_NEWNODE((long_t)*s, SAVED3);
 		exeterm(SAVED1->u.lis);
 		if (stk->u.num) resultstring[j++] = *s; }
 	    resultstring[j] = '\0';
@@ -3247,12 +3249,12 @@ D(		printf("filter: "); writefactor(stk, stdout); printf("\n"); )
 		if (stk->u.num)				/* test */
 		    { if (DMP2 == NULL)			/* first */
 		      { DMP2 =
-			    newnode(DMP1->op,
+			    NEWNODE(DMP1->op,
 				DMP1->u,NULL);
 			DMP3 = DMP2; }
 		    else				/* further */
 		      { DMP3->next =
-			    newnode(DMP1->op,
+			    NEWNODE(DMP1->op,
 				DMP1->u,NULL);
 			DMP3 = DMP3->next; } }
 		DMP1 = DMP1->next; }
@@ -3285,12 +3287,12 @@ PRIVATE void split_(void)
       { case SET_ :
 	  { long j, set = stk->u.set, yes_set = 0, no_set = 0;
 	    for (j = 0; j < SETSIZE; j++)
-	      { if (set & (1 << j))
+	      { if (set & ((long_t)1 << j))
 		  { stk = INTEGER_NEWNODE(j,save);
 		    exeterm(program);
 		    if (stk->u.num)
-			  yes_set = yes_set | (1 << j);
-		    else  no_set = no_set | (1 << j); } }
+			  yes_set |= ((long_t)1 << j);
+		    else  no_set |= ((long_t)1 << j); } }
 	    stk = SET_NEWNODE(yes_set,save);
 	    NULLARY(SET_NEWNODE,no_set);
 	    break; }
@@ -3301,7 +3303,7 @@ PRIVATE void split_(void)
 	    nostring =
 		(char *) malloc(strlen(stk->u.str) + 1);
 	    for (s = stk->u.str; *s != '\0'; s++)
-	      { stk = CHAR_NEWNODE((long) *s, save);
+	      { stk = CHAR_NEWNODE((long_t) *s, save);
 		exeterm(program);
 		if (stk->u.num) yesstring[yesptr++] = *s;
 			   else nostring[noptr++] = *s; }
@@ -3353,12 +3355,12 @@ PRIVATE void split_(void)
       { case SET_ :
 	  { long j; long yes_set = 0, no_set = 0;
 	    for (j = 0; j < SETSIZE; j++)
-	      { if (SAVED2->u.set & (1 << j))
+	      { if (SAVED2->u.set & ((long_t)1 << j))
 		  { stk = INTEGER_NEWNODE(j,SAVED3);
 		    exeterm(SAVED1->u.lis);
 		    if (stk->u.num)
-			  yes_set = yes_set | (1 << j);
-		    else  no_set = no_set | (1 << j); } }
+			  yes_set |= ((long_t)1 << j);
+		    else  no_set |= ((long_t)1 << j); } }
 	    stk = SET_NEWNODE(yes_set,SAVED3);
 	    NULLARY(SET_NEWNODE,no_set);
 	    break; }
@@ -3369,7 +3371,7 @@ PRIVATE void split_(void)
 	    nostring =
 		(char *) malloc(strlen(SAVED2->u.str) + 1);
 	    for (s = SAVED2->u.str; *s != '\0'; s++)
-	      { stk = CHAR_NEWNODE((long) *s, SAVED3);
+	      { stk = CHAR_NEWNODE((long_t) *s, SAVED3);
 		exeterm(SAVED1->u.lis);
 		if (stk->u.num) yesstring[yesptr++] = *s;
 			   else nostring[noptr++] = *s; }
@@ -3390,23 +3392,23 @@ D(		printf("split: "); writefactor(stk, stdout); printf("\n"); )
 		if (stk->u.num)				/* pass */
 		    if (DMP2 == NULL)			/* first */
 		      { DMP2 =
-			    newnode(DMP1->op,
+			    NEWNODE(DMP1->op,
 				DMP1->u,NULL);
 			DMP3 = DMP2; }
 		    else				/* further */
 		      { DMP3->next =
-			    newnode(DMP1->op,
+			    NEWNODE(DMP1->op,
 				DMP1->u,NULL);
 			DMP3 = DMP3->next; }
 		else					/* fail */
 		    if (DMP4 == NULL)			/* first */
 		      { DMP4 =
-			    newnode(DMP1->op,
+			    NEWNODE(DMP1->op,
 				DMP1->u,NULL);
 			DMP5 = DMP4; }
 		    else				/* further */
 		      { DMP5->next =
-			    newnode(DMP1->op,
+			    NEWNODE(DMP1->op,
 				DMP1->u,NULL);
 			DMP5 = DMP5->next; }
 		DMP1 = DMP1->next; }
@@ -3438,7 +3440,7 @@ PRIVATE void PROCEDURE(void)					\
       { case SET_ :						\
 	  { long j, set = stk->u.set;				\
 	    for (j = 0; j < SETSIZE && result == INITIAL; j++)	\
-	      { if (set & (1 << j))				\
+	      { if (set & ((long_t)1 << j))			\
 		  { stk = INTEGER_NEWNODE(j,save);		\
 		    exeterm(program);				\
 		    if (stk->u.num != INITIAL)			\
@@ -3448,7 +3450,7 @@ PRIVATE void PROCEDURE(void)					\
 	  { char *s;						\
 	    for (s = stk->u.str;				\
 		 *s != '\0' && result == INITIAL; s++)		\
-	      { stk = CHAR_NEWNODE((long)*s,save);		\
+	      { stk = CHAR_NEWNODE((long_t)*s,save);		\
 		exeterm(program);				\
 		if (stk->u.num != INITIAL)			\
 		    result = 1 - INITIAL; }			\
@@ -3478,7 +3480,7 @@ PRIVATE void PROCEDURE(void)					\
       { case SET_ :						\
 	  { long j;						\
 	    for (j = 0; j < SETSIZE && result == INITIAL; j++)	\
-	      { if (SAVED2->u.set & (1 << j))			\
+	      { if (SAVED2->u.set & ((long_t)1 << j))		\
 		  { stk = INTEGER_NEWNODE(j,SAVED3);		\
 		    exeterm(SAVED1->u.lis);			\
 		    if (stk->u.num != INITIAL)			\
@@ -3488,7 +3490,7 @@ PRIVATE void PROCEDURE(void)					\
 	  { char *s;						\
 	    for (s = SAVED2->u.str;				\
 		 *s != '\0' && result == INITIAL; s++)		\
-	      { stk = CHAR_NEWNODE((long)*s,SAVED3);		\
+	      { stk = CHAR_NEWNODE((long_t)*s,SAVED3);		\
 		exeterm(SAVED1->u.lis);				\
 		if (stk->u.num != INITIAL)			\
 		    result = 1 - INITIAL; }			\
@@ -3537,13 +3539,13 @@ PRIVATE void primrec_(void)
 	case STRING_:
 	  { char *s;
 	    for (s = data->u.str; *s != '\0'; s++)
-	      { stk = CHAR_NEWNODE((long) *s, stk);
+	      { stk = CHAR_NEWNODE((long_t) *s, stk);
 		n++; }
 	    break; }
 	case SET_:
 	  { long j; long set = data->u.set;
 	    for (j = 0; j < SETSIZE; j++)
-		if (set & (1 << j))
+		if (set & ((long_t)1 << j))
 		  { stk = INTEGER_NEWNODE(j,stk);
 		    n++; }
 	    break; }
@@ -3579,13 +3581,13 @@ PRIVATE void primrec_(void)
 	case STRING_:
 	  { char *s;
 	    for (s = SAVED3->u.str; *s != '\0'; s++)
-	      { stk = CHAR_NEWNODE((long) *s, stk);
+	      { stk = CHAR_NEWNODE((long_t) *s, stk);
 		n++; }
 	    break; }
 	case SET_:
 	  { long j; long set = SAVED3->u.set;
 	    for (j = 0; j < SETSIZE; j++)
-		if (set & (1 << j))
+		if (set & ((long_t)1 << j))
 		  { stk = INTEGER_NEWNODE(j,stk);
 		    n++; }
 	    break; }

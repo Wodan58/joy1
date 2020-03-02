@@ -1,8 +1,8 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.12
- *  date    : 01/21/19
+ *  version : 1.14
+ *  date    : 02/22/20
  */
 #include <stdio.h>
 #include <time.h>
@@ -291,7 +291,7 @@ D(  printf("found field: %s\n", mod_fields->name); )
     case LBRACE:
 	while (getsym(), symb != RBRACE)
 	    if (symb == CHAR_ || symb == INTEGER_)
-		set = set | (1 << numb);
+		set |= ((long_t)1 << numb);
 	    else
 		error("numeric expected in set");
 	stk = SET_NEWNODE(set, stk);
@@ -310,6 +310,10 @@ D(  printf("found field: %s\n", mod_fields->name); )
 	error("a factor cannot begin with this symbol");
     }
 }
+
+#ifndef SINGLE
+#define SINGLE
+#endif
 
 PUBLIC void readterm(void)
 {
@@ -379,9 +383,9 @@ PUBLIC void writefactor(Node *n, FILE *stm)
 	set = n->u.set;
 	fprintf(stm, "{");
 	for (i = 0; i < SETSIZE; i++)
-	    if (set & (1 << i)) {
+	    if (set & ((long_t)1 << i)) {
 		fprintf(stm, "%d", i);
-		set = set & ~(1 << i);
+		set &= ~((long_t)1 << i);
 		if (set != 0)
 		    fprintf(stm, " ");
 	    }

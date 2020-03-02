@@ -3,12 +3,13 @@
 HDRS  =  globals.h
 SRCS  =  interp.c  scan.c  utils.c  main.c
 OBJS  =  interp.o  scan.o  utils.o  main.o
-CC    =  gcc -g -ansi -pedantic -Wall -D_C_SOURCE=1 -DGC_BDW -DDEBUG -lm
+CC = gcc
+CFLAGS = -DDEBUG -DGC_BDW -D_C_SOURCE=1 -Ibdwgc/include -Wall -Wextra -Werror -g -ansi -pedantic
 
-joy:		$(OBJS)  gc/gc.a
-		$(CC)  $(OBJS)  gc/gc.a  -lm  -o joy
+joy:	$(OBJS) bdwgc/gc-lib.a
+	$(CC) -o$@ $(OBJS) -Lgc -lgc-lib -lm
 
-$(OBJS):	$(HDRS)
+$(OBJS):$(HDRS)
 
-gc/gc.a:
-		cd gc; $(MAKE)
+bdwgc/gc-lib.a:
+	cd bdwgc; $(MAKE)

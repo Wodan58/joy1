@@ -9,4 +9,4 @@ OBJS = interp.o scan.o utils.o main.o
 joy:	$(OBJS)
 	$(CC) -o$@ $(OBJS) -lm
 
-$(OBJS): $(HDRS)
+$(OBJS):$(HDRS)

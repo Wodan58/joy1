@@ -63,7 +63,7 @@ The builtin `intern` allows interning of symbols with spaces or other characters
 do not adhere to the naming restrictions of identifiers. This looks like a mistake,
 but it is not necessary to have this corrected. After all, there exists a different way
 of accessing symbols: `"symbol" intern == [symbol] first`. In both cases, the symbol
-"symbol" will be placed on the stack.
+`symbol` will be placed on the stack.
 
 REST_OF_UNIX_ESCAPES
 --------------------
@@ -86,7 +86,7 @@ NO_HELP_LOCAL_SYMBOLS
 
 Symbols from the PRIVATE section of a module or symbols that are defined between HIDE
 and IN end up in the symbol table. This change prevents them from showing up in the
-symbol table. This means that the output of alljoy.joy will be different with this
+symbol table. This means that the output of alljoy.joy will be different when this
 change enabled. Not having local symbols shown seems good to have, because they cannot
 be used outside their respective PUBLIC sections.
 

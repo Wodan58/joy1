@@ -1,4 +1,4 @@
-MODULE m.
+MODULE m .
 
 m 10 .
 
@@ -32,6 +32,6 @@ false stdin = .
 stdin 0.0 = .
 stdin stdout = .
 
-"test12.joy" include.
+"test12.joy" include .
 
 10 .
