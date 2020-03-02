@@ -1,8 +1,8 @@
 /* FILE: globals.h */
 /*
  *  module  : globals.h
- *  version : 1.21
- *  date    : 03/02/20
+ *  version : 1.20
+ *  date    : 02/28/20
  */
 #ifndef GLOBALS_H
 #define GLOBALS_H
@@ -162,7 +162,7 @@ CHECK_END_SYMBOL
 #ifdef BIT_32
 #define SETSIZE		32
 #define MAXINT		2147483647
-typedef int long_t;
+typedef long long_t;
 #else
 #define SETSIZE		64
 #define MAXINT		9223372036854775807LL

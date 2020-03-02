@@ -58,9 +58,9 @@ add_custom_target(demo12.txt ALL
 add_custom_target(demo13.txt ALL
 		  DEPENDS joy
 		  COMMAND joy jp-nestrec.joy >demo13.txt)
-#add_custom_target(demo14.txt ALL
-#		  DEPENDS joy
-#		  COMMAND joy jp-reprodtst.joy >demo14.txt)
+add_custom_target(demo14.txt ALL
+		  DEPENDS joy
+		  COMMAND joy jp-reprodtst.joy >demo14.txt)
 add_custom_target(demo15.txt ALL
 		  DEPENDS joy
 		  COMMAND joy flatjoy.joy >demo15.txt)
