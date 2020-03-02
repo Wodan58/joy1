@@ -1,8 +1,8 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.14
- *  date    : 02/22/20
+ *  version : 1.15
+ *  date    : 03/02/20
  */
 #include <stdio.h>
 #include <time.h>
@@ -371,7 +371,7 @@ PUBLIC void writefactor(Node *n, FILE *stm)
 	return;
     case INTEGER_:
 #ifdef BIT_32
-	fprintf(stm, "%ld", n->u.num);
+	fprintf(stm, "%ld", (long)n->u.num);
 #else
 	fprintf(stm, "%lld", n->u.num);
 #endif
