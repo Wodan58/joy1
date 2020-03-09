@@ -1,8 +1,8 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.26
- *  date    : 02/28/20
+ *  version : 1.27
+ *  date    : 03/07/20
  */
 
 /*
@@ -792,7 +792,7 @@ PRIVATE void formatf_(void)
 #define UNMKTIME(PROCEDURE,NAME,FUNC)				\
 PRIVATE void PROCEDURE(void)					\
 {   struct tm *t;						\
-    long wday;							\
+    long_t wday;						\
     time_t timval;						\
     Node *my_dump;						\
     ONEPARAM(NAME);						\
@@ -816,7 +816,7 @@ PRIVATE void PROCEDURE(void)					\
 #define UNMKTIME(PROCEDURE,NAME,FUNC)				\
 PRIVATE void PROCEDURE(void)					\
 {   struct tm *t;						\
-    long wday;							\
+    long_t wday;						\
     time_t timval;						\
     ONEPARAM(NAME);						\
     INTEGER(NAME);						\
@@ -950,14 +950,14 @@ PRIVATE void modf_(void)
 
 PRIVATE void ldexp_(void)
 {
-    long exp;
+    int exp;
 
     TWOPARAMS("ldexp");
     INTEGER("ldexp");
     exp = stk->u.num;
     POP(stk);
     FLOAT("ldexp");
-    UNARY(FLOAT_NEWNODE, ldexp(FLOATVAL, (int)exp));
+    UNARY(FLOAT_NEWNODE, ldexp(FLOATVAL, exp));
 }
 
 PRIVATE void trunc_(void)
@@ -1218,7 +1218,7 @@ PRIVATE void PROCEDURE(void)					\
 #else
 #define COMPREL(PROCEDURE,NAME,CONSTRUCTOR,OPR)			\
 PRIVATE void PROCEDURE(void)					\
-  { long comp = 0;						\
+  { int comp = 0;						\
     TWOPARAMS(NAME);						\
     switch (stk->op)						\
       { case BOOLEAN_: case CHAR_: case INTEGER_:		\
@@ -1430,7 +1430,7 @@ PRIVATE void fputchars_(void) /* suggested by Heiko Kuhrt, as "fputstring_" */
 PRIVATE void fread_(void)
 {
     unsigned char *buf;
-    long count;
+    long_t count;
 #ifdef SINGLE
     Node *my_dump = 0;
 #endif
@@ -1522,7 +1522,7 @@ PRIVATE void first_(void)
 	    UNARY(CHAR_NEWNODE,(long_t)*(stk->u.str));
 	    return;
 	case SET_:
-	  { long i = 0;
+	  { int i = 0;
 	    CHECKEMPTYSET(stk->u.set,"first");
 	    while (!(stk->u.set & ((long_t)1 << i))) i++;
 	    UNARY(INTEGER_NEWNODE,i);
@@ -1562,7 +1562,7 @@ PRIVATE void uncons_(void)
     ONEPARAM("uncons");
     switch (stk->op)
       { case SET_:
-	  { long i = 0; long set = stk->u.set;
+	  { int i = 0; long_t set = stk->u.set;
 	    CHECKEMPTYSET(set,"uncons");
 	    while (!(set & ((long_t)1 << i))) i++;
 	    UNARY(INTEGER_NEWNODE,i);
@@ -1600,7 +1600,7 @@ PRIVATE void unswons_(void)
     ONEPARAM("unswons");
     switch (stk->op)
       { case SET_:
-	  { long i = 0; long set = stk->u.set;
+	  { int i = 0; long_t set = stk->u.set;
 	    CHECKEMPTYSET(set,"unswons");
 	    while (!(set & ((long_t)1 << i))) i++;
 	    UNARY(SET_NEWNODE,set & ~((long_t)1 << i));
@@ -1630,7 +1630,7 @@ PRIVATE void unswons_(void)
 	    BADAGGREGATE("unswons"); }
 }
 
-PRIVATE long equal_aux(Node *n1,Node *n2); /* forward */
+PRIVATE int equal_aux(Node *n1,Node *n2); /* forward */
 
 PRIVATE int equal_list_aux(Node *n1,Node *n2)
 {
@@ -1641,7 +1641,7 @@ PRIVATE int equal_list_aux(Node *n1,Node *n2)
     else return 0;
 }
 
-PRIVATE long equal_aux(Node *n1,Node *n2)
+PRIVATE int equal_aux(Node *n1,Node *n2)
 {
 #ifdef CORRECT_TYPE_COMPARE
     int error;
@@ -1740,7 +1740,7 @@ PRIVATE void PROCEDURE(void)					\
 	execerror("non-negative integer", NAME);		\
     switch (AGGR->op)						\
       { case SET_:						\
-	  { long i; int indx = INDEX->u.num;			\
+	  { int i, indx = INDEX->u.num;				\
 	    CHECKEMPTYSET(AGGR->u.set,NAME);			\
 	    for (i = 0; i < SETSIZE; i++)			\
 	      { if (AGGR->u.set & ((long_t)1 << i))		\
@@ -1771,7 +1771,7 @@ PRIVATE void PROCEDURE(void)					\
 PRIVATE void PROCEDURE(void)					\
 {   switch (AGGR->op)						\
       { case SET_:						\
-	  { long i; int indx = INDEX->u.num;			\
+	  { int i, indx = INDEX->u.num;				\
 	    for (i = 0; i < SETSIZE; i++)			\
 	      { if (AGGR->u.set & ((long_t)1 << i))		\
 		  { if (indx == 0)				\
@@ -1906,7 +1906,7 @@ PRIVATE void drop_(void)
     TWOPARAMS("drop");
     switch (stk->next->op)
       { case SET_:
-	  { int i; long result = 0;
+	  { int i; long_t result = 0;
 	    for (i = 0; i < SETSIZE; i++)
 		if (stk->next->u.set & ((long_t)1 << i))
 		  { if (n < 1) result |= ((long_t)1 << i);
@@ -1937,7 +1937,7 @@ PRIVATE void take_(void)
     TWOPARAMS("take");
     switch (stk->next->op)
       { case SET_:
-	  { int i; long result = 0;
+	  { int i; long_t result = 0;
 	    for (i = 0; i < SETSIZE; i++)
 		if (stk->next->u.set & ((long_t)1 << i))
 		  { if (n > 0)
@@ -2129,7 +2129,7 @@ PRIVATE void not_(void)
 
 PRIVATE void size_(void)
 {
-    long siz = 0;
+    long_t siz = 0;
     ONEPARAM("size");
     switch (stk->op)
       { case SET_:
@@ -2151,7 +2151,7 @@ PRIVATE void size_(void)
 
 PRIVATE void small_(void)
 {
-    long sml = 0;
+    int sml = 0;
     ONEPARAM("small");
     switch (stk->op)
       { case BOOLEAN_: case INTEGER_:
@@ -2929,7 +2929,7 @@ PRIVATE void map_(void)
 	    stk = STRING_NEWNODE(resultstring,save);
 	    break; }
 	case SET_:
-	  { long i; long set = stk->u.set, resultset = 0;
+	  { int i; long_t set = stk->u.set, resultset = 0;
 	    for (i = 0; i < SETSIZE; i++)
 		if (set & ((long_t)1 << i))
 		  { stk = INTEGER_NEWNODE(i,save);
@@ -2986,7 +2986,7 @@ D(		printf("map: "); writefactor(stk, stdout); printf("\n"); )
 	    stk = STRING_NEWNODE(resultstring,SAVED3);
 	    break; }
 	case SET_:
-	  { long i; long resultset = 0;
+	  { int i; long_t resultset = 0;
 	    for (i = 0; i < SETSIZE; i++)
 		if (SAVED2->u.set & ((long_t)1 << i))
 		  { stk = INTEGER_NEWNODE(i,SAVED3);
@@ -3025,7 +3025,7 @@ PRIVATE void step_(void)
 		exeterm(program); }
 	    break; }
 	case SET_:
-	  { long i, set = data->u.set;
+	  { int i; long_t set = data->u.set;
 	    for (i = 0; i < SETSIZE; i++)
 		if (set & ((long_t)1 << i))
 		  { stk = INTEGER_NEWNODE(i,stk);
@@ -3057,7 +3057,7 @@ PRIVATE void step_(void)
 		exeterm(SAVED1->u.lis); }
 	    break; }
 	case SET_:
-	  { long i;
+	  { int i;
 	    for (i = 0; i < SETSIZE; i++)
 		if (SAVED2->u.set & ((long_t)1 << i))
 		  { stk = INTEGER_NEWNODE(i,stk);
@@ -3168,7 +3168,7 @@ PRIVATE void filter_(void)
     save = stk->next;
     switch (stk->op)
       { case SET_ :
-	  { long j, set = stk->u.set, resultset = 0;
+	  { int j; long_t set = stk->u.set, resultset = 0;
 	    for (j = 0; j < SETSIZE; j++)
 	      { if (set & ((long_t)1 << j))
 		  { stk = INTEGER_NEWNODE(j,save);
@@ -3218,7 +3218,7 @@ PRIVATE void filter_(void)
     SAVESTACK;
     switch (SAVED2->op)
       { case SET_ :
-	  { long j; long resultset = 0;
+	  { int j; long_t resultset = 0;
 	    for (j = 0; j < SETSIZE; j++)
 	      { if (SAVED2->u.set & ((long_t)1 << j))
 		  { stk = INTEGER_NEWNODE(j,SAVED3);
@@ -3285,7 +3285,7 @@ PRIVATE void split_(void)
     save = stk->next;
     switch (stk->op)
       { case SET_ :
-	  { long j, set = stk->u.set, yes_set = 0, no_set = 0;
+	  { int j; long_t set = stk->u.set, yes_set = 0, no_set = 0;
 	    for (j = 0; j < SETSIZE; j++)
 	      { if (set & ((long_t)1 << j))
 		  { stk = INTEGER_NEWNODE(j,save);
@@ -3353,7 +3353,7 @@ PRIVATE void split_(void)
     SAVESTACK;
     switch (SAVED2->op)
       { case SET_ :
-	  { long j; long yes_set = 0, no_set = 0;
+	  { int j; long_t yes_set = 0, no_set = 0;
 	    for (j = 0; j < SETSIZE; j++)
 	      { if (SAVED2->u.set & ((long_t)1 << j))
 		  { stk = INTEGER_NEWNODE(j,SAVED3);
@@ -3429,7 +3429,7 @@ D(		printf("split: "); writefactor(stk, stdout); printf("\n"); )
 #ifdef SINGLE
 #define SOMEALL(PROCEDURE,NAME,INITIAL)				\
 PRIVATE void PROCEDURE(void)					\
-{   long result = INITIAL;					\
+{   int result = INITIAL;					\
     Node *program, *my_dump, *save;				\
     TWOPARAMS(NAME);						\
     ONEQUOTE(NAME);						\
@@ -3438,7 +3438,7 @@ PRIVATE void PROCEDURE(void)					\
     save = stk->next;						\
     switch (stk->op)						\
       { case SET_ :						\
-	  { long j, set = stk->u.set;				\
+	  { int j; long_t set = stk->u.set;			\
 	    for (j = 0; j < SETSIZE && result == INITIAL; j++)	\
 	      { if (set & ((long_t)1 << j))			\
 		  { stk = INTEGER_NEWNODE(j,save);		\
@@ -3472,13 +3472,13 @@ PRIVATE void PROCEDURE(void)					\
 #else
 #define SOMEALL(PROCEDURE,NAME,INITIAL)				\
 PRIVATE void PROCEDURE(void)					\
-{   long result = INITIAL;					\
+{   int result = INITIAL;					\
     TWOPARAMS(NAME);						\
     ONEQUOTE(NAME);						\
     SAVESTACK;							\
     switch (SAVED2->op)						\
       { case SET_ :						\
-	  { long j;						\
+	  { int j;						\
 	    for (j = 0; j < SETSIZE && result == INITIAL; j++)	\
 	      { if (SAVED2->u.set & ((long_t)1 << j))		\
 		  { stk = INTEGER_NEWNODE(j,SAVED3);		\
@@ -3543,14 +3543,14 @@ PRIVATE void primrec_(void)
 		n++; }
 	    break; }
 	case SET_:
-	  { long j; long set = data->u.set;
+	  { int j; long_t set = data->u.set;
 	    for (j = 0; j < SETSIZE; j++)
 		if (set & ((long_t)1 << j))
 		  { stk = INTEGER_NEWNODE(j,stk);
 		    n++; }
 	    break; }
 	case INTEGER_:
-	  { long j;
+	  { long_t j;
 	    for (j = data->u.num; j > 0; j--)
 	      { stk = INTEGER_NEWNODE(j, stk);
 		n++; }
@@ -3585,14 +3585,14 @@ PRIVATE void primrec_(void)
 		n++; }
 	    break; }
 	case SET_:
-	  { long j; long set = SAVED3->u.set;
+	  { int j; long_t set = SAVED3->u.set;
 	    for (j = 0; j < SETSIZE; j++)
 		if (set & ((long_t)1 << j))
 		  { stk = INTEGER_NEWNODE(j,stk);
 		    n++; }
 	    break; }
 	case INTEGER_:
-	  { long j;
+	  { long_t j;
 	    for (j = SAVED3->u.num; j > 0; j--)
 	      { stk = INTEGER_NEWNODE(j, stk);
 		n++; }

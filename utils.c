@@ -1,8 +1,8 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.15
- *  date    : 03/02/20
+ *  version : 1.16
+ *  date    : 03/07/20
  */
 #include <stdio.h>
 #include <time.h>
@@ -95,6 +95,18 @@ PRIVATE Node *copy(Node *n)
     temp->u.num = n->op == LIST_ ? (long)copy(n->u.lis) : n->u.num;
    with the following case statement: */
     switch(n->op) {
+    case COPIED_:
+    default:
+	temp->u.lis = n->u.lis;
+	break;
+    case USR_:
+	temp->u.ent = n->u.ent;
+	break;
+    case ANON_FUNCT_:
+	temp->u.proc = n->u.proc;
+	break;
+    case BOOLEAN_:
+    case CHAR_:
     case INTEGER_:
 	temp->u.num = n->u.num;
 	break;
@@ -104,17 +116,15 @@ PRIVATE Node *copy(Node *n)
     case STRING_:
 	temp->u.str = n->u.str;
 	break;
+    case LIST_:
+	temp->u.lis = copy(n->u.lis);
+	break;
     case FLOAT_:
 	temp->u.dbl = n->u.dbl;
 	break;
     case FILE_:
 	temp->u.fil = n->u.fil;
 	break;
-    case LIST_:
-	temp->u.lis = copy(n->u.lis);
-	break;
-    default:
-	temp->u.num = n->u.num;
     }
 /* end of replacement */
     temp->next = copy(n->next);
@@ -244,7 +254,7 @@ PUBLIC void memoryindex_(void)
 
 PUBLIC void readfactor(void)	/* read a JOY factor		*/
 {
-    long set = 0;
+    long_t set = 0;
 
     switch (symb) {
     case ATOM:
@@ -281,8 +291,11 @@ D(  printf("found field: %s\n", mod_fields->name); )
     case BOOLEAN_:
     case INTEGER_:
     case CHAR_:
-    case STRING_:
 	bucket.num = numb;
+	stk = newnode(symb, bucket, stk);
+	return;
+    case STRING_:
+	bucket.str = strg;
 	stk = newnode(symb, bucket, stk);
 	return;
     case FLOAT_:
@@ -361,7 +374,7 @@ PUBLIC void writefactor(Node *n, FILE *stm)
 {
     char *p;
     int i;
-    long set;
+    long_t set;
 
     if (n == NULL)
 	execerror("non-empty stack", "print");

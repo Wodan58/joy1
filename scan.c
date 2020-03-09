@@ -1,8 +1,8 @@
 /* FILE: scan.c */
 /*
  *  module  : scan.c
- *  version : 1.16
- *  date    : 07/15/19
+ *  version : 1.17
+ *  date    : 03/07/20
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -268,7 +268,7 @@ Start:
 	}
 	string[i] = '\0';
 	getch();
-	numb = (size_t)strdup(string);
+	strg = strdup(string);
 	symb = STRING_;
 	return;
     case '-': /* PERHAPS unary minus */

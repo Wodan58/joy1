@@ -1,8 +1,8 @@
 /* FILE: main.c */
 /*
  *  module  : main.c
- *  version : 1.15
- *  date    : 07/12/19
+ *  version : 1.16
+ *  date    : 03/07/20
  */
 
 /*
@@ -119,6 +119,10 @@ Manfred von Thun, 2006
 #include <stdlib.h>
 #include <setjmp.h>
 #include <time.h>
+#ifdef __GNUC__
+#include <signal.h>
+#include <execinfo.h>
+#endif
 #define ALLOC
 #include "globals.h"
 #ifdef strdup
@@ -379,11 +383,27 @@ static int mustinclude = 1;
         printf("->  %s is not empty:\n", NAME);			\
 	writeterm(D, stdout); printf("\n"); }
 
+#ifdef __GNUC__
+void Catch(int signum)
+{
+    int nptrs;
+    void *buffer[100];
+
+    fprintf(stderr, "Caught: %d\n", signum);
+    nptrs = backtrace(buffer, 100);
+    backtrace_symbols_fd(buffer, nptrs, 2);
+    abort();
+}
+#endif
+
 int main(int argc, char **argv)
 {
     FILE *fp;
 #ifdef SINGLE
     Node *my_prog;
+#endif
+#ifdef __GNUC__
+    signal(SIGSEGV, Catch);
 #endif
 #ifdef GC_BDW
     GC_init();

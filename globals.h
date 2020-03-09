@@ -1,8 +1,8 @@
 /* FILE: globals.h */
 /*
  *  module  : globals.h
- *  version : 1.20
- *  date    : 02/28/20
+ *  version : 1.21
+ *  date    : 03/07/20
  */
 #ifndef GLOBALS_H
 #define GLOBALS_H
@@ -162,7 +162,7 @@ CHECK_END_SYMBOL
 #ifdef BIT_32
 #define SETSIZE		32
 #define MAXINT		2147483647
-typedef long long_t;
+typedef int long_t;
 #else
 #define SETSIZE		64
 #define MAXINT		9223372036854775807LL
@@ -274,6 +274,7 @@ CLASS int startclock,gc_clock;			/* main		*/
 /* CLASS int ch; */				/* scanner	*/
 CLASS Symbol symb;
 CLASS long_t numb;
+CLASS char *strg;				/* string 	*/
 CLASS double dblf;
 CLASS char ident[ALEN];
 CLASS int hashvalue;
@@ -293,7 +294,7 @@ CLASS Entry					/* symbol table	*/
     *location;					/* getsym	*/
 
 #define LOC2INT(e) (((size_t)e - (size_t)symtab) / sizeof(Entry))
-#define INT2LOC(x) ((Entry*) ((x + (size_t)symtab)) * sizeof(Entry))
+#define INT2LOC(x) ((Entry *)((x + (size_t)symtab)) * sizeof(Entry))
 
 CLASS Node				/* dynamic memory	*/
 /*
@@ -308,7 +309,7 @@ CLASS Node				/* dynamic memory	*/
 #endif
 
 #define MEM2INT(n) (((size_t)n - (size_t)memory) / sizeof(Node))
-#define INT2MEM(x) ((Node*) ((x + (size_t)&memory) * sizeof(Node)))
+#define INT2MEM(x) ((Node *)((x + (size_t)memory) * sizeof(Node)))
 
 /* GOOD REFS:
 	005.133l H4732		A LISP interpreter in C
