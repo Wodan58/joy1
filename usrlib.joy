@@ -13,7 +13,7 @@ LIBRA
 HIDE
     returned == "\007\nReturned to Joy\n" putchars
 IN
-						(* unix:
+						(* unix: *)
     unix == true;
     control-eof == 'D;
     terminal == "/dev/tty";
@@ -23,9 +23,9 @@ IN
 	"\nTo return to Joy, type:   exit\n" putchars
 	"csh" system
 	returned;
-    						etc *)
+    						(* etc *)
 
-						(* vms: *)
+						(* vms:
     vms == true;
     control-eof == 'Z;
     terminal == "tt:";
@@ -36,7 +36,7 @@ IN
 	control-eof putch  '\n putch
 	"@tt:" system
 	returned;
-						(* etc *)
+						etc *)
 
     edit ==
 	dup editor swap concat system

@@ -1,8 +1,8 @@
 /* FILE: scan.c */
 /*
  *  module  : scan.c
- *  version : 1.17
- *  date    : 03/07/20
+ *  version : 1.18
+ *  date    : 03/23/20
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,11 +39,29 @@ PUBLIC void inilinebuffer(char *str)
     infile[0].name = str;
 }
 
+PUBLIC int getlinenum(void)
+{
+    int linenum;
+
+    linenum = linenumber;
+    linenumber = -1;
+    return linenum;
+}
+
+PUBLIC void resetlinebuffer(int linenum)
+{
+    linenumber = linenum;
+    linbuf[0] = 0;
+    linelength = 0;
+    currentcolumn = 0;
+    ch = ' ';
+}
+
 PRIVATE void putline(void)
 {
     int i;
 
-    if (!linenumber)
+    if (linenumber <= 0)
 	return;
     if (echoflag > 2)
 	printf("%4d", linenumber);
@@ -61,7 +79,8 @@ PRIVATE void getch(void)
 Again:
 #endif
 	currentcolumn = linelength = 0;
-	linenumber++;
+	if (linenumber >= 0)
+	    linenumber++;
 	if (fgets(linbuf, INPLINEMAX, srcfile))
 	    linelength = strlen(linbuf);
 	else if (ilevel > 0) {

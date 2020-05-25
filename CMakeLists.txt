@@ -67,3 +67,9 @@ add_custom_target(demo15.txt ALL
 add_custom_target(demo16.txt ALL
 		  DEPENDS joy
 		  COMMAND joy jp-church.joy >demo16.txt)
+add_custom_target(demo17.txt ALL
+		  DEPENDS joy
+		  COMMAND joy mandel.joy >demo17.txt)
+add_custom_target(demo18.txt ALL
+		  DEPENDS joy
+		  COMMAND joy alljoy.joy >demo18.txt)

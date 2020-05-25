@@ -1,8 +1,8 @@
 /* FILE: globals.h */
 /*
  *  module  : globals.h
- *  version : 1.21
- *  date    : 03/07/20
+ *  version : 1.23
+ *  date    : 03/25/20
  */
 #ifndef GLOBALS_H
 #define GLOBALS_H
@@ -19,11 +19,6 @@
 */
 #define SINGLE
 #define MAKE_CONTS_OBSOLETE
-#else
-/*
-    The following #defines are only available when GC_BDW is not defined.
-*/
-#define ENABLE_TRACEGC
 #endif
 
 #ifndef BIT_32
@@ -34,7 +29,7 @@
 #endif
 
 /*
-    The following #defines are not present in the source code.
+    The following #defines are NOT present in the source code.
     They have been accepted.
 
 USE_ONLY_STDIN
@@ -98,8 +93,8 @@ CHECK_EMPTY_STACK
 CORRECT_NULL_CASES
 */
 /*
-    The following #defines are not present in the source code.
-    They have not been accepted.
+    The following #defines are NOT present in the source code.
+    They have NOT been accepted.
 
 CORRECT_FLOAT_BUFFER
 GET_FROM_STDIN
@@ -108,10 +103,8 @@ REMOVE_UNUSED_ERRORCOUNT
 */
 /*
     The following #defines are present in the source code.
-    They have not been accepted.
+    They have NOT been accepted.
 
-CORRECT_INHAS_COMPARE
-USE_UNKNOWN_SYMBOLS
 TRACK_USED_SYMBOLS
 NOT_ALSO_FOR_FLOAT
 NOT_ALSO_FOR_FILE
@@ -132,11 +125,14 @@ CHECK_END_SYMBOL
 #define REST_OF_UNIX_ESCAPES
 #define CORRECT_ALEN
 #define NO_HELP_LOCAL_SYMBOLS
+#define USE_UNKNOWN_SYMBOLS
+#define CORRECT_INHAS_COMPARE
 /*
     The following #defines are present in the source code.
     They have been accepted.
 */
 #define USE_SHELL_ESCAPE
+#define ENABLE_TRACEGC
 #define RUNTIME_CHECKS
 				/* configure			*/
 #define SHELLESCAPE	'$'
@@ -203,7 +199,7 @@ typedef long long long_t;
 #define JPUBLIC		1107
 
 #ifdef DEBUG
-#    define D(x) x
+#    define D(x)	x
 #else
 #    define D(x)
 #endif
@@ -237,16 +233,13 @@ typedef struct Node
 
 typedef struct Entry
   { char *name;
-#if defined(NO_HELP_LOCAL_SYMBOLS) || defined(USE_UNKNOWN_SYMBOLS) || defined(TRACK_USED_SYMBOLS)
+#if defined(NO_HELP_LOCAL_SYMBOLS) || defined(TRACK_USED_SYMBOLS)
     unsigned char is_module;
 #else
     int is_module;
 #endif
 #ifdef NO_HELP_LOCAL_SYMBOLS
     unsigned char is_local;
-#endif
-#ifdef USE_UNKNOWN_SYMBOLS
-    unsigned char is_unknown;
 #endif
 #ifdef TRACK_USED_SYMBOLS
     unsigned char is_used;
@@ -333,11 +326,13 @@ PUBLIC void dummy_(void);
 PUBLIC void exeterm(Node *n);
 PUBLIC void inisymboltable(void)		/* initialise		*/;
 PUBLIC char *opername(int o);
-PUBLIC void lookup(void);
+PUBLIC void lookup(int priv);
 PUBLIC void abortexecution_(void);
 PUBLIC void execerror(char *message, char *op);
 PUBLIC void quit_(void);
 PUBLIC void inilinebuffer(char *filnam);
+PUBLIC int getlinenum(void);
+PUBLIC void resetlinebuffer(int linenum);
 /* PUBLIC void putline(void); */
 /* PUBLIC int endofbuffer(void); */
 PUBLIC void error(char *message);
@@ -349,8 +344,8 @@ PUBLIC void printnode(Node *p);
 PUBLIC void gc_(void);
 PUBLIC Node *newnode(Operator o, Types u, Node *r);
 PUBLIC void memoryindex_(void);
-PUBLIC void readfactor(void)		/* read a JOY factor		*/;
-PUBLIC void readterm(void);
+PUBLIC void readfactor(int priv)	/* read a JOY factor		*/;
+PUBLIC void readterm(int priv);
 PUBLIC void writefactor(Node *n, FILE *stm);
 PUBLIC void writeterm(Node *n, FILE *stm);
 

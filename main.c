@@ -1,8 +1,8 @@
 /* FILE: main.c */
 /*
  *  module  : main.c
- *  version : 1.16
- *  date    : 03/07/20
+ *  version : 1.20
+ *  date    : 03/24/20
  */
 
 /*
@@ -24,7 +24,7 @@ has already been computed by the scanner.
 function lookup:
 
 Since HIDE's and modules can be nested, there is the notion
-of level (up to 10, which is ample), level 0 means global).
+of level (up to 10, which is ample, level 0 means global).
 The array display contains the starting points of the local
 tables. So, to lookup identifier id (string "foo"), start
 at the current highest level (display_lookup), do a linear
@@ -143,16 +143,17 @@ PRIVATE void enterglobal(void)
     location = symtabindex++;
 D(  printf("getsym, new: '%s'\n", ident); )
     location->name = strdup(ident);
-    location->u.body = NULL; /* may be assigned in definition */
-#ifdef USE_UNKNOWN_SYMBOLS
-    location->is_unknown = 1;
+    location->is_module = 0;
+#ifdef NO_HELP_LOCAL_SYMBOLS
+    location->is_local = 0;
 #endif
+    location->u.body = NULL; /* may be assigned in definition */
     location->next = hashentry[hashvalue];
 D(  printf("entered %s at %p\n", ident, (void *)LOC2INT(location)); )
     hashentry[hashvalue] = location;
 }
 
-PUBLIC void lookup(void)
+PUBLIC void lookup(int priv)
 {
     int i;
 
@@ -169,77 +170,38 @@ D(  printf("%s  hashes to %d\n", ident, hashvalue); )
     while (location != symtab && strcmp(ident, location->name) != 0)
 	location = location->next;
 
-    if (location == symtab) /* not found, enter in global */
+    if (!priv && location == symtab) /* not found, enter in global */
 	enterglobal();
 }
 
-#ifdef USE_UNKNOWN_SYMBOLS
-PRIVATE void detachatom(void)
+PRIVATE void enteratom(int priv)
 {
-    Entry *cur, *prev;
-
-    for (prev = cur = hashentry[hashvalue]; cur != symtab; cur = cur->next) {
-	if (cur == location) {
-	    if (prev == cur)
-		hashentry[hashvalue] = cur->next;
-	    else
-		prev->next = cur->next;
-	    break;
-	}
-	prev = cur;
-    }
-}
-#endif
-
-PRIVATE void enteratom(void)
-{
-#ifdef USE_UNKNOWN_SYMBOLS
-    lookup();
-    if (display_enter > 0) {
-	if (location->is_unknown)
-	    detachatom();
-	else {
-	    if (symtabindex - symtab >= SYMTABMAX)
-		execerror("index", "symbols");
-	    location = symtabindex++;
-D(  printf("hidden definition '%s' at %p\n",ident,(void *)LOC2INT(location)); )
-	    location->name = strdup(ident);
-	    location->u.body = NULL; /* may be assigned later */
-	}
-#ifdef NO_HELP_LOCAL_SYMBOLS
-	location->is_local = 1;
-#endif
-	location->next = display[display_enter];
-	display[display_enter] = location;
-    }
-    location->is_unknown = 0;
-#else
-    if (display_enter > 0) {
+    if (priv && display_enter > 0) {
 	if (symtabindex - symtab >= SYMTABMAX)
 	    execerror("index", "symbols");
 	location = symtabindex++;
 D(  printf("hidden definition '%s' at %p\n",ident,(void *)LOC2INT(location)); )
 	location->name = strdup(ident);
-	location->u.body = NULL; /* may be assigned later */
+	location->is_module = 0;
 #ifdef NO_HELP_LOCAL_SYMBOLS
 	location->is_local = 1;
 #endif
+	location->u.body = NULL; /* may be assigned later */
 	location->next = display[display_enter];
 	display[display_enter] = location;
     } else
-	lookup();
-#endif
+	lookup(0);
 }
 
-PRIVATE void defsequence(void);		/* forward */
-PRIVATE void compound_def(void);	/* forward */
+PRIVATE void defsequence(int priv);	/* forward */
+PRIVATE void compound_def(int priv);	/* forward */
 
-PRIVATE void definition(void)
+PRIVATE void definition(int priv)
 {
     Entry *here = NULL;
 
     if (symb == LIBRA || symb == JPRIVATE || symb == HIDE || symb == MODULE) {
-	compound_def();
+	compound_def(priv);
 	if (symb == END || symb == PERIOD)
 	    getsym();
 	else
@@ -255,34 +217,42 @@ PRIVATE void definition(void)
 	return;
 
     /* symb == ATOM : */
-    enteratom();
-    if (location < firstlibra) {
-	printf("warning: overwriting inbuilt '%s'\n", location->name);
-	enterglobal();
+    if (!priv) {
+	enteratom(priv);
+	if (location < firstlibra) {
+	    printf("warning: overwriting inbuilt '%s'\n", location->name);
+	    enterglobal();
+	}
+	here = location;
     }
-    here = location;
     getsym();
     if (symb == EQDEF)
 	getsym();
     else
 	error(" == expected in definition");
-    readterm();
+    readterm(priv);
 D(  printf("assigned this body: "); )
-D(  writeterm(stk->u.lis, stdout); )
+D(  if (!priv) writeterm(stk->u.lis, stdout); )
 D(  printf("\n"); )
-    if (here != NULL) {
-	here->u.body = stk->u.lis;
-	/* here->is_module = 0; */
+    if (!priv) {
+	if (here != NULL) {
+	    here->u.body = stk->u.lis;
+	    /* here->is_module = 0; */
+	}
+	stk = stk->next;
     }
-    stk = stk->next;
 }
 
-PRIVATE void defsequence(void)
+PRIVATE void defsequence(int priv)
 {
-    definition();
+    if (priv)
+	enteratom(priv);
+    definition(priv);
     while (symb == SEMICOL) {
 	getsym();
-	definition();
+	if (priv && symb <= ATOM)
+	    enteratom(priv);
+	definition(priv);
     }
 }
 
@@ -292,8 +262,12 @@ PRIVATE void enterdisplay(void)
 	execerror("index", "display");
 }
 
-PRIVATE void compound_def(void)
+PRIVATE void compound_def(int priv)
 {
+#ifdef USE_UNKNOWN_SYMBOLS
+    long offset;
+    int linenum;
+#endif
     Entry *here = NULL, *oldplace;
 
     switch (symb) {
@@ -303,19 +277,34 @@ PRIVATE void compound_def(void)
 	    error("atom expected as name of module");
 	    abortexecution_();
 	}
-	enteratom();
-	here = location;
+	if (!priv) {
+	    enteratom(priv);
+	    here = location;
+	}
 	getsym();
 	++display_lookup;
 	enterdisplay();
-	display[display_enter] = NULL;
-	compound_def();
-	here->is_module = 1;
-	here->u.module_fields = display[display_enter--];
+	if (priv)
+	    display[display_enter] = NULL;
+	compound_def(priv);
+	if (!priv) {
+	    here->is_module = 1;
+	    here->u.module_fields = display[display_enter];
+	}
+	--display_enter;
 	--display_lookup;
 	break;
     case JPRIVATE :
     case HIDE :
+#ifdef USE_UNKNOWN_SYMBOLS
+	if (!priv) {
+	    offset = ftell(srcfile);
+	    linenum = getlinenum();
+	    compound_def(1);
+	    fseek(srcfile, offset, 0);
+	    resetlinebuffer(linenum);
+	}
+#endif
 	getsym();
 	if (display_lookup > display_enter) {
 	    /* already inside module or hide */
@@ -325,21 +314,22 @@ PRIVATE void compound_def(void)
 	    printf("enter = %d\n", LOC2INT(display[display_enter]));
 */
 	    enterdisplay();
-	    defsequence();
+	    defsequence(priv);
 	    --display_enter;
 /*
 	    printf("lookup = %d\n", LOC2INT(display[display_lookup]));
 	    printf("enter = %d\n", LOC2INT(display[display_enter]));
 */
-	    compound_def();
+	    compound_def(priv);
 	    display[display_lookup] = oldplace;
 	} else {
 	    ++display_lookup;
 	    enterdisplay();
-	    display[display_enter] = NULL;
-	    defsequence();
+	    if (priv)
+		display[display_enter] = NULL;
+	    defsequence(priv);
 	    --display_enter;
-	    compound_def();
+	    compound_def(priv);
 	    --display_lookup;
 	}
 	break;
@@ -347,7 +337,7 @@ PRIVATE void compound_def(void)
     case LIBRA :
     case IN :
 	getsym();
-	defsequence();
+	defsequence(priv);
 	break;
     default :
 	printf("warning: empty compound definition\n");
@@ -474,11 +464,13 @@ D(  printf("starting main loop\n"); )
 	getsym();
 	if (symb == LIBRA || symb == HIDE || symb == MODULE ) {
 	    inimem1();
-	    compound_def();
+	    compound_def(0);
 	    inimem2();
 	} else {
-	    readterm();
+	    readterm(0);
+D(  if (stk) { )
 D(  printf("program is: "); writeterm(stk->u.lis, stdout); printf("\n"); )
+D(  } )
 #ifdef SINGLE
 	    if (stk != NULL) {
 		my_prog = stk->u.lis;

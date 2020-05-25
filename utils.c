@@ -1,8 +1,8 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.16
- *  date    : 03/07/20
+ *  version : 1.18
+ *  date    : 04/14/20
  */
 #include <stdio.h>
 #include <time.h>
@@ -252,13 +252,13 @@ PUBLIC void memoryindex_(void)
 #endif
 }
 
-PUBLIC void readfactor(void)	/* read a JOY factor		*/
+PUBLIC void readfactor(int priv)	/* read a JOY factor		*/
 {
     long_t set = 0;
 
     switch (symb) {
     case ATOM:
-	lookup();
+	lookup(priv);
 D(  printf("readfactor: location = %p\n", (void *)location); )
 	while (location->is_module) {
 	    Entry *mod_fields = location->u.module_fields;
@@ -281,25 +281,31 @@ D(  printf("looking for field %s\n", ident); )
 D(  printf("found field: %s\n", mod_fields->name); )
 	    location = mod_fields;
 	}
-/* end of replacement */
-	if (location < firstlibra) {
-	    bucket.proc = location->u.proc;
-	    stk = newnode(LOC2INT(location), bucket, stk);
-	} else
-	    stk = USR_NEWNODE(location, stk);
+	if (!priv) {
+	    if (location < firstlibra) {
+		bucket.proc = location->u.proc;
+		stk = newnode(LOC2INT(location), bucket, stk);
+	    } else
+		stk = USR_NEWNODE(location, stk);
+	}
 	return;
     case BOOLEAN_:
     case INTEGER_:
     case CHAR_:
-	bucket.num = numb;
-	stk = newnode(symb, bucket, stk);
+	if (!priv) {
+	    bucket.num = numb;
+	    stk = newnode(symb, bucket, stk);
+	}
 	return;
     case STRING_:
-	bucket.str = strg;
-	stk = newnode(symb, bucket, stk);
+	if (!priv) {
+	    bucket.str = strg;
+	    stk = newnode(symb, bucket, stk);
+	}
 	return;
     case FLOAT_:
-	stk = FLOAT_NEWNODE(dblf, stk);
+	if (!priv)
+	    stk = FLOAT_NEWNODE(dblf, stk);
 	return;
     case LBRACE:
 	while (getsym(), symb != RBRACE)
@@ -307,11 +313,12 @@ D(  printf("found field: %s\n", mod_fields->name); )
 		set |= ((long_t)1 << numb);
 	    else
 		error("numeric expected in set");
-	stk = SET_NEWNODE(set, stk);
+	if (!priv)
+	    stk = SET_NEWNODE(set, stk);
 	return;
     case LBRACK:
 	getsym();
-	readterm();
+	readterm(priv);
 	if (symb != RBRACK)
 	    error("']' expected");
 	return;
@@ -324,50 +331,25 @@ D(  printf("found field: %s\n", mod_fields->name); )
     }
 }
 
-#ifndef SINGLE
-#define SINGLE
-#endif
-
-PUBLIC void readterm(void)
+PUBLIC void readterm(int priv)
 {
-#ifdef SINGLE
     Node **my_dump;
-#endif
-    stk = LIST_NEWNODE(0L, stk);
-#ifdef SINGLE
-    my_dump = &stk->u.lis;
-#endif
-    if (symb <= ATOM) {
-	readfactor();
-#ifdef SINGLE
-	*my_dump = stk;
-	my_dump = &stk->next;
-	stk = stk->next;
-#else
-	stk->next->u.lis = stk;
-	stk = stk->next;
-	stk->u.lis->next = NULL;
-	dump = newnode(LIST_, stk->u, dump);
-#endif
-	while (getsym(), symb <= ATOM) {
-	    readfactor();
-#ifdef SINGLE
+
+    if (!priv) {
+	stk = LIST_NEWNODE(0L, stk);
+	my_dump = &stk->u.lis;
+    }
+    if (symb > ATOM)
+	return;
+    do {
+	readfactor(priv);
+	if (!priv) {
 	    *my_dump = stk;
 	    my_dump = &stk->next;
-	    stk = stk->next;
-#else
-	    dump->u.lis->next = stk;
-	    stk = stk->next;
-	    dump->u.lis->next->next = NULL;
-	    dump->u.lis = dump->u.lis->next;
-#endif
+	    stk = *my_dump;
+	    *my_dump = 0;
 	}
-#ifdef SINGLE
-	*my_dump = 0;
-#else
-	dump = dump->next;
-#endif
-    }
+    } while (getsym(), symb <= ATOM);
 }
 
 PUBLIC void writefactor(Node *n, FILE *stm)
