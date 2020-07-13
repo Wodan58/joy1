@@ -4,7 +4,8 @@
 Introduction
 ============
 
-Changes that are mentioned in globals.h are described here.
+Changes that are mentioned in globals.h are described here. A summary of the
+changes is at the end of this page.
 
 Recent changes
 ==============
@@ -97,7 +98,7 @@ between HIDE and IN end up in the symbol table. This change prevents them from
 showing up in the symbol table. This means that the output of alljoy.joy will
 be different when this change is enabled. Not having local symbols shown seems
 good to have, because they cannot be used outside their respective PUBLIC
-sections.
+sections. This is now accepted and not present in the source anymore.
 
 USE_UNKNOWN_SYMBOLS
 -------------------
@@ -166,3 +167,28 @@ CHECK_END_SYMBOL
 Existing behaviour, not accepted. The following program leads to an error and
 should not lead to an error: `get get +. 123 456`. The program prints `579` and
 then issues the error about a missing END or period.
+
+Summary
+=======
+
+This updated version of Joy is slowly drifting away from the legacy version.
+
+- Some builtins have been added: `fget`, `getch`, and `sametype`.
+
+- When compiling with BDW enabled, `dump`, `conts`, and `memoryindex` are no
+  longer used.
+
+- The paper j09imp.html states: "When input reverts to an earlier file, the
+  earlier line numbering is resumed." That functionality was added in this
+  version.
+
+- There is the option of compiling with BIT_64; also the floating point size is
+  kept the same as the integer size.
+
+- Local symbols are now fully supported: they can call each other and do not
+  show up in the symbol table.
+
+- The function `Compare` is used to enforce the same type of equality in all
+  comparison operators.
+
+- C89 is still supported in the NOBDW version.

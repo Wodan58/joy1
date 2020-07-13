@@ -1,8 +1,8 @@
 /* FILE: main.c */
 /*
  *  module  : main.c
- *  version : 1.20
- *  date    : 03/24/20
+ *  version : 1.27
+ *  date    : 06/29/20
  */
 
 /*
@@ -119,391 +119,376 @@ Manfred von Thun, 2006
 #include <stdlib.h>
 #include <setjmp.h>
 #include <time.h>
-#ifdef __GNUC__
-#include <signal.h>
-#include <execinfo.h>
-#endif
+#include <gc.h>
 #define ALLOC
 #include "globals.h"
-#ifdef strdup
-#undef strdup
-#endif
-#ifdef GC_BDW
-#include <gc.h>
-#define strdup GC_strdup
-#else
-char *my_strdup(char *str);
-#define strdup my_strdup
-#endif
 
-PRIVATE void enterglobal(void)
+/*
+    Initialize the symbol table with builtins.
+*/
+PUBLIC void inisymboltable(pEnv env) /* initialise */
 {
-    if (symtabindex - symtab >= SYMTABMAX)
-	execerror("index", "symbols");
-    location = symtabindex++;
-D(  printf("getsym, new: '%s'\n", ident); )
-    location->name = strdup(ident);
-    location->is_module = 0;
-#ifdef NO_HELP_LOCAL_SYMBOLS
-    location->is_local = 0;
-#endif
-    location->u.body = NULL; /* may be assigned in definition */
-    location->next = hashentry[hashvalue];
-D(  printf("entered %s at %p\n", ident, (void *)LOC2INT(location)); )
-    hashentry[hashvalue] = location;
+    int i, rv;
+    Entry ent;
+    khiter_t key;
+
+    symtabindex = env->symtab = GC_malloc(SYMTABMAX * sizeof(Entry));
+    env->hash = kh_init(Symtab);
+    for (i = 0; (ent.name = opername(i)) != 0; i++) {
+        ent.is_module = ent.is_local = 0;
+        ent.u.proc = operproc(i);
+        ent.next = 0;
+        key = kh_put(Symtab, env->hash, ent.name, &rv);
+        kh_value(env->hash, key) = symtabindex;
+        *symtabindex++ = ent;
+    }
+    firstlibra = symtabindex;
 }
 
-PUBLIC void lookup(int priv)
+/*
+    Global identifiers are stored at location.
+*/
+PRIVATE void enterglobal(pEnv env)
+{
+    int rv;
+    Entry ent;
+    khiter_t key;
+
+    if (symtabindex - env->symtab >= SYMTABMAX)
+        execerror("index", "symbols");
+    ent.name = GC_strdup(ident);
+    ent.is_module = ent.is_local = 0;
+    ent.u.body = 0; /* may be assigned in definition */
+    ent.next = 0;
+    key = kh_put(Symtab, env->hash, ent.name, &rv);
+    kh_value(env->hash, key) = location = symtabindex;
+    *symtabindex++ = ent;
+}
+
+/*
+    Lookup first searches ident in the local symbol tables; if not found in the
+    global symbol table; if still not found enters ident in the global table.
+*/
+PUBLIC void lookup(pEnv env, int priv)
 {
     int i;
+    Entry ent;
+    khiter_t key;
 
-D(  printf("%s  hashes to %d\n", ident, hashvalue); )
+    location = 0;
     for (i = display_lookup; i > 0; i--) {
-	location = display[i];
-	while (location != NULL && strcmp(ident, location->name) != 0)
-	    location = location->next;
-	if (location != NULL) /* found in local table */
-	    return;
+        location = display[i];
+        while (location != NULL && strcmp(ident, location->name) != 0)
+            location = location->next;
+        if (location != NULL) /* found in local table */
+            return;
     }
 
-    location = hashentry[hashvalue];
-    while (location != symtab && strcmp(ident, location->name) != 0)
-	location = location->next;
+    if ((key = kh_get(Symtab, env->hash, ident)) != kh_end(env->hash))
+        location = kh_value(env->hash, key);
 
-    if (!priv && location == symtab) /* not found, enter in global */
-	enterglobal();
+    if (!priv && (!location || location->is_local))
+        enterglobal(env); /* not found, enter in global */
 }
 
-PRIVATE void enteratom(int priv)
+/*
+    Enteratom enters a symbol the symbol table, maybe a local symbol.
+*/
+PRIVATE void enteratom(pEnv env, int priv)
 {
+    int rv;
+    Entry ent;
+    khiter_t key;
+
     if (priv && display_enter > 0) {
-	if (symtabindex - symtab >= SYMTABMAX)
-	    execerror("index", "symbols");
-	location = symtabindex++;
-D(  printf("hidden definition '%s' at %p\n",ident,(void *)LOC2INT(location)); )
-	location->name = strdup(ident);
-	location->is_module = 0;
-#ifdef NO_HELP_LOCAL_SYMBOLS
-	location->is_local = 1;
-#endif
-	location->u.body = NULL; /* may be assigned later */
-	location->next = display[display_enter];
-	display[display_enter] = location;
+        if (symtabindex - env->symtab >= SYMTABMAX)
+            execerror("index", "symbols");
+        ent.name = GC_strdup(ident);
+        ent.is_local = 1;
+        ent.is_module = 0;
+        ent.u.body = 0; /* may be assigned later */
+        ent.next = display[display_enter];
+        display[display_enter] = symtabindex;
+        key = kh_put(Symtab, env->hash, ent.name, &rv);
+        kh_value(env->hash, key) = location = symtabindex;
+        *symtabindex++ = ent;
     } else
-	lookup(0);
+        lookup(env, 0);
 }
 
-PRIVATE void defsequence(int priv);	/* forward */
-PRIVATE void compound_def(int priv);	/* forward */
+/*
+    The rest of these procedures is not affected by the change of the symbol
+    table implementation.
+*/
+PRIVATE void defsequence(pEnv env, int priv); /* forward */
+PRIVATE void compound_def(pEnv env, int priv); /* forward */
 
-PRIVATE void definition(int priv)
+PRIVATE void definition(pEnv env, int priv)
 {
-    Entry *here = NULL;
+    Entry* here = NULL;
 
     if (symb == LIBRA || symb == JPRIVATE || symb == HIDE || symb == MODULE) {
-	compound_def(priv);
-	if (symb == END || symb == PERIOD)
-	    getsym();
-	else
-	    error(" END or period '.' expected in compound definition");
-	return;
+        compound_def(env, priv);
+        if (symb == END || symb == PERIOD)
+            getsym(env);
+        else
+            error(" END or period '.' expected in compound definition");
+        return;
     }
 
     if (symb != ATOM)
-/*   NOW ALLOW EMPTY DEFINITION:
-      { error("atom expected at start of definition");
-	abortexecution_(); }
-*/
-	return;
+        /*   NOW ALLOW EMPTY DEFINITION:
+              { error("atom expected at start of definition");
+                abortexecution_(); }
+        */
+        return;
 
     /* symb == ATOM : */
     if (!priv) {
-	enteratom(priv);
-	if (location < firstlibra) {
-	    printf("warning: overwriting inbuilt '%s'\n", location->name);
-	    enterglobal();
-	}
-	here = location;
+        enteratom(env, priv);
+        if (location < firstlibra) {
+            printf("warning: overwriting inbuilt '%s'\n", location->name);
+            enterglobal(env);
+        }
+        here = location;
     }
-    getsym();
+    getsym(env);
     if (symb == EQDEF)
-	getsym();
+        getsym(env);
     else
-	error(" == expected in definition");
-    readterm(priv);
-D(  printf("assigned this body: "); )
-D(  if (!priv) writeterm(stk->u.lis, stdout); )
-D(  printf("\n"); )
+        error(" == expected in definition");
+    readterm(env, priv);
     if (!priv) {
-	if (here != NULL) {
-	    here->u.body = stk->u.lis;
-	    /* here->is_module = 0; */
-	}
-	stk = stk->next;
+        if (here != NULL)
+            here->u.body = env->stck->u.lis;
+        env->stck = env->stck->next;
     }
 }
 
-PRIVATE void defsequence(int priv)
+PRIVATE void defsequence(pEnv env, int priv)
 {
     if (priv)
-	enteratom(priv);
-    definition(priv);
+        enteratom(env, priv);
+    definition(env, priv);
     while (symb == SEMICOL) {
-	getsym();
-	if (priv && symb <= ATOM)
-	    enteratom(priv);
-	definition(priv);
+        getsym(env);
+        if (priv && symb <= ATOM)
+            enteratom(env, priv);
+        definition(env, priv);
     }
 }
 
 PRIVATE void enterdisplay(void)
 {
     if (++display_enter >= DISPLAYMAX)
-	execerror("index", "display");
+        execerror("index", "display");
 }
 
-PRIVATE void compound_def(int priv)
+PRIVATE void compound_def(pEnv env, int priv)
 {
-#ifdef USE_UNKNOWN_SYMBOLS
     long offset;
     int linenum;
-#endif
     Entry *here = NULL, *oldplace;
 
     switch (symb) {
-    case MODULE :
-	getsym();
-	if (symb != ATOM) {
-	    error("atom expected as name of module");
-	    abortexecution_();
-	}
-	if (!priv) {
-	    enteratom(priv);
-	    here = location;
-	}
-	getsym();
-	++display_lookup;
-	enterdisplay();
-	if (priv)
-	    display[display_enter] = NULL;
-	compound_def(priv);
-	if (!priv) {
-	    here->is_module = 1;
-	    here->u.module_fields = display[display_enter];
-	}
-	--display_enter;
-	--display_lookup;
-	break;
-    case JPRIVATE :
-    case HIDE :
-#ifdef USE_UNKNOWN_SYMBOLS
-	if (!priv) {
-	    offset = ftell(srcfile);
-	    linenum = getlinenum();
-	    compound_def(1);
-	    fseek(srcfile, offset, 0);
-	    resetlinebuffer(linenum);
-	}
-#endif
-	getsym();
-	if (display_lookup > display_enter) {
-	    /* already inside module or hide */
-	    oldplace = display[display_lookup];
-/*
-	    printf("lookup = %d\n", LOC2INT(display[display_lookup]));
-	    printf("enter = %d\n", LOC2INT(display[display_enter]));
-*/
-	    enterdisplay();
-	    defsequence(priv);
-	    --display_enter;
-/*
-	    printf("lookup = %d\n", LOC2INT(display[display_lookup]));
-	    printf("enter = %d\n", LOC2INT(display[display_enter]));
-*/
-	    compound_def(priv);
-	    display[display_lookup] = oldplace;
-	} else {
-	    ++display_lookup;
-	    enterdisplay();
-	    if (priv)
-		display[display_enter] = NULL;
-	    defsequence(priv);
-	    --display_enter;
-	    compound_def(priv);
-	    --display_lookup;
-	}
-	break;
-    case JPUBLIC :
-    case LIBRA :
-    case IN :
-	getsym();
-	defsequence(priv);
-	break;
-    default :
-	printf("warning: empty compound definition\n");
-	break;
+    case MODULE:
+        getsym(env);
+        if (symb != ATOM) {
+            error("atom expected as name of module");
+            abortexecution_(env);
+        }
+        if (!priv) {
+            enteratom(env, priv);
+            here = location;
+        }
+        getsym(env);
+        ++display_lookup;
+        enterdisplay();
+        if (priv)
+            display[display_enter] = NULL;
+        compound_def(env, priv);
+        if (!priv) {
+            here->is_module = 1;
+            here->u.module_fields = display[display_enter];
+        }
+        --display_enter;
+        --display_lookup;
+        break;
+    case JPRIVATE:
+    case HIDE:
+        if (!priv) {
+            offset = ftell(srcfile);
+            linenum = getlinenum();
+            compound_def(env, 1);
+            fseek(srcfile, offset, 0);
+            resetlinebuffer(linenum);
+        }
+        getsym(env);
+        if (display_lookup > display_enter) {
+            /* already inside module or hide */
+            oldplace = display[display_lookup];
+            /*
+                        printf("lookup = %d\n",
+               LOC2INT(display[display_lookup]));
+                        printf("enter = %d\n", LOC2INT(display[display_enter]));
+            */
+            enterdisplay();
+            defsequence(env, priv);
+            --display_enter;
+            /*
+                        printf("lookup = %d\n",
+               LOC2INT(display[display_lookup]));
+                        printf("enter = %d\n", LOC2INT(display[display_enter]));
+            */
+            compound_def(env, priv);
+            display[display_lookup] = oldplace;
+        } else {
+            ++display_lookup;
+            enterdisplay();
+            if (priv)
+                display[display_enter] = NULL;
+            defsequence(env, priv);
+            --display_enter;
+            compound_def(env, priv);
+            --display_lookup;
+        }
+        break;
+    case JPUBLIC:
+    case LIBRA:
+    case IN:
+        getsym(env);
+        defsequence(env, priv);
+        break;
+    default:
+        printf("warning: empty compound definition\n");
+        break;
     }
 }
 
 jmp_buf begin;
 
-PUBLIC void abortexecution_(void)
-{
-#ifndef SINGLE
-    conts = dump = dump1 = dump2 = dump3 = dump4 = dump5 = NULL;
-#endif
-    longjmp(begin, 0);
-}
+PUBLIC void abortexecution_(pEnv env) { longjmp(begin, 0); }
 
-PUBLIC void execerror(char *message, char *op)
+PUBLIC void execerror(char* message, char* op)
 {
     printf("run time error: %s needed for %s\n", message, op);
-    abortexecution_();
+    abortexecution_(0);
 }
 
-PUBLIC void quit_(void)
-{
-    exit(0);
-}
+PUBLIC void quit_(pEnv env) { exit(0); }
 
 static int mustinclude = 1;
 
-#define CHECK(D, NAME)						\
-    if (D) {							\
-        printf("->  %s is not empty:\n", NAME);			\
-	writeterm(D, stdout); printf("\n"); }
-
-#ifdef __GNUC__
-void Catch(int signum)
+#ifdef STATS
+static void report_clock(void)
 {
-    int nptrs;
-    void *buffer[100];
+    double timediff;
 
-    fprintf(stderr, "Caught: %d\n", signum);
-    nptrs = backtrace(buffer, 100);
-    backtrace_symbols_fd(buffer, nptrs, 2);
-    abort();
+    timediff = (double)(clock() - startclock) / CLOCKS_PER_SEC;
+    fprintf(stderr, "%.2f seconds CPU to execute\n", timediff);
 }
 #endif
 
-int main(int argc, char **argv)
+int start_main(int argc, char** argv)
 {
-    FILE *fp;
-#ifdef SINGLE
-    Node *my_prog;
-#endif
-#ifdef __GNUC__
-    signal(SIGSEGV, Catch);
-#endif
-#ifdef GC_BDW
-    GC_init();
-#endif
+    FILE* fp;
+    Node* prog;
+
+    Env env; /* symbol table, stack, and buckets */
+
     g_argc = argc;
     g_argv = argv;
     if (argc > 1) {
-	g_argc--;
-	g_argv++;
-	srcfile = fopen(argv[1], "r");
-	if (!srcfile) {
-	    printf("failed to open the file '%s'.\n", argv[1]);
-	    exit(0);
-	}
-	inilinebuffer(argv[1]);
-	if (!strcmp(argv[1], "joytut.inp") ||
-	    !strcmp(argv[1], "jp-joytst.joy")) {
-	    printf("JOY  -  compiled at 11:59:37 on Jul  2 2001 (NOBDW)\n");
-	    printf("Copyright 2001 by Manfred von Thun\n");
-	}
-	if (!strcmp(argv[1], "laztst.joy")) {
-	    printf("JOY  -  compiled at 15:32:32 on Nov 12 2001 (BDW)\n");
-	    printf("Copyright 2001 by Manfred von Thun\n");
-	}
-	if (!strcmp(argv[1], "lsptst.joy") || !strcmp(argv[1], "plgtst.joy") ||
-	    !strcmp(argv[1], "symtst.joy")) {
-	    printf("JOY  -  compiled at 14:54:45 on Feb  1 2002 (BDW)\n");
-	    printf("Copyright 2001 by Manfred von Thun\n");
-	}
-	if (!strcmp(argv[1], "grmtst.joy") || !strcmp(argv[1], "mtrtst.joy")) {
-	    printf("JOY  -  compiled at 15:19:20 on Apr  3 2002 (BDW)\n");
-	    printf("Copyright 2001 by Manfred von Thun\n");
-	}
-	if (!strcmp(argv[1], "modtst.joy")) {
-	    printf("JOY  -  compiled at 16:57:51 on Mar 17 2003 (BDW)\n");
-	    printf("Copyright 2001 by Manfred von Thun\n");
-	}
+        g_argc--;
+        g_argv++;
+        srcfile = fopen(argv[1], "r");
+        if (!srcfile) {
+            printf("failed to open the file '%s'.\n", argv[1]);
+            exit(0);
+        }
+        inilinebuffer(argv[1]);
+        if (!strcmp(argv[1], "joytut.inp")
+            || !strcmp(argv[1], "jp-joytst.joy")) {
+            printf("JOY  -  compiled at 11:59:37 on Jul  2 2001 (NOBDW)\n");
+            printf("Copyright 2001 by Manfred von Thun\n");
+        }
+        if (!strcmp(argv[1], "laztst.joy")) {
+            printf("JOY  -  compiled at 15:32:32 on Nov 12 2001 (BDW)\n");
+            printf("Copyright 2001 by Manfred von Thun\n");
+        }
+        if (!strcmp(argv[1], "lsptst.joy") || !strcmp(argv[1], "plgtst.joy")
+            || !strcmp(argv[1], "symtst.joy")) {
+            printf("JOY  -  compiled at 14:54:45 on Feb  1 2002 (BDW)\n");
+            printf("Copyright 2001 by Manfred von Thun\n");
+        }
+        if (!strcmp(argv[1], "grmtst.joy") || !strcmp(argv[1], "mtrtst.joy")) {
+            printf("JOY  -  compiled at 15:19:20 on Apr  3 2002 (BDW)\n");
+            printf("Copyright 2001 by Manfred von Thun\n");
+        }
+        if (!strcmp(argv[1], "modtst.joy")) {
+            printf("JOY  -  compiled at 16:57:51 on Mar 17 2003 (BDW)\n");
+            printf("Copyright 2001 by Manfred von Thun\n");
+        }
     } else {
-	srcfile = stdin;
-	inilinebuffer(0);
+        srcfile = stdin;
+        inilinebuffer(0);
 #ifdef GC_BDW
-	printf("JOY  -  compiled at %s on %s (BDW)\n", __TIME__, __DATE__);
+        printf("JOY  -  compiled at %s on %s (BDW)\n", __TIME__, __DATE__);
 #else
-	printf("JOY  -  compiled at %s on %s (NOBDW)\n", __TIME__, __DATE__);
+        printf("JOY  -  compiled at %s on %s (MINBDW)\n", __TIME__, __DATE__);
 #endif
-	printf("Copyright 2001 by Manfred von Thun\n");
+        printf("Copyright 2001 by Manfred von Thun\n");
     }
     startclock = clock();
-    gc_clock = 0;
+#ifdef STATS
+    atexit(report_clock);
+#endif
     echoflag = INIECHOFLAG;
     tracegc = INITRACEGC;
     autoput = INIAUTOPUT;
-    inisymboltable();
+    inisymboltable(&env);
     display[0] = NULL;
-    inimem1();
-    inimem2();
+    env.stck = NULL;
     setjmp(begin);
-D(  printf("starting main loop\n"); )
     setbuf(stdout, 0);
     while (1) {
-	if (mustinclude) {
-	    mustinclude = 0;
-	    if ((fp = fopen("usrlib.joy", "r")) != 0) {
-		fclose(fp);
-		doinclude("usrlib.joy");
-	    }
-	}
-	getsym();
-	if (symb == LIBRA || symb == HIDE || symb == MODULE ) {
-	    inimem1();
-	    compound_def(0);
-	    inimem2();
-	} else {
-	    readterm(0);
-D(  if (stk) { )
-D(  printf("program is: "); writeterm(stk->u.lis, stdout); printf("\n"); )
-D(  } )
-#ifdef SINGLE
-	    if (stk != NULL) {
-		my_prog = stk->u.lis;
-		stk = stk->next;
-		exeterm(my_prog);
-	    }
-#else
-	    if (stk != NULL) {
-		prog = stk->u.lis;
-		stk = stk->next;
-		conts = NULL;
-		exeterm(prog);
-	    }
-	    if (conts || dump || dump1 || dump2 || dump3 || dump4 || dump5) {
-		printf("the dumps are not empty\n");
-		CHECK(conts, "conts");
-		CHECK(dump, "dump"); CHECK(dump1, "dump1");
-		CHECK(dump2, "dump2"); CHECK(dump3, "dump3");
-		CHECK(dump4, "dump4"); CHECK(dump5, "dump5");
-	    }
-#endif
-	    if (autoput == 2 && stk != NULL) {
-		writeterm(stk, stdout);
-		printf("\n");
-	    } else if (autoput == 1 && stk != NULL) {
-		writefactor(stk, stdout);
-		printf("\n");
-		stk = stk->next;
-	    }
-	}
-#ifdef CHECK_END_SYMBOL
-	if (symb != END && symb != PERIOD)
-	    error(" END or period '.' expected");
-#endif
+        if (mustinclude) {
+            mustinclude = 0;
+            if ((fp = fopen("usrlib.joy", "r")) != 0) {
+                fclose(fp);
+                doinclude("usrlib.joy");
+            }
+        }
+        getsym(&env);
+        if (symb == LIBRA || symb == HIDE || symb == MODULE)
+            compound_def(&env, 0);
+        else {
+            readterm(&env, 0);
+            if (env.stck != NULL) {
+                prog = env.stck->u.lis;
+                env.stck = env.stck->next;
+                exeterm(&env, prog);
+            }
+            if (autoput == 2 && env.stck != NULL) {
+                writeterm(&env, env.stck, stdout);
+                printf("\n");
+            } else if (autoput == 1 && env.stck != NULL) {
+                writefactor(&env, env.stck, stdout);
+                printf("\n");
+                env.stck = env.stck->next;
+            }
+        }
     }
+}
+
+int main(int argc, char** argv)
+{
+    int (*volatile m)(int, char**) = start_main;
+
+#ifdef GC_BDW
+    GC_INIT();
+#else
+    GC_init(&argc);
+#endif
+    return (*m)(argc, argv);
 }
