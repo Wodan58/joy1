@@ -1,8 +1,8 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.34
- *  date    : 06/25/20
+ *  version : 1.35
+ *  date    : 07/23/20
  */
 
 /*
@@ -2163,7 +2163,7 @@ HELP(h_help1_, ==)
 
 /* - - - - -   C O M B I N A T O R S   - - - - - */
 
-#ifdef TRACE
+#ifdef TRACING
 PUBLIC void printfactor(pEnv env, Node* n, FILE* stm)
 {
     switch (n->op) {
@@ -2243,7 +2243,7 @@ start:
 #ifdef STATS
         ++opers;
 #endif
-#ifdef TRACE
+#ifdef TRACING
         printfactor(env, n, stdout);
         printf(" . ");
         writeterm(env, env->stck, stdout);

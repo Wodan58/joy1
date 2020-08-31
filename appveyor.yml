@@ -6,9 +6,6 @@ environment:
   BDWGC_VERSION: 8.0.4
   BDWGC_ARCHIVE: gc-%BDWGC_VERSION%.tar.gz
 
-cache:
-  - %BDWGC_ARCHIVE%
-
 install:
   # install BDWGC
   - if not exist %BDWGC_ARCHIVE% appveyor DownloadFile "https://github.com/ivmai/bdwgc/releases/download/v%BDWGC_VERSION%/%BDWGC_ARCHIVE%"

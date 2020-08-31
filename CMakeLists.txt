@@ -8,7 +8,8 @@ option(REAL_BDW "Use BDW garbage collector" OFF)
 if(WIN32)
 add_definitions(-DGC_NOT_DLL -D_CRT_SECURE_NO_WARNINGS)
 else()
-#add_definitions(-DSTATS)
+#add_definitions(-DTRACING -DSTATS)
+add_definitions(-DSTATS)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 --coverage -fprofile-arcs -ftest-coverage") # debug, no optimization
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage") # enabling coverage
 endif()

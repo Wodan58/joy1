@@ -1,8 +1,8 @@
 /* FILE: globals.h */
 /*
  *  module  : globals.h
- *  version : 1.28
- *  date    : 06/29/20
+ *  version : 1.29
+ *  date    : 08/17/20
  */
 #ifndef GLOBALS_H
 #define GLOBALS_H
@@ -106,7 +106,7 @@ CHECK_END_SYMBOL
 TRACK_USED_SYMBOLS
 NOT_ALSO_FOR_FLOAT
 NOT_ALSO_FOR_FILE
-TRACE
+TRACING
 STATS
 */
 /*
