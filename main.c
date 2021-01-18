@@ -1,8 +1,8 @@
 /* FILE: main.c */
 /*
  *  module  : main.c
- *  version : 1.29
- *  date    : 01/09/21
+ *  version : 1.30
+ *  date    : 01/18/21
  */
 
 /*
@@ -172,7 +172,6 @@ PRIVATE void enterglobal(pEnv env)
 PUBLIC void lookup(pEnv env, int priv)
 {
     int i;
-    Entry ent;
     khiter_t key;
 
     location = 0;

@@ -1,7 +1,7 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.1
-#   date    : 01/14/21
+#   version : 1.2
+#   date    : 01/18/21
 #
 cmake_minimum_required(VERSION 3.0)
 project(Joy VERSION 1.0)
@@ -21,14 +21,18 @@ add_definitions(-DGC_BDW)
 include_directories(bdwgc/include)
 add_subdirectory(bdwgc)
 add_executable(joy interp.c scan.c utils.c main.c srand.c rand.c)
+if(WIN32)
+target_link_libraries(joy "${BDWGC}")
+else()
 target_link_libraries(joy "${BDWGC}" m)
+endif()
 else()
 include_directories(.)
 add_executable(joy interp.c scan.c utils.c main.c gc.c srand.c rand.c)
-target_link_libraries(joy m)
 endif()
 if(WIN32)
 else()
+target_link_libraries(joy m)
 add_subdirectory(lib)
 add_subdirectory(test)
 endif()
