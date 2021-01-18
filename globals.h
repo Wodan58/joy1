@@ -1,8 +1,8 @@
 /* FILE: globals.h */
 /*
  *  module  : globals.h
- *  version : 1.30
- *  date    : 01/15/21
+ *  version : 1.31
+ *  date    : 01/18/21
  */
 #ifndef GLOBALS_H
 #define GLOBALS_H
@@ -17,7 +17,9 @@
     The following #defines are not available in the oldest ANSI standard.
 */
 #define USE_SNPRINTF
+#ifndef _MSC_VER
 #define USE_TIME_REC
+#endif
 
 /*
     The following #defines are NOT present in the source code.

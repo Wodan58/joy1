@@ -1,8 +1,8 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.36
- *  date    : 01/08/21
+ *  version : 1.37
+ *  date    : 01/18/21
  */
 
 /*
@@ -283,7 +283,7 @@ PUSH(echo_, INTEGER_NEWNODE, echoflag)
 PUSH(autoput_, INTEGER_NEWNODE, autoput)
 PUSH(undeferror_, INTEGER_NEWNODE, undeferror)
 PUSH(clock_, INTEGER_NEWNODE, (clock() - startclock))
-PUSH(time_, INTEGER_NEWNODE, time(NULL))
+PUSH(time_, INTEGER_NEWNODE, (long_t)time(NULL))
 PUSH(argc_, INTEGER_NEWNODE, g_argc)
 
 PUBLIC void stack_(pEnv env) { NULLARY(LIST_NEWNODE, env->stck); }
@@ -796,7 +796,7 @@ PRIVATE void mktime_(pEnv env)
     ONEPARAM("mktime");
     LIST("mktime");
     decode_time(env, &t);
-    UNARY(INTEGER_NEWNODE, mktime(&t));
+    UNARY(INTEGER_NEWNODE, (long_t)mktime(&t));
 }
 
 PRIVATE void strftime_(pEnv env)
