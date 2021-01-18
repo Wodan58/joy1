@@ -1,8 +1,8 @@
 /* FILE: globals.h */
 /*
  *  module  : globals.h
- *  version : 1.29
- *  date    : 08/17/20
+ *  version : 1.30
+ *  date    : 01/15/21
  */
 #ifndef GLOBALS_H
 #define GLOBALS_H
@@ -317,7 +317,7 @@ PUBLIC void inilinebuffer(char* filnam);
 PUBLIC int getlinenum(void);
 PUBLIC void resetlinebuffer(int linenum);
 PUBLIC void error(char* message);
-PUBLIC int doinclude(char* filnam);
+PUBLIC void doinclude(char* filnam);
 PUBLIC void getsym(pEnv env);
 PUBLIC void inimem1(void);
 PUBLIC void inimem2(void);

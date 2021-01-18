@@ -1,8 +1,8 @@
 /* FILE: scan.c */
 /*
  *  module  : scan.c
- *  version : 1.22
- *  date    : 06/23/20
+ *  version : 1.23
+ *  date    : 01/15/21
  */
 #include <stdio.h>
 #include <string.h>
@@ -115,7 +115,7 @@ PUBLIC void error(char* message)
 #endif
 }
 
-PUBLIC int doinclude(char* filnam)
+PUBLIC void doinclude(char* filnam)
 {
     FILE* fp;
 
@@ -128,10 +128,9 @@ PUBLIC int doinclude(char* filnam)
         infile[++ilevel].fp = srcfile = fp;
         infile[ilevel].name = filnam;
         infile[ilevel].linenum = 0;
-        return 1;
+        return;
     }
     execerror("valid file name", "include");
-    return -1; /* not reached */
 }
 
 #ifdef FGET_FROM_FILE

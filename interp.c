@@ -1,8 +1,8 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.35
- *  date    : 07/23/20
+ *  version : 1.36
+ *  date    : 01/08/21
  */
 
 /*
@@ -42,6 +42,9 @@
 #ifdef CORRECT_INTERN_LOOKUP
 #include <ctype.h>
 #endif
+
+void my_srand(unsigned num);
+int my_rand(void);
 
 PRIVATE void helpdetail_(pEnv env); /* this file */
 PRIVATE void undefs_(pEnv env);
@@ -271,7 +274,7 @@ PUSH(stderr_, FILE_NEWNODE, stderr)
 PUSH(dump_, LIST_NEWNODE, 0) /* variables */
 PUSH(conts_, LIST_NEWNODE, 0)
 PUSH(symtabindex_, INTEGER_NEWNODE, LOC2INT(symtabindex))
-PUSH(rand_, INTEGER_NEWNODE, rand())
+PUSH(rand_, INTEGER_NEWNODE, my_rand())
 #if 0
 /* this is now in utils.c */
 PUSH(memoryindex_, INTEGER_NEWNODE, MEM2INT(memoryindex))
@@ -2106,7 +2109,7 @@ USETOP(setautoput_, "setautoput", NUMERICTYPE, autoput = env->stck->u.num)
 USETOP(
     setundeferror_, "setundeferror", NUMERICTYPE, undeferror = env->stck->u.num)
 USETOP(settracegc_, "settracegc", NUMERICTYPE, tracegc = env->stck->u.num)
-USETOP(srand_, "srand", INTEGER, srand((unsigned int)env->stck->u.num))
+USETOP(srand_, "srand", INTEGER, my_srand((unsigned)env->stck->u.num))
 USETOP(include_, "include", STRING, doinclude(env->stck->u.str))
 USETOP(system_, "system", STRING, (void)system(env->stck->u.str))
 
