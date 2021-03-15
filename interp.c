@@ -1,8 +1,8 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.43
- *  date    : 03/14/21
+ *  version : 1.44
+ *  date    : 03/15/21
  */
 
 /*
@@ -558,7 +558,7 @@ PRIVATE void format_(pEnv env)
     FOURPARAMS("format");
     INTEGER("format");
     INTEGER2("format");
-    prec = env->stck->u.num;
+    prec = (char)env->stck->u.num;
     POP(env->stck);
     width = env->stck->u.num;
     POP(env->stck);
@@ -596,7 +596,7 @@ PRIVATE void formatf_(pEnv env)
     width = env->stck->u.num;
     POP(env->stck);
     CHARACTER("formatf");
-    spec = env->stck->u.num;
+    spec = (char)env->stck->u.num;
     POP(env->stck);
     if (!strchr("eEfgG", spec))
         execerror("one of: e E f g G", "formatf");
@@ -1098,7 +1098,7 @@ PRIVATE double Compare(pEnv env, Node *first, Node *second, int *error)
                     comp = 1;                                                  \
             }                                                                  \
         }                                                                      \
-        env->stck = CONSTRUCTOR(comp, env->stck->next->next);                  \
+        env->stck = CONSTRUCTOR((int)comp, env->stck->next->next);             \
     }
 
 COMPREL(eql_, "=", BOOLEAN_NEWNODE, ==, i == j)
@@ -1277,7 +1277,7 @@ PRIVATE void fwrite_(pEnv env)
             execerror("numeric list", "fwrite");
     buff = GC_malloc_atomic(length);
     for (n = env->stck->u.lis, i = 0; n; n = n->next, i++)
-        buff[i] = n->u.num;
+        buff[i] = (unsigned char)n->u.num;
     POP(env->stck);
     FILE("fwrite");
     fwrite(buff, (size_t)length, (size_t)1, env->stck->u.fil);
@@ -1599,7 +1599,7 @@ PRIVATE void opcase_(pEnv env)
             if (ELEM->op != CHAR_)                                             \
                 execerror("character", NAME);                                  \
             s = GC_malloc_atomic(strlen(AGGR->u.str) + 2);                     \
-            *s = ELEM->u.num;                                                  \
+            *s = (char)ELEM->u.num;                                            \
             strcpy(s + 1, AGGR->u.str);                                        \
             BINARY(STRING_NEWNODE, s);                                         \
             break;                                                             \
@@ -1906,7 +1906,7 @@ TYPE(user_, "user", ==, USR_)
         POP(env->stck);                                                        \
     }
 USETOP(put_, "put", ONEPARAM, writefactor(env, env->stck, stdout); printf(" "))
-USETOP(putch_, "putch", NUMERICTYPE, printf("%c", env->stck->u.num))
+USETOP(putch_, "putch", NUMERICTYPE, printf("%c", (int)env->stck->u.num))
 USETOP(putchars_, "putchars", STRING, printf("%s", env->stck->u.str))
 USETOP(setecho_, "setecho", NUMERICTYPE, echoflag = env->stck->u.num)
 USETOP(setautoput_, "setautoput", NUMERICTYPE, autoput = env->stck->u.num)
@@ -2345,7 +2345,7 @@ PRIVATE void map_(pEnv env)
         for (s = ptr; *s; s++) {
             env->stck = CHAR_NEWNODE(*s, save);
             exeterm(env, program);
-            resultstring[j++] = env->stck->u.num;
+            resultstring[j++] = (char)env->stck->u.num;
         }
         resultstring[j] = 0;
         env->stck = STRING_NEWNODE(resultstring, save);
