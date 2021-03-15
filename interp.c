@@ -1,8 +1,8 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.37
- *  date    : 01/18/21
+ *  version : 1.43
+ *  date    : 03/14/21
  */
 
 /*
@@ -34,14 +34,12 @@
 */
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-#include <gc.h>
+#include "gc.h"
 #include "globals.h"
-#ifdef CORRECT_INTERN_LOOKUP
-#include <ctype.h>
-#endif
 
 void my_srand(unsigned num);
 int my_rand(void);
@@ -51,7 +49,6 @@ PRIVATE void undefs_(pEnv env);
 PRIVATE void make_manual(int style /* 0=plain, 1=html, 2=latex */);
 PRIVATE void manual_list_(pEnv env);
 
-#ifdef RUNTIME_CHECKS
 #define ONEPARAM(NAME)                                                         \
     if (env->stck == NULL)                                                     \
     execerror("one parameter", NAME)
@@ -116,32 +113,11 @@ PRIVATE void manual_list_(pEnv env);
 #define NUMERIC2(NAME)                                                         \
     if (env->stck->next->op != INTEGER_ && env->stck->next->op != CHAR_)       \
     execerror("numeric second parameter", NAME)
-#else
-#define ONEPARAM(NAME)
-#define TWOPARAMS(NAME)
-#define THREEPARAMS(NAME)
-#define FOURPARAMS(NAME)
-#define FIVEPARAMS(NAME)
-#define ONEQUOTE(NAME)
-#define TWOQUOTES(NAME)
-#define THREEQUOTES(NAME)
-#define FOURQUOTES(NAME)
-#define SAME2TYPES(NAME)
-#define STRING(NAME)
-#define STRING2(NAME)
-#define INTEGER(NAME)
-#define INTEGER2(NAME)
-#define CHARACTER(NAME)
-#define INTEGERS2(NAME)
-#define NUMERICTYPE(NAME)
-#define NUMERIC2(NAME)
-#endif
 #define FLOATABLE (env->stck->op == INTEGER_ || env->stck->op == FLOAT_)
 #define FLOATABLE2                                                             \
     ((env->stck->op == FLOAT_ && env->stck->next->op == FLOAT_)                \
         || (env->stck->op == FLOAT_ && env->stck->next->op == INTEGER_)        \
         || (env->stck->op == INTEGER_ && env->stck->next->op == FLOAT_))
-#ifdef RUNTIME_CHECKS
 #define FLOAT(NAME)                                                            \
     if (!FLOATABLE)                                                            \
         execerror("float or integer", NAME);
@@ -149,10 +125,6 @@ PRIVATE void manual_list_(pEnv env);
     if (!(FLOATABLE2 || (env->stck->op == INTEGER_                             \
                             && env->stck->next->op == INTEGER_)))              \
     execerror("two floats or integers", NAME)
-#else
-#define FLOAT(NAME)
-#define FLOAT2(NAME)
-#endif
 #define FLOATVAL                                                               \
     (env->stck->op == FLOAT_ ? env->stck->u.dbl : (double)env->stck->u.num)
 #define FLOATVAL2                                                              \
@@ -173,7 +145,6 @@ PRIVATE void manual_list_(pEnv env);
         BINARY(FLOAT_NEWNODE, (FLOATVAL2)OPER(FLOATVAL));                      \
         return;                                                                \
     }
-#ifdef RUNTIME_CHECKS
 #define FILE(NAME)                                                             \
     if (env->stck->op != FILE_ || env->stck->u.fil == NULL)                    \
     execerror("file", NAME)
@@ -207,21 +178,6 @@ PRIVATE void manual_list_(pEnv env);
 #define INDEXTOOLARGE(NAME) execerror("smaller index", NAME)
 #define BADAGGREGATE(NAME) execerror("aggregate parameter", NAME)
 #define BADDATA(NAME) execerror("different type", NAME)
-#else
-#define FILE(NAME)
-#define CHECKZERO(NAME)
-#define LIST(NAME)
-#define LIST2(NAME)
-#define USERDEF(NAME)
-#define CHECKLIST(OPR, NAME)
-#define CHECKSETMEMBER(NODE, NAME)
-#define CHECKEMPTYSET(SET, NAME)
-#define CHECKEMPTYSTRING(STRING, NAME)
-#define CHECKEMPTYLIST(LIST, NAME)
-#define INDEXTOOLARGE(NAME)
-#define BADAGGREGATE(NAME)
-#define BADDATA(NAME)
-#endif
 
 #define DMP dump->u.lis
 #define DMP1 dump1->u.lis
@@ -273,7 +229,7 @@ PUSH(stdout_, FILE_NEWNODE, stdout)
 PUSH(stderr_, FILE_NEWNODE, stderr)
 PUSH(dump_, LIST_NEWNODE, 0) /* variables */
 PUSH(conts_, LIST_NEWNODE, 0)
-PUSH(symtabindex_, INTEGER_NEWNODE, LOC2INT(symtabindex))
+PUSH(symtabindex_, INTEGER_NEWNODE, symtabindex)
 PUSH(rand_, INTEGER_NEWNODE, my_rand())
 #if 0
 /* this is now in utils.c */
@@ -290,7 +246,7 @@ PUBLIC void stack_(pEnv env) { NULLARY(LIST_NEWNODE, env->stck); }
 
 /* - - - - -   O P E R A T O R S   - - - - - */
 
-PRIVATE void id_(pEnv env) { /* do nothing */ }
+PRIVATE void id_(pEnv env) { /* do nothing */}
 
 PRIVATE void unstack_(pEnv env)
 {
@@ -300,7 +256,7 @@ PRIVATE void unstack_(pEnv env)
 }
 
 #if 0
-PRIVATE void newstack_(void)
+PRIVATE void newstack_(pEnv env)
 {
     env->stck = NULL;
 }
@@ -311,20 +267,19 @@ PRIVATE void newstack_(void)
 PRIVATE void name_(pEnv env)
 {
     ONEPARAM("name");
-    UNARY(STRING_NEWNODE, env->stck->op == USR_ ? env->stck->u.ent->name
-                                                : opername(env->stck->op));
+    UNARY(STRING_NEWNODE, env->stck->op == USR_
+            ? vec_at(env->symtab, env->stck->u.ent).name
+            : opername(env->stck->op));
 }
 
 PRIVATE void intern_(pEnv env)
 {
-#if defined(RUNTIME_CHECKS)
-    char* p;
-#endif
+    char *p;
+
     ONEPARAM("intern");
     STRING("intern");
     strncpy(ident, env->stck->u.str, ALEN);
     ident[ALEN - 1] = 0;
-#if defined(RUNTIME_CHECKS) && defined(CORRECT_INTERN_LOOKUP)
     p = 0;
     if (ident[0] == '-' || !strchr("(#)[]{}.;'\"0123456789", ident[0]))
         for (p = ident + 1; *p; p++)
@@ -332,18 +287,17 @@ PRIVATE void intern_(pEnv env)
                 break;
     if (!p || *p)
         execerror("valid name", ident);
-#endif
     lookup(env, 0);
     if (location < firstlibra) {
-        env->bucket2.proc = location->u.proc;
-        GUNARY(LOC2INT(location), env->bucket2);
+        env->yylval.proc = vec_at(env->symtab, location).u.proc;
+        GUNARY(location, env->yylval);
     } else
         UNARY(USR_NEWNODE, location);
 }
 
 PRIVATE void getenv_(pEnv env)
 {
-    char* str;
+    char *str;
 
     ONEPARAM("getenv");
     STRING("getenv");
@@ -356,7 +310,7 @@ PRIVATE void body_(pEnv env)
 {
     ONEPARAM("body");
     USERDEF("body");
-    UNARY(LIST_NEWNODE, env->stck->u.ent->u.body);
+    UNARY(LIST_NEWNODE, vec_at(env->symtab, env->stck->u.ent).u.body);
 }
 
 PRIVATE void pop_(pEnv env)
@@ -431,7 +385,7 @@ PRIVATE void dup_(pEnv env)
 #define DIPPED(PROCEDURE, NAME, PARAMCOUNT, ARGUMENT)                          \
     PRIVATE void PROCEDURE(pEnv env)                                           \
     {                                                                          \
-        Node* save;                                                            \
+        Node *save;                                                            \
         PARAMCOUNT(NAME);                                                      \
         save = env->stck;                                                      \
         env->stck = env->stck->next;                                           \
@@ -461,7 +415,6 @@ DIPPED(rotated_, "rotated", FOURPARAMS, rotate_)
         case BOOLEAN_:                                                         \
         case CHAR_:                                                            \
         case INTEGER_:                                                         \
-        case LIST_:                                                            \
             BINARY(BOOLEAN_NEWNODE,                                            \
                 (env->stck->next->u.num OPER2 env->stck->u.num));              \
             return;                                                            \
@@ -497,10 +450,6 @@ PRIVATE void abs_(pEnv env)
     }
     /* end new */
     FLOAT_U(fabs);
-#if 0
-    INTEGER("abs");
-    if (env->stck->u.num < 0) UNARY(INTEGER_NEWNODE, - env->stck->u.num);
-#endif
 }
 
 PRIVATE double fsgn(double f)
@@ -524,11 +473,6 @@ PRIVATE void sign_(pEnv env)
     }
     /* end new */
     FLOAT_U(fsgn);
-#if 0
-    INTEGER("sign");
-    if (env->stck->u.num < 0) UNARY(INTEGER_NEWNODE, -1L);
-    else if (env->stck->u.num > 0) UNARY(INTEGER_NEWNODE, 1L);
-#endif
 }
 
 PRIVATE void neg_(pEnv env)
@@ -543,23 +487,7 @@ PRIVATE void neg_(pEnv env)
     }
     /* end new */
     FLOAT_U(-);
-#if 0
-    INTEGER("neg");
-    UNARY(INTEGER_NEWNODE, -env->stck->u.num);
-#endif
 }
-
-/* probably no longer needed:
-#define MULDIV(PROCEDURE, NAME, OPER, CHECK)			\
-PRIVATE void PROCEDURE(void)					\
-{   TWOPARAMS(NAME);						\
-    FLOAT_I(OPER);						\
-    INTEGERS2(NAME);						\
-    CHECK;							\
-    BINARY(INTEGER_NEWNODE, env->stck->next->u.num OPER env->stck->u.num); }
-MULDIV(mul_, "*", *, )
-MULDIV(divide_, "/", /, CHECKZERO("/"))
-*/
 
 PRIVATE void mul_(pEnv env)
 {
@@ -571,12 +499,10 @@ PRIVATE void mul_(pEnv env)
 
 PRIVATE void divide_(pEnv env)
 {
-#ifdef RUNTIME_CHECKS
     TWOPARAMS("/");
     if ((env->stck->op == FLOAT_ && env->stck->u.dbl == 0.0)
         || (env->stck->op == INTEGER_ && env->stck->u.num == 0))
         execerror("non-zero divisor", "/");
-#endif
     FLOAT_I(/);
     INTEGERS2("/");
     BINARY(INTEGER_NEWNODE, env->stck->next->u.num / env->stck->u.num);
@@ -593,37 +519,26 @@ PRIVATE void rem_(pEnv env)
 
 PRIVATE void div_(pEnv env)
 {
-#ifdef BIT_32
     ldiv_t result;
-#else
-    lldiv_t result;
-#endif
+
     TWOPARAMS("div");
     INTEGERS2("div");
     CHECKZERO("div");
-#ifdef BIT_32
-    result = ldiv(env->stck->next->u.num, env->stck->u.num);
-#else
-    result = lldiv(env->stck->next->u.num, env->stck->u.num);
-#endif
+    result = ldiv(env->stck->next->u.num, env->stck->u.num); /* BIT_32 */
     BINARY(INTEGER_NEWNODE, result.quot);
     NULLARY(INTEGER_NEWNODE, result.rem);
 }
 
 PRIVATE void strtol_(pEnv env)
 {
-    Node* base;
+    Node *base;
 
     TWOPARAMS("strtol");
     base = env->stck;
     INTEGER("strtol");
     env->stck = env->stck->next;
-    STRING("strtol");
-#ifdef BIT_32
+    STRING("strtol"); /* BIT_32 */
     UNARY(INTEGER_NEWNODE, strtol(env->stck->u.str, NULL, base->u.num));
-#else
-    UNARY(INTEGER_NEWNODE, strtoll(env->stck->u.str, NULL, base->u.num));
-#endif
 }
 
 PRIVATE void strtod_(pEnv env)
@@ -650,22 +565,17 @@ PRIVATE void format_(pEnv env)
     CHARACTER("format");
     spec = env->stck->u.num;
     POP(env->stck);
-#ifdef RUNTIME_CHECKS
     if (!strchr("dioxX", spec))
         execerror("one of: d i o x X", "format");
-#endif
     strcpy(format, "%*.*ld");
     format[5] = spec;
+    NUMERICTYPE("format");
 #ifdef USE_SNPRINTF
     leng = snprintf(0, 0, format, width, prec, env->stck->u.num) + 1;
     result = GC_malloc_atomic(leng + 1);
-#else
-    result = GC_malloc_atomic(INPLINEMAX); /* should be sufficient */
-#endif
-    NUMERICTYPE("format");
-#ifdef USE_SNPRINTF
     snprintf(result, leng, format, width, prec, env->stck->u.num);
 #else
+    result = GC_malloc_atomic(INPLINEMAX); /* should be sufficient */
     sprintf(result, format, width, prec, env->stck->u.num);
 #endif
     UNARY(STRING_NEWNODE, result);
@@ -688,22 +598,17 @@ PRIVATE void formatf_(pEnv env)
     CHARACTER("formatf");
     spec = env->stck->u.num;
     POP(env->stck);
-#ifdef RUNTIME_CHECKS
     if (!strchr("eEfgG", spec))
         execerror("one of: e E f g G", "formatf");
-#endif
     strcpy(format, "%*.*lg");
     format[5] = spec;
+    FLOAT("formatf");
 #ifdef USE_SNPRINTF
     leng = snprintf(0, 0, format, width, prec, env->stck->u.num) + 1;
     result = GC_malloc_atomic(leng + 1);
-#else
-    result = GC_malloc_atomic(INPLINEMAX); /* should be sufficient */
-#endif
-    FLOAT("formatf");
-#ifdef USE_SNPRINTF
     snprintf(result, leng, format, width, prec, env->stck->u.dbl);
 #else
+    result = GC_malloc_atomic(INPLINEMAX); /* should be sufficient */
     sprintf(result, format, width, prec, env->stck->u.dbl);
 #endif
     UNARY(STRING_NEWNODE, result);
@@ -712,9 +617,9 @@ PRIVATE void formatf_(pEnv env)
 /* - - -   TIME   - - - */
 
 #ifndef USE_TIME_REC
-void localtime_r(time_t* t, struct tm* tm) { *tm = *localtime(t); }
+void localtime_r(time_t *t, struct tm *tm) { *tm = *localtime(t); }
 
-void gmtime_r(time_t* t, struct tm* tm) { *tm = *gmtime(t); }
+void gmtime_r(time_t *t, struct tm *tm) { *tm = *gmtime(t); }
 #endif
 
 #define UNMKTIME(PROCEDURE, NAME, FUNC)                                        \
@@ -723,7 +628,7 @@ void gmtime_r(time_t* t, struct tm* tm) { *tm = *gmtime(t); }
         struct tm t;                                                           \
         long_t wday;                                                           \
         time_t timval;                                                         \
-        Node* my_dump;                                                         \
+        Node *my_dump;                                                         \
         ONEPARAM(NAME);                                                        \
         INTEGER(NAME);                                                         \
         timval = env->stck->u.num;                                             \
@@ -745,9 +650,9 @@ void gmtime_r(time_t* t, struct tm* tm) { *tm = *gmtime(t); }
 UNMKTIME(localtime_, "localtime", localtime_r)
 UNMKTIME(gmtime_, "gmtime", gmtime_r)
 
-PRIVATE void decode_time(pEnv env, struct tm* t)
+PRIVATE void decode_time(pEnv env, struct tm *t)
 {
-    Node* p;
+    Node *p;
     t->tm_year = t->tm_mon = t->tm_mday = t->tm_hour = t->tm_min = t->tm_sec
         = t->tm_isdst = t->tm_yday = t->tm_wday = 0;
     p = env->stck->u.lis;
@@ -947,14 +852,15 @@ PLUSMINUS(minus_, "-", -)
 MAXMIN(max_, "max", <)
 MAXMIN(min_, "min", >)
 
-PRIVATE double Compare(Node* first, Node* second, int* error)
+PRIVATE double Compare(pEnv env, Node *first, Node *second, int *error)
 {
     *error = 0;
     switch (first->op) {
     case USR_:
         switch (second->op) {
         case USR_:
-            return strcmp(first->u.ent->name, second->u.ent->name);
+            return strcmp(vec_at(env->symtab, first->u.ent).name,
+                vec_at(env->symtab, second->u.ent).name);
         case ANON_FUNCT_:
         case BOOLEAN_:
         case CHAR_:
@@ -962,13 +868,15 @@ PRIVATE double Compare(Node* first, Node* second, int* error)
         case SET_:
             break;
         case STRING_:
-            return strcmp(first->u.ent->name, second->u.str);
+            return strcmp(
+                vec_at(env->symtab, first->u.ent).name, second->u.str);
         case LIST_:
         case FLOAT_:
         case FILE_:
             break;
         default:
-            return strcmp(first->u.ent->name, opername(second->op));
+            return strcmp(
+                vec_at(env->symtab, first->u.ent).name, opername(second->op));
         }
         break;
     case ANON_FUNCT_:
@@ -1070,7 +978,8 @@ PRIVATE double Compare(Node* first, Node* second, int* error)
     case STRING_:
         switch (second->op) {
         case USR_:
-            return strcmp(first->u.str, second->u.ent->name);
+            return strcmp(
+                first->u.str, vec_at(env->symtab, second->u.ent).name);
         case ANON_FUNCT_:
         case BOOLEAN_:
         case CHAR_:
@@ -1144,7 +1053,8 @@ PRIVATE double Compare(Node* first, Node* second, int* error)
     default:
         switch (second->op) {
         case USR_:
-            return strcmp(opername(first->op), second->u.ent->name);
+            return strcmp(
+                opername(first->op), vec_at(env->symtab, second->u.ent).name);
         case ANON_FUNCT_:
         case BOOLEAN_:
         case CHAR_:
@@ -1177,7 +1087,7 @@ PRIVATE double Compare(Node* first, Node* second, int* error)
             j = env->stck->u.num;                                              \
             comp = SETCMP;                                                     \
         } else {                                                               \
-            cmp = Compare(env->stck->next, env->stck, &error);                 \
+            cmp = Compare(env, env->stck->next, env->stck, &error);            \
             if (error)                                                         \
                 BADDATA(NAME);                                                 \
             else {                                                             \
@@ -1269,7 +1179,7 @@ PRIVATE void getch_(pEnv env) { NULLARY(CHAR_NEWNODE, getchar()); }
 
 PRIVATE void fgets_(pEnv env)
 {
-    char* buf;
+    char *buf;
     size_t leng, size = INPLINEMAX;
 
     ONEPARAM("fgets");
@@ -1286,16 +1196,12 @@ PRIVATE void fgets_(pEnv env)
 
 PRIVATE void fput_(pEnv env)
 {
-    FILE* stm;
+    FILE *stm;
 
-#ifdef RUNTIME_CHECKS
     TWOPARAMS("fput");
     stm = NULL;
     if (env->stck->next->op != FILE_ || (stm = env->stck->next->u.fil) == NULL)
         execerror("file", "fput");
-#else
-    stm = env->stck->next->u.fil;
-#endif
     writefactor(env, env->stck, stm);
     fprintf(stm, " ");
     POP(env->stck);
@@ -1304,15 +1210,11 @@ PRIVATE void fput_(pEnv env)
 #ifdef FGET_FROM_FILE
 PRIVATE void fget_(pEnv env)
 {
-    FILE* stm = NULL;
+    FILE *stm = NULL;
 
-#ifdef RUNTIME_CHECKS
     ONEPARAM("fget");
     if (env->stck->op != FILE_ || (stm = env->stck->u.fil) == NULL)
         execerror("file", "fget");
-#else
-    stm = env->stck->u.fil;
-#endif
     redirect(stm);
     getsym(env);
     readfactor(env, 0);
@@ -1334,25 +1236,21 @@ PRIVATE void fputch_(pEnv env)
 PRIVATE void fputchars_(
     pEnv env) /* suggested by Heiko Kuhrt, as "fputstring_" */
 {
-    FILE* stm;
+    FILE *stm;
 
-#ifdef RUNTIME_CHECKS
     TWOPARAMS("fputchars");
     stm = NULL;
     if (env->stck->next->op != FILE_ || (stm = env->stck->next->u.fil) == NULL)
         execerror("file", "fputchars");
-#else
-    stm = env->stck->next->u.fil;
-#endif
     fprintf(stm, "%s", env->stck->u.str);
     POP(env->stck);
 }
 
 PRIVATE void fread_(pEnv env)
 {
-    unsigned char* buf;
+    unsigned char *buf;
     long_t count;
-    Node* my_dump = 0;
+    Node *my_dump = 0;
 
     TWOPARAMS("fread");
     INTEGER("fread");
@@ -1363,28 +1261,20 @@ PRIVATE void fread_(pEnv env)
     for (count = fread(buf, (size_t)1, (size_t)count, env->stck->u.fil) - 1;
          count >= 0; count--)
         my_dump = INTEGER_NEWNODE(buf[count], my_dump);
-#ifdef CORRECT_FREAD_PARAM
     NULLARY(LIST_NEWNODE, my_dump);
-#else
-    UNARY(LIST_NEWNODE, my_dump);
-#endif
 }
 
 PRIVATE void fwrite_(pEnv env)
 {
     int length, i;
-    unsigned char* buff;
-    Node* n;
+    unsigned char *buff;
+    Node *n;
 
     TWOPARAMS("fwrite");
     LIST("fwrite");
     for (n = env->stck->u.lis, length = 0; n; n = n->next, length++)
-#ifdef RUNTIME_CHECKS
         if (n->op != INTEGER_)
             execerror("numeric list", "fwrite");
-#else
-        ;
-#endif
     buff = GC_malloc_atomic(length);
     for (n = env->stck->u.lis, i = 0; n; n = n->next, i++)
         buff[i] = n->u.num;
@@ -1449,9 +1339,9 @@ PRIVATE void rest_(pEnv env)
         break;
     }
     case STRING_: {
-        char* s = env->stck->u.str;
+        char *s = env->stck->u.str;
         CHECKEMPTYSTRING(s, "rest");
-        UNARY(STRING_NEWNODE, GC_strdup(s + 1));
+        UNARY(STRING_NEWNODE, GC_strdup(++s));
         break;
     }
     case LIST_:
@@ -1465,7 +1355,7 @@ PRIVATE void rest_(pEnv env)
 
 PRIVATE void uncons_(pEnv env)
 {
-    Node* save;
+    Node *save;
 
     ONEPARAM("uncons");
     switch (env->stck->op) {
@@ -1480,10 +1370,10 @@ PRIVATE void uncons_(pEnv env)
         break;
     }
     case STRING_: {
-        char* s = env->stck->u.str;
+        char *s = env->stck->u.str;
         CHECKEMPTYSTRING(s, "uncons");
         UNARY(CHAR_NEWNODE, *s);
-        NULLARY(STRING_NEWNODE, GC_strdup(s + 1));
+        NULLARY(STRING_NEWNODE, GC_strdup(++s));
         break;
     }
     case LIST_:
@@ -1499,7 +1389,7 @@ PRIVATE void uncons_(pEnv env)
 
 PRIVATE void unswons_(pEnv env)
 {
-    Node* save;
+    Node *save;
 
     ONEPARAM("unswons");
     switch (env->stck->op) {
@@ -1532,21 +1422,21 @@ PRIVATE void unswons_(pEnv env)
     }
 }
 
-PRIVATE int equal_aux(Node* n1, Node* n2); /* forward */
+PRIVATE int equal_aux(pEnv env, Node *n1, Node *n2); /* forward */
 
-PRIVATE int equal_list_aux(Node* n1, Node* n2)
+PRIVATE int equal_list_aux(pEnv env, Node *n1, Node *n2)
 {
     if (n1 == NULL && n2 == NULL)
         return 1;
     if (n1 == NULL || n2 == NULL)
         return 0;
-    if (equal_aux(n1, n2))
-        return equal_list_aux(n1->next, n2->next);
+    if (equal_aux(env, n1, n2))
+        return equal_list_aux(env, n1->next, n2->next);
     else
         return 0;
 }
 
-PRIVATE int equal_aux(Node* n1, Node* n2)
+PRIVATE int equal_aux(pEnv env, Node *n1, Node *n2)
 {
     int error;
 
@@ -1555,14 +1445,14 @@ PRIVATE int equal_aux(Node* n1, Node* n2)
     if (n1 == NULL || n2 == NULL)
         return 0;
     if (n1->op == LIST_ && n2->op == LIST_)
-        return equal_list_aux(n1->u.lis, n2->u.lis);
-    return !Compare(n1, n2, &error) && !error;
+        return equal_list_aux(env, n1->u.lis, n2->u.lis);
+    return !Compare(env, n1, n2, &error) && !error;
 }
 
 PRIVATE void equal_(pEnv env)
 {
     TWOPARAMS("equal");
-    BINARY(BOOLEAN_NEWNODE, equal_aux(env->stck, env->stck->next));
+    BINARY(BOOLEAN_NEWNODE, equal_aux(env, env->stck, env->stck->next));
 }
 
 #define INHAS(PROCEDURE, NAME, AGGR, ELEM)                                     \
@@ -1575,15 +1465,15 @@ PRIVATE void equal_(pEnv env)
             found = ((AGGR->u.set) & ((long_t)1 << ELEM->u.num)) > 0;          \
             break;                                                             \
         case STRING_: {                                                        \
-            char* s;                                                           \
+            char *s;                                                           \
             for (s = AGGR->u.str; s && *s != '\0' && *s != ELEM->u.num; s++)   \
                 ;                                                              \
             found = s && *s != '\0';                                           \
             break;                                                             \
         }                                                                      \
         case LIST_: {                                                          \
-            Node* n = AGGR->u.lis;                                             \
-            while (n != NULL && (Compare(n, ELEM, &error) || error))           \
+            Node *n = AGGR->u.lis;                                             \
+            while (n != NULL && (Compare(env, n, ELEM, &error) || error))      \
                 n = n->next;                                                   \
             found = n != NULL;                                                 \
             break;                                                             \
@@ -1596,7 +1486,6 @@ PRIVATE void equal_(pEnv env)
 INHAS(in_, "in", env->stck, env->stck->next)
 INHAS(has_, "has", env->stck->next, env->stck)
 
-#ifdef RUNTIME_CHECKS
 #define OF_AT(PROCEDURE, NAME, AGGR, INDEX)                                    \
     PRIVATE void PROCEDURE(pEnv env)                                           \
     {                                                                          \
@@ -1625,7 +1514,7 @@ INHAS(has_, "has", env->stck->next, env->stck)
             BINARY(CHAR_NEWNODE, AGGR->u.str[INDEX->u.num]);                   \
             return;                                                            \
         case LIST_: {                                                          \
-            Node* n = AGGR->u.lis;                                             \
+            Node *n = AGGR->u.lis;                                             \
             int i = INDEX->u.num;                                              \
             CHECKEMPTYLIST(n, NAME);                                           \
             while (i > 0) {                                                    \
@@ -1641,42 +1530,7 @@ INHAS(has_, "has", env->stck->next, env->stck)
             BADAGGREGATE(NAME);                                                \
         }                                                                      \
     }
-#else
-#define OF_AT(PROCEDURE, NAME, AGGR, INDEX)                                    \
-    PRIVATE void PROCEDURE(void)                                               \
-    {                                                                          \
-        switch (AGGR->op) {                                                    \
-        case SET_: {                                                           \
-            int i, indx = INDEX->u.num;                                        \
-            for (i = 0; i < SETSIZE; i++) {                                    \
-                if (AGGR->u.set & ((long_t)1 << i)) {                          \
-                    if (indx == 0) {                                           \
-                        BINARY(INTEGER_NEWNODE, i);                            \
-                        return;                                                \
-                    }                                                          \
-                    indx--;                                                    \
-                }                                                              \
-            }                                                                  \
-            return;                                                            \
-        }                                                                      \
-        case STRING_:                                                          \
-            BINARY(CHAR_NEWNODE, AGGR->u.str[INDEX->u.num]);                   \
-            return;                                                            \
-        case LIST_: {                                                          \
-            Node* n = AGGR->u.lis;                                             \
-            int i = INDEX->u.num;                                              \
-            while (i > 0) {                                                    \
-                n = n->next;                                                   \
-                i--;                                                           \
-            }                                                                  \
-            GBINARY(n->op, n->u);                                              \
-            return;                                                            \
-        }                                                                      \
-        default:                                                               \
-            BADAGGREGATE(NAME);                                                \
-        }                                                                      \
-    }
-#endif
+
 OF_AT(of_, "of", env->stck, env->stck->next)
 OF_AT(at_, "at", env->stck->next, env->stck)
 
@@ -1693,7 +1547,7 @@ PRIVATE void choice_(pEnv env)
 
 PRIVATE void case_(pEnv env)
 {
-    Node* n;
+    Node *n;
     int error;
 
     TWOPARAMS("case");
@@ -1701,16 +1555,10 @@ PRIVATE void case_(pEnv env)
     n = env->stck->u.lis;
     CHECKEMPTYLIST(n, "case");
     while (n->next != NULL && n->u.lis->u.num != env->stck->next->u.num) {
-        if (!Compare(n->u.lis, env->stck->next, &error) && !error)
+        if (!Compare(env, n->u.lis, env->stck->next, &error) && !error)
             break;
         n = n->next;
     }
-    /*
-        printf("case : now execute : ");
-        writefactor(n->u.lis, stdout); printf("\n");
-        env->stck = env->stck->next->next;
-        exeterm(n->next != NULL ? n->u.lis->next : n->u.lis);
-    */
     if (n->next != NULL) {
         env->stck = env->stck->next->next;
         exeterm(env, n->u.lis->next);
@@ -1722,7 +1570,7 @@ PRIVATE void case_(pEnv env)
 
 PRIVATE void opcase_(pEnv env)
 {
-    Node* n;
+    Node *n;
     ONEPARAM("opcase");
     LIST("opcase");
     n = env->stck->u.lis;
@@ -1734,7 +1582,6 @@ PRIVATE void opcase_(pEnv env)
     UNARY(LIST_NEWNODE, n->next != NULL ? n->u.lis->next : n->u.lis);
 }
 
-#ifdef RUNTIME_CHECKS
 #define CONS_SWONS(PROCEDURE, NAME, AGGR, ELEM)                                \
     PRIVATE void PROCEDURE(pEnv env)                                           \
     {                                                                          \
@@ -1748,7 +1595,7 @@ PRIVATE void opcase_(pEnv env)
             BINARY(SET_NEWNODE, AGGR->u.set | ((long_t)1 << ELEM->u.num));     \
             break;                                                             \
         case STRING_: {                                                        \
-            char* s;                                                           \
+            char *s;                                                           \
             if (ELEM->op != CHAR_)                                             \
                 execerror("character", NAME);                                  \
             s = GC_malloc_atomic(strlen(AGGR->u.str) + 2);                     \
@@ -1761,31 +1608,7 @@ PRIVATE void opcase_(pEnv env)
             BADAGGREGATE(NAME);                                                \
         }                                                                      \
     }
-#else
-#define CONS_SWONS(PROCEDURE, NAME, AGGR, ELEM)                                \
-    PRIVATE void PROCEDURE(void)                                               \
-    {                                                                          \
-        TWOPARAMS(NAME);                                                       \
-        switch (AGGR->op) {                                                    \
-        case LIST_:                                                            \
-            BINARY(LIST_NEWNODE, newnode(ELEM->op, ELEM->u, AGGR->u.lis));     \
-            break;                                                             \
-        case SET_:                                                             \
-            BINARY(SET_NEWNODE, AGGR->u.set | ((long_t)1 << ELEM->u.num));     \
-            break;                                                             \
-        case STRING_: {                                                        \
-            char* s;                                                           \
-            s = GC_malloc_atomic(strlen(AGGR->u.str) + 2);                     \
-            *s = ELEM->u.num;                                                  \
-            strcpy(s + 1, AGGR->u.str);                                        \
-            BINARY(STRING_NEWNODE, s);                                         \
-            break;                                                             \
-        }                                                                      \
-        default:                                                               \
-            BADAGGREGATE(NAME);                                                \
-        }                                                                      \
-    }
-#endif
+
 CONS_SWONS(cons_, "cons", env->stck, env->stck->next)
 CONS_SWONS(swons_, "swons", env->stck->next, env->stck)
 
@@ -1808,14 +1631,14 @@ PRIVATE void drop_(pEnv env)
         return;
     }
     case STRING_: {
-        char* result = env->stck->next->u.str;
+        char *result = env->stck->next->u.str;
         while (n-- > 0 && *result != '\0')
             ++result;
         BINARY(STRING_NEWNODE, GC_strdup(result));
         return;
     }
     case LIST_: {
-        Node* result = env->stck->next->u.lis;
+        Node *result = env->stck->next->u.lis;
         while (n-- > 0 && result != NULL)
             result = result->next;
         BINARY(LIST_NEWNODE, result);
@@ -1829,9 +1652,9 @@ PRIVATE void drop_(pEnv env)
 PRIVATE void take_(pEnv env)
 {
     int n = env->stck->u.num;
-    Node* my_dump1 = 0; /* old  */
-    Node* my_dump2 = 0; /* head */
-    Node* my_dump3 = 0; /* last */
+    Node *my_dump1 = 0; /* old  */
+    Node *my_dump2 = 0; /* head */
+    Node *my_dump3 = 0; /* last */
 
     TWOPARAMS("take");
     switch (env->stck->next->op) {
@@ -1897,9 +1720,9 @@ PRIVATE void take_(pEnv env)
 
 PRIVATE void concat_(pEnv env)
 {
-    Node* my_dump1 = 0; /* old  */
-    Node* my_dump2 = 0; /* head */
-    Node* my_dump3 = 0; /* last */
+    Node *my_dump1 = 0; /* old  */
+    Node *my_dump2 = 0; /* head */
+    Node *my_dump3 = 0; /* last */
 
     TWOPARAMS("concat");
     SAME2TYPES("concat");
@@ -1987,29 +1810,11 @@ PRIVATE void not_(pEnv env)
     case SET_:
         UNARY(SET_NEWNODE, ~env->stck->u.set);
         break;
-#ifndef ONLY_LOGICAL_NOT
-    case STRING_:
-        UNARY(BOOLEAN_NEWNODE, (*(env->stck->u.str) != '\0'));
-        break;
-    case LIST_:
-        UNARY(BOOLEAN_NEWNODE, (!env->stck->u.lis));
-        break;
+    case BOOLEAN_:
     case CHAR_:
     case INTEGER_:
-#endif
-    case BOOLEAN_:
         UNARY(BOOLEAN_NEWNODE, (!env->stck->u.num));
         break;
-#ifdef NOT_ALSO_FOR_FLOAT
-    case FLOAT_:
-        UNARY(BOOLEAN_NEWNODE, (!env->stck->u.dbl));
-        break;
-#endif
-#ifdef NOT_ALSO_FOR_FILE
-    case FILE_:
-        UNARY(BOOLEAN_NEWNODE, (env->stck->u.fil != NULL));
-        break;
-#endif
     default:
         BADDATA("not");
     }
@@ -2031,7 +1836,7 @@ PRIVATE void size_(pEnv env)
         siz = strlen(env->stck->u.str);
         break;
     case LIST_: {
-        Node* e = env->stck->u.lis;
+        Node *e = env->stck->u.lis;
         while (e != NULL) {
             e = e->next;
             siz++;
@@ -2060,7 +1865,6 @@ PRIVATE void small_(pEnv env)
             int i = 0;
             while (!(env->stck->u.set & ((long_t)1 << i)))
                 i++;
-            D(printf("small: first member found is %d\n", i);)
             sml = (env->stck->u.set & ~((long_t)1 << i)) == 0;
         }
         break;
@@ -2115,12 +1919,14 @@ USETOP(system_, "system", STRING, (void)system(env->stck->u.str))
 
 PRIVATE void undefs_(pEnv env)
 {
-    Entry* i = symtabindex;
-    Node* n = 0;
-    while (i != env->symtab) {
-        --i;
-        if ((i->name[0] != 0) && (i->name[0] != '_') && (i->u.body == NULL))
-            n = STRING_NEWNODE(i->name, n);
+    pEntry i = symtabindex;
+    Node *n = 0;
+    Entry ent;
+
+    while (i) {
+        ent = vec_at(env->symtab, --i);
+        if ((ent.name[0] != 0) && (ent.name[0] != '_') && (ent.u.body == NULL))
+            n = STRING_NEWNODE(ent.name, n);
     }
     env->stck = LIST_NEWNODE(n, env->stck);
 }
@@ -2128,7 +1934,7 @@ PRIVATE void undefs_(pEnv env)
 PRIVATE void argv_(pEnv env)
 {
     int i;
-    Node* my_dump = 0;
+    Node *my_dump = 0;
 
     for (i = g_argc - 1; i >= 0; i--)
         my_dump = STRING_NEWNODE(g_argv[i], my_dump);
@@ -2141,33 +1947,37 @@ PRIVATE void get_(pEnv env)
     readfactor(env, 0);
 }
 
-PUBLIC void dummy_(pEnv env) { /* never called */ }
+PUBLIC void dummy_(pEnv env) { /* never called */}
 
 #define HELP(PROCEDURE, REL)                                                   \
     PRIVATE void PROCEDURE(pEnv env)                                           \
     {                                                                          \
-        Entry* i = symtabindex;                                                \
+        pEntry i = symtabindex;                                                \
         int column = 0;                                                        \
         int name_length;                                                       \
-        while (i != env->symtab)                                               \
-            if ((--i)->name[0] REL '_' && !i->is_local) {                      \
-                name_length = strlen(i->name) + 1;                             \
+        Entry ent;                                                             \
+        while (i) {                                                            \
+            ent = vec_at(env->symtab, --i);                                    \
+            if (ent.name[0] REL '_' && !ent.is_local) {                        \
+                name_length = strlen(ent.name) + 1;                            \
                 if (column + name_length > 72) {                               \
                     printf("\n");                                              \
                     column = 0;                                                \
                 }                                                              \
-                printf("%s ", i->name);                                        \
+                printf("%s ", ent.name);                                       \
                 column += name_length;                                         \
             }                                                                  \
+        }                                                                      \
         printf("\n");                                                          \
     }
+
 HELP(help1_, !=)
 HELP(h_help1_, ==)
 
 /* - - - - -   C O M B I N A T O R S   - - - - - */
 
 #ifdef TRACING
-PUBLIC void printfactor(pEnv env, Node* n, FILE* stm)
+PUBLIC void printfactor(pEnv env, Node *n, FILE *stm)
 {
     switch (n->op) {
     case BOOLEAN_:
@@ -2207,7 +2017,7 @@ PUBLIC void printfactor(pEnv env, Node* n, FILE* stm)
 #ifdef TRACK_USED_SYMBOLS
 static void report_symbols(void)
 {
-    Entry* n;
+    Entry *n;
 
     for (n = symtab; n->name; n++)
         if (n->is_used)
@@ -2225,8 +2035,10 @@ static void report_stats(void)
 }
 #endif
 
-void exeterm(pEnv env, Node* n)
+void exeterm(pEnv env, Node *n)
 {
+    Entry ent;
+
 #ifdef TRACK_USED_SYMBOLS
     static int first;
 
@@ -2237,7 +2049,7 @@ void exeterm(pEnv env, Node* n)
 #endif
 start:
     if (!n)
-	return;
+        return;
 #ifdef STATS
     if (++calls == 1)
         atexit(report_stats);
@@ -2268,13 +2080,14 @@ start:
             env->stck = newnode(n->op, n->u, env->stck);
             break;
         case USR_:
-            if (!n->u.ent->u.body && undeferror)
-                execerror("definition", n->u.ent->name);
+            ent = vec_at(env->symtab, n->u.ent);
+            if (!ent.u.body && undeferror)
+                execerror("definition", ent.name);
             if (!n->next) {
-                n = n->u.ent->u.body;
+                n = ent.u.body;
                 goto start;
             }
-            exeterm(env, n->u.ent->u.body);
+            exeterm(env, ent.u.body);
             break;
         default:
             (*n->u.proc)(env);
@@ -2296,7 +2109,7 @@ PRIVATE void x_(pEnv env)
 
 PRIVATE void i_(pEnv env)
 {
-    Node* save;
+    Node *save;
 
     ONEPARAM("i");
     ONEQUOTE("i");
@@ -2307,7 +2120,7 @@ PRIVATE void i_(pEnv env)
 
 PRIVATE void dip_(pEnv env)
 {
-    Node* save;
+    Node *save;
 
     TWOPARAMS("dip");
     ONEQUOTE("dip");
@@ -2317,7 +2130,6 @@ PRIVATE void dip_(pEnv env)
     GNULLARY(save->next->op, save->next->u);
 }
 
-#ifdef RUNTIME_CHECKS
 #define N_ARY(PROCEDURE, NAME, PARAMCOUNT, TOP)                                \
     PRIVATE void PROCEDURE(pEnv env)                                           \
     {                                                                          \
@@ -2332,18 +2144,7 @@ PRIVATE void dip_(pEnv env)
             execerror("value to push", NAME);                                  \
         env->stck = newnode(env->stck->op, env->stck->u, top);                 \
     }
-#else
-#define N_ARY(PROCEDURE, NAME, PARAMCOUNT, TOP)                                \
-    PRIVATE void PROCEDURE(void)                                               \
-    {                                                                          \
-        Node *save, *top;                                                      \
-        save = stck;                                                           \
-        stck = stck->next;                                                     \
-        top = TOP;                                                             \
-        exeterm(save->u.lis);                                                  \
-        stck = newnode(stck->op, stck->u, top);                                \
-    }
-#endif
+
 N_ARY(nullary_, "nullary", ONEPARAM, env->stck)
 N_ARY(unary_, "unary", TWOPARAMS, env->stck->next)
 N_ARY(binary_, "binary", THREEPARAMS, env->stck->next->next)
@@ -2352,7 +2153,7 @@ N_ARY(ternary_, "ternary", FOURPARAMS, env->stck->next->next->next)
 PRIVATE void times_(pEnv env)
 {
     int i, n;
-    Node* program;
+    Node *program;
 
     TWOPARAMS("times");
     ONEQUOTE("times");
@@ -2381,7 +2182,7 @@ PRIVATE void infra_(pEnv env)
 
 PRIVATE void app1_(pEnv env)
 {
-    Node* program;
+    Node *program;
 
     TWOPARAMS("app1");
     ONEQUOTE("app1");
@@ -2520,10 +2321,8 @@ PRIVATE void map_(pEnv env)
         while (my_dump1 != NULL) {
             env->stck = newnode(my_dump1->op, my_dump1->u, save);
             exeterm(env, program);
-#if defined(RUNTIME_CHECKS)
             if (env->stck == NULL)
                 execerror("non-empty stack", "map");
-#endif
             if (my_dump2 == NULL) /* first */
             {
                 my_dump2 = newnode(env->stck->op, env->stck->u, NULL);
@@ -2541,7 +2340,7 @@ PRIVATE void map_(pEnv env)
     case STRING_: {
         char *s = 0, *resultstring = 0;
         int j = 0;
-        char* volatile ptr = env->stck->u.str;
+        char *volatile ptr = GC_strdup(env->stck->u.str);
         resultstring = GC_malloc_atomic(strlen(ptr) + 1);
         for (s = ptr; *s; s++) {
             env->stck = CHAR_NEWNODE(*s, save);
@@ -2589,7 +2388,7 @@ PRIVATE void step_(pEnv env)
         break;
     }
     case STRING_: {
-        char* s;
+        char *s;
         for (s = data->u.str; *s != '\0'; s++) {
             env->stck = CHAR_NEWNODE(*s, env->stck);
             exeterm(env, program);
@@ -2626,11 +2425,9 @@ PRIVATE void cond_(pEnv env)
     ONEPARAM("cond");
     LIST("cond");
     CHECKEMPTYLIST(env->stck->u.lis, "cond");
-/* must check for QUOTES in list */
-#ifdef RUNTIME_CHECKS
+    /* must check for QUOTES in list */
     for (my_dump = env->stck->u.lis; my_dump->next; my_dump = my_dump->next)
         CHECKLIST(my_dump->u.lis->op, "cond");
-#endif
     my_dump = env->stck->u.lis;
     save = env->stck->next;
     while (result == 0 && my_dump != NULL && my_dump->next != NULL) {
@@ -2697,7 +2494,7 @@ PRIVATE void filter_(pEnv env)
     case STRING_: {
         char *s, *resultstring;
         int j = 0;
-        char* volatile ptr = env->stck->u.str;
+        char *volatile ptr = GC_strdup(env->stck->u.str);
         resultstring = GC_malloc_atomic(strlen(ptr) + 1);
         for (s = ptr; *s; s++) {
             env->stck = CHAR_NEWNODE(*s, save);
@@ -2769,8 +2566,8 @@ PRIVATE void split_(pEnv env)
     case STRING_: {
         char *yesstring = 0, *nostring = 0;
         int yesptr = 0, noptr = 0;
-        char* volatile ptr = env->stck->u.str;
-        char* str = ptr;
+        char *volatile ptr = GC_strdup(env->stck->u.str);
+        char *str = ptr;
         size_t leng = strlen(str) + 1;
         yesstring = GC_malloc_atomic(leng);
         nostring = GC_malloc_atomic(leng);
@@ -2849,8 +2646,8 @@ PRIVATE void split_(pEnv env)
             break;                                                             \
         }                                                                      \
         case STRING_: {                                                        \
-            char* s;                                                           \
-            char* volatile ptr = env->stck->u.str;                             \
+            char *s;                                                           \
+            char *volatile ptr = GC_strdup(env->stck->u.str);                  \
             for (s = ptr; *s != '\0' && result == INITIAL; s++) {              \
                 env->stck = CHAR_NEWNODE(*s, save);                            \
                 exeterm(env, program);                                         \
@@ -2893,7 +2690,7 @@ PRIVATE void primrec_(pEnv env)
     POP(env->stck);
     switch (data->op) {
     case LIST_: {
-        Node* current = data->u.lis;
+        Node *current = data->u.lis;
         while (current != NULL) {
             env->stck = newnode(current->op, current->u, env->stck);
             current = current->next;
@@ -2902,7 +2699,7 @@ PRIVATE void primrec_(pEnv env)
         break;
     }
     case STRING_: {
-        char* s;
+        char *s;
         for (s = data->u.str; *s != '\0'; s++) {
             env->stck = CHAR_NEWNODE(*s, env->stck);
             n++;
@@ -2935,9 +2732,9 @@ PRIVATE void primrec_(pEnv env)
         exeterm(env, third);
 }
 
-PRIVATE void tailrecaux(pEnv env, Node* first, Node* second, Node* third)
+PRIVATE void tailrecaux(pEnv env, Node *first, Node *second, Node *third)
 {
-    Node* save;
+    Node *save;
     int result;
 
 tailrec:
@@ -3046,7 +2843,7 @@ PRIVATE void ifte_(pEnv env)
     exeterm(env, num ? first : second);
 }
 
-PRIVATE void condlinrecaux(pEnv env, Node* list)
+PRIVATE void condlinrecaux(pEnv env, Node *list)
 {
     int result = 0;
     Node *my_dump, *save;
@@ -3078,7 +2875,7 @@ PRIVATE void condlinrecaux(pEnv env, Node* list)
 
 PRIVATE void condlinrec_(pEnv env)
 {
-    Node* list;
+    Node *list;
 
     ONEPARAM("condlinrec");
     LIST("condlinrec");
@@ -3088,7 +2885,7 @@ PRIVATE void condlinrec_(pEnv env)
     condlinrecaux(env, list);
 }
 
-PRIVATE void condnestrecaux(pEnv env, Node* list)
+PRIVATE void condnestrecaux(pEnv env, Node *list)
 {
     int result = 0;
     Node *my_dump, *save;
@@ -3115,7 +2912,7 @@ PRIVATE void condnestrecaux(pEnv env, Node* list)
 
 PRIVATE void condnestrec_(pEnv env)
 {
-    Node* list;
+    Node *list;
 
     ONEPARAM("condnestrec");
     LIST("condnestrec");
@@ -3126,9 +2923,9 @@ PRIVATE void condnestrec_(pEnv env)
 }
 
 PRIVATE void linrecaux(
-    pEnv env, Node* first, Node* second, Node* third, Node* fourth)
+    pEnv env, Node *first, Node *second, Node *third, Node *fourth)
 {
-    Node* save;
+    Node *save;
     int result;
 
     save = env->stck;
@@ -3162,9 +2959,9 @@ PRIVATE void linrec_(pEnv env)
 }
 
 PRIVATE void binrecaux(
-    pEnv env, Node* first, Node* second, Node* third, Node* fourth)
+    pEnv env, Node *first, Node *second, Node *third, Node *fourth)
 {
-    Node* save;
+    Node *save;
     int result;
 
     save = env->stck;
@@ -3201,9 +2998,9 @@ PRIVATE void binrec_(pEnv env)
     binrecaux(env, first, second, third, fourth);
 }
 
-PRIVATE void treestepaux(pEnv env, Node* item, Node* program)
+PRIVATE void treestepaux(pEnv env, Node *item, Node *program)
 {
-    Node* my_dump;
+    Node *my_dump;
 
     if (item->op != LIST_) {
         GNULLARY(item->op, item->u);
@@ -3235,11 +3032,9 @@ PRIVATE void treerecaux(pEnv env)
     if (env->stck->next->op == LIST_) {
         NULLARY(LIST_NEWNODE, ANON_FUNCT_NEWNODE(treerecaux, NULL));
         cons_(env); /*  D  [[[O] C] ANON_FUNCT_]	*/
-        D(printf("treerecaux: stack = ");)
-        D(writeterm(env, env->stck, stdout); printf("\n");)
         exeterm(env, env->stck->u.lis->u.lis->next);
     } else {
-        Node* n = env->stck;
+        Node *n = env->stck;
         POP(env->stck);
         exeterm(env, n->u.lis->u.lis);
     }
@@ -3250,8 +3045,6 @@ PRIVATE void treerec_(pEnv env)
     THREEPARAMS("treerec");
     TWOQUOTES("treerec");
     cons_(env);
-    D(printf("treerec: stack = "); writeterm(env, env->stck, stdout);
-        printf("\n");)
     treerecaux(env);
 }
 
@@ -3260,8 +3053,6 @@ PRIVATE void genrecaux(pEnv env)
     int result;
     Node *program, *save;
 
-    D(printf("genrecaux: stack = ");)
-    D(writeterm(env, env->stck, stdout); printf("\n");)
     program = env->stck;
     save = env->stck = env->stck->next;
     exeterm(env, program->u.lis->u.lis); /*	[I]	*/
@@ -3290,10 +3081,8 @@ PRIVATE void genrec_(pEnv env)
 
 PRIVATE void treegenrecaux(pEnv env)
 {
-    Node* save;
+    Node *save;
 
-    D(printf("treegenrecaux: stack = ");)
-    D(writeterm(env, env->stck, stdout); printf("\n");)
     save = env->stck;
     env->stck = env->stck->next;
     if (env->stck->op == LIST_) {
@@ -3312,8 +3101,6 @@ PRIVATE void treegenrec_(pEnv env)
     THREEQUOTES("treegenrec");
     cons_(env);
     cons_(env);
-    D(printf("treegenrec: stack = "); writeterm(env, env->stck, stdout);
-        printf("\n");)
     treegenrecaux(env);
 }
 
@@ -3324,6 +3111,8 @@ PRIVATE void html_manual_(pEnv env) { make_manual(1); }
 PRIVATE void latex_manual_(pEnv env) { make_manual(2); }
 
 /* - - - - -   I N I T I A L I S A T I O N   - - - - - */
+
+/* clang-format off */
 
 static struct {
     char* name;
@@ -4039,17 +3828,19 @@ static struct {
 {0, dummy_, "->","->"}
 };
 
+/* clang-format on */
+
 PRIVATE void helpdetail_(pEnv env)
 {
-    Node* n;
+    Node *n;
     ONEPARAM("HELP");
     LIST("HELP");
     printf("\n");
     n = env->stck->u.lis;
     while (n != NULL) {
         if (n->op == USR_) {
-            printf("%s  ==\n    ", n->u.ent->name);
-            writeterm(env, n->u.ent->u.body, stdout);
+            printf("%s  ==\n    ", vec_at(env->symtab, n->u.ent).name);
+            writeterm(env, vec_at(env->symtab, n->u.ent).u.body, stdout);
             printf("\n");
             break;
         } else {
@@ -4090,15 +3881,16 @@ PRIVATE void make_manual(int style /* 0=plain, 1=HTML, 2=Latex */)
     if (HTML)
         printf("<HTML>\n<DL>\n");
     for (i = BOOLEAN_; optable[i].name != 0; i++) {
-        char* n = optable[i].name;
+        char *n = optable[i].name;
+/* clang-format off */
         HEADER(n, " truth value type", "literal") else
-        HEADER(n, "false", "operand") else
-        HEADER(n, "id", "operator") else
-        HEADER(n, "null", "predicate") else
-        HEADER(n, "i", "combinator") else
-        HEADER(n, "help", "miscellaneous commands")
-        if (n[0] != '_')
-        {
+	HEADER(n, "false", "operand") else
+	HEADER(n, "id", "operator") else
+	HEADER(n, "null", "predicate") else
+	HEADER(n, "i", "combinator") else
+	HEADER(n, "help", "miscellaneous commands")
+	if (n[0] != '_') {
+/* clang-format on */
             if (HTML)
                 printf("\n<DT>");
             else if (LATEX) {
@@ -4139,8 +3931,8 @@ PRIVATE void make_manual(int style /* 0=plain, 1=HTML, 2=Latex */)
 PRIVATE void manual_list_(pEnv env)
 {
     int i = -1;
-    Node* tmp;
-    Node* n = NULL;
+    Node *tmp;
+    Node *n = NULL;
     while (optable[++i].name)
         ; /* find end */
     --i; /* overshot */
@@ -4154,7 +3946,7 @@ PRIVATE void manual_list_(pEnv env)
     env->stck = LIST_NEWNODE(n, env->stck);
 }
 
-PUBLIC char* opername(int o)
+PUBLIC char *opername(int o)
 {
     if (o >= 0 && o < sizeof(optable) / sizeof(optable[0]))
         return optable[o].name;

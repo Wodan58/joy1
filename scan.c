@@ -1,19 +1,21 @@
 /* FILE: scan.c */
 /*
  *  module  : scan.c
- *  version : 1.23
- *  date    : 01/15/21
+ *  version : 1.26
+ *  date    : 03/14/21
  */
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include <gc.h>
+#include "gc.h"
 #include "globals.h"
 
 static struct {
-    FILE* fp;
-    char* name;
+    FILE *fp;
+#if 0
+    char name[ALEN];
+#endif
     int linenum;
 } infile[INPSTACKMAX];
 static int ilevel = 0;
@@ -25,10 +27,13 @@ static int errorcount = 0;
 #endif
 static int ch = ' ';
 
-PUBLIC void inilinebuffer(char* str)
+PUBLIC void inilinebuffer(char *str)
 {
     infile[0].fp = srcfile;
-    infile[0].name = str;
+#if 0
+    strncpy(infile[0].name, str, ALEN);
+    infile[0].name[ALEN - 1] = 0;
+#endif
 }
 
 PUBLIC int getlinenum(void)
@@ -97,7 +102,7 @@ PRIVATE void getch(void)
 
 PRIVATE int endofbuffer(void) { return currentcolumn == linelength; }
 
-PUBLIC void error(char* message)
+PUBLIC void error(char *message)
 {
     int i;
 
@@ -115,9 +120,9 @@ PUBLIC void error(char* message)
 #endif
 }
 
-PUBLIC void doinclude(char* filnam)
+PUBLIC void doinclude(char *filnam)
 {
-    FILE* fp;
+    FILE *fp;
 
     if (ilevel + 1 == INPSTACKMAX)
         execerror("fewer include files", "include");
@@ -126,7 +131,10 @@ PUBLIC void doinclude(char* filnam)
     linenumber = 0;
     if ((fp = fopen(filnam, "r")) != 0) {
         infile[++ilevel].fp = srcfile = fp;
-        infile[ilevel].name = filnam;
+#if 0
+	strncpy(infile[ilevel].name, filnam, ALEN);
+	infile[ilevel].name[ALEN - 1] = 0;
+#endif
         infile[ilevel].linenum = 0;
         return;
     }
@@ -134,14 +142,16 @@ PUBLIC void doinclude(char* filnam)
 }
 
 #ifdef FGET_FROM_FILE
-PUBLIC void redirect(FILE* fp)
+PUBLIC void redirect(FILE *fp)
 {
     if (infile[ilevel].fp == fp)
         return;
     if (ilevel + 1 == INPSTACKMAX)
         execerror("fewer include files", "redirect");
-    infile[++ilevel].fp = fp;
-    infile[ilevel].name = 0;
+    infile[++ilevel].fp = srcfile = fp;
+#if 0
+    infile[ilevel].name[0] = 0;
+#endif
     infile[ilevel].linenum = 0;
 }
 #endif
@@ -164,12 +174,10 @@ PRIVATE int specialchar(void)
         return '\'';
     case '\"':
         return '\"';
-#ifdef REST_OF_UNIX_ESCAPES
     case 'v':
         return '\v';
     case '\\':
         return '\\';
-#endif
     default:
         if (isdigit(ch)) {
             int i, num = ch - '0';
@@ -249,7 +257,7 @@ Start:
         getch();
         if (ch == '\\')
             ch = specialchar();
-        env->bucket.num = ch;
+        env->yylval.num = ch;
         symb = CHAR_;
         getch();
         return;
@@ -263,7 +271,7 @@ Start:
         }
         string[i] = '\0';
         getch();
-        env->bucket.str = GC_strdup(string);
+        env->yylval.str = GC_strdup(string);
         symb = STRING_;
         return;
     case '-': /* PERHAPS unary minus */
@@ -308,16 +316,12 @@ Start:
                     while (isdigit(ch))
                         getch();
                 }
-                env->bucket.dbl = strtod(&linbuf[start], NULL);
+                env->yylval.dbl = strtod(&linbuf[start], NULL);
                 symb = FLOAT_;
                 return;
             }
         done:
-#ifdef BIT_32
-            env->bucket.num = strtol(&linbuf[start], NULL, 0);
-#else
-            env->bucket.num = strtoll(&linbuf[start], NULL, 0);
-#endif
+            env->yylval.num = strtol(&linbuf[start], NULL, 0); /* BIT_32 */
             symb = INTEGER_;
             return;
         }
@@ -366,17 +370,17 @@ Start:
         }
         if (strcmp(ident, "true") == 0) {
             symb = BOOLEAN_;
-            env->bucket.num = 1;
+            env->yylval.num = 1;
             return;
         }
         if (strcmp(ident, "false") == 0) {
             symb = BOOLEAN_;
-            env->bucket.num = 0;
+            env->yylval.num = 0;
             return;
         }
         if (strcmp(ident, "maxint") == 0) {
             symb = INTEGER_;
-            env->bucket.num = MAXINT;
+            env->yylval.num = MAXINT;
             return;
         }
         symb = ATOM;

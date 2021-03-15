@@ -1,7 +1,7 @@
 /*
     module  : gc.c
-    version : 1.16
-    date    : 06/14/20
+    version : 1.20
+    date    : 03/12/21
 */
 #include <stdio.h>
 #include <string.h>
@@ -10,10 +10,13 @@
 #include <stdint.h>
 #include <setjmp.h>
 #include <math.h>
+#include "gc.h"
 #include "khash.h"
 
 #define GC_LEAF		1
 #define GC_MARK		2
+
+#define MIN_ITEMS	4
 
 typedef struct mem_info {
     unsigned char flags;
@@ -32,7 +35,7 @@ KHASH_INIT(Backup, uintptr_t, mem_info, 1, HASH_FUNCTION, kh_int64_hash_equal)
 
 static khash_t(Backup) *MEM;			    /* backup of pointers */
 static char *bottom;				    /* stack bottom */
-static khint_t max_items = 4;			    /* max. items before gc */
+static khint_t max_items = MIN_ITEMS;		    /* max. items before gc */
 static char *lower = (char *)UINTPTR_MAX, *upper;   /* lower and upper heap */
 
 /*
@@ -84,6 +87,8 @@ static void scan(void)
 	    }
 	}
     max_items = 2 * kh_size(MEM);
+    if (max_items < MIN_ITEMS)
+	max_items = MIN_ITEMS;
 }
 
 /*
@@ -115,10 +120,12 @@ static void mark_stk(void)
 {
     char *ptr = (char *)&ptr;
   
+#ifdef STACK_GROWS_UPWARD
     if (ptr > bottom)
 	for (; ptr > bottom; ptr -= sizeof(char *))
 	    mark_ptr(*(char **)ptr);
     else
+#endif
 	for (; ptr < bottom; ptr += sizeof(char *))
 	    mark_ptr(*(char **)ptr);
 }
@@ -178,22 +185,27 @@ static void *mem_block(size_t size, int f)
 /*
     Register an atomic allocated block.
 */
+#ifdef USE_GC_MALLOC_ATOMIC
 void *GC_malloc_atomic(size_t size)
 {
     return mem_block(size, 1);
 }
+#endif
 
 /*
     Register a memory block.
 */
+#ifdef USE_GC_MALLOC
 void *GC_malloc(size_t size)
 {
     return mem_block(size, 0);
 }
+#endif
 
 /*
     Update the size of a memory block.
 */
+#ifdef USE_GC_REALLOC
 static void update(void *ptr, size_t size)
 {
     khiter_t key;
@@ -232,10 +244,12 @@ void *GC_realloc(void *old, size_t size)
 	remind(ptr, size, forget(old));
     return ptr;
 }
+#endif
 
 /*
     Duplicate a string.
 */
+#ifdef USE_GC_STRDUP
 char *GC_strdup(const char *str)
 {
     char *ptr;
@@ -246,3 +260,4 @@ char *GC_strdup(const char *str)
 	strcpy(ptr, str);
     return ptr;
 }
+#endif

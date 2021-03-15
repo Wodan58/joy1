@@ -1,13 +1,18 @@
 /* FILE: globals.h */
 /*
  *  module  : globals.h
- *  version : 1.31
- *  date    : 01/18/21
+ *  version : 1.34
+ *  date    : 03/14/21
  */
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-#define BIT_32
+/* #define BIT_32	*/
+
+#ifdef NULL
+#undef NULL
+#define NULL 0
+#endif
 
 #ifdef _MSC_VER
 #pragma warning(disable : 4267)
@@ -90,6 +95,12 @@ USE_UNKNOWN_SYMBOLS
 CORRECT_TYPE_COMPARE
 CORRECT_CASE_COMPARE
 CORRECT_INHAS_COMPARE
+RUNTIME_CHECKS
+ONLY_LOGICAL_NOT
+CORRECT_FREAD_PARAM
+CORRECT_INTERN_LOOKUP
+REST_OF_UNIX_ESCAPES
+CORRECT_ALEN
 */
 /*
     The following #defines are NOT present in the source code.
@@ -100,14 +111,15 @@ GET_FROM_STDIN
 ORIGINAL_JOY
 REMOVE_UNUSED_ERRORCOUNT
 CHECK_END_SYMBOL
+NOT_ALSO_FOR_FLOAT
+NOT_ALSO_FOR_FILE
+DEBUG
 */
 /*
     The following #defines are present in the source code.
     They have NOT been accepted.
 
 TRACK_USED_SYMBOLS
-NOT_ALSO_FOR_FLOAT
-NOT_ALSO_FOR_FILE
 TRACING
 STATS
 */
@@ -120,35 +132,20 @@ STATS
 #define FGET_FROM_FILE
 #define SAMETYPE_BUILTIN
 #define GETCH_AS_BUILTIN
-#define ONLY_LOGICAL_NOT
-#define CORRECT_FREAD_PARAM
-#define CORRECT_INTERN_LOOKUP
-#define REST_OF_UNIX_ESCAPES
-#define CORRECT_ALEN
 /*
     The following #defines are present in the source code.
     They have been accepted.
 */
 #define USE_SHELL_ESCAPE
-#define RUNTIME_CHECKS
 
 /* configure			*/
 #define SHELLESCAPE '$'
 #define INPSTACKMAX 10
 #define INPLINEMAX 255
-#ifdef CORRECT_ALEN
 #define ALEN 22
-#else
-#define ALEN 20
-#endif
-#define HASHSIZE 9
-#define SYMTABMAX 1000
+#define SYMTABMAX 0
 #define DISPLAYMAX 10 /* nesting in HIDE & MODULE	*/
-#ifndef GC_BDW
-#define MEMORYMAX 20006
-#else
 #define MEMORYMAX 0
-#endif
 #define INIECHOFLAG 0
 #define INIAUTOPUT 1
 #define INITRACEGC 1
@@ -158,10 +155,12 @@ STATS
 #define SETSIZE 32
 #define MAXINT 2147483647
 typedef int long_t;
+typedef float my_float_t;
 #else
 #define SETSIZE 64
-#define MAXINT 9223372036854775807LL
-typedef long long long_t;
+#define MAXINT 9223372036854775807
+typedef long long_t;
+typedef double my_float_t;
 #endif
 
 /* symbols from getsym		*/
@@ -198,17 +197,7 @@ typedef long long long_t;
 #define JPRIVATE 1106
 #define JPUBLIC 1107
 
-#ifdef DEBUG
-#define D(x) x
-#else
-#define D(x)
-#endif
-
-#if 0
-#define PRIVATE static
-#else
 #define PRIVATE
-#endif
 #define PUBLIC
 
 /* types			*/
@@ -216,17 +205,17 @@ typedef int Symbol;
 
 typedef short Operator;
 
-typedef struct Entry* pEntry;
+typedef unsigned pEntry;
 
-typedef struct Env* pEnv;
+typedef struct Env *pEnv;
 
 typedef union {
     long_t num;
     long_t set;
-    char* str;
-    double dbl;
-    FILE* fil;
-    struct Node* lis;
+    char *str;
+    my_float_t dbl;
+    FILE *fil;
+    struct Node *lis;
     pEntry ent;
     void (*proc)(pEnv);
 } Types;
@@ -234,33 +223,34 @@ typedef union {
 typedef struct Node {
     Types u;
     Operator op;
-    struct Node* next;
+    struct Node *next;
 } Node;
 
 typedef struct Entry {
-    char* name;
+    char *name;
     unsigned char is_local;
     unsigned char is_module;
 #ifdef TRACK_USED_SYMBOLS
     unsigned char is_used;
 #endif
+    pEntry next;
     union {
-        Node* body;
+        Node *body;
         pEntry module_fields;
         void (*proc)(pEnv);
     } u;
-    pEntry next;
 } Entry;
 
 #include "khash.h"
+#include "kvec.h"
 
 KHASH_MAP_INIT_STR(Symtab, pEntry)
 
 typedef struct Env {
-    pEntry symtab;
-    khash_t(Symtab) * hash;
-    Node* stck;
-    Types bucket, bucket2;
+    vector(Entry) *symtab;
+    khash_t(Symtab) *hash;
+    Node *stck;
+    Types yylval, bucket;
 } Env;
 
 #ifdef ALLOC
@@ -269,9 +259,9 @@ typedef struct Env {
 #define CLASS extern
 #endif
 
-CLASS FILE* srcfile;
+CLASS FILE *srcfile;
 CLASS int g_argc;
-CLASS char** g_argv;
+CLASS char **g_argv;
 CLASS int echoflag;
 CLASS int autoput;
 CLASS int undeferror;
@@ -282,15 +272,10 @@ CLASS char ident[ALEN];
 CLASS int display_enter;
 CLASS int display_lookup;
 
-CLASS Entry /* symbol table */
-    *symtabindex, *display[DISPLAYMAX], *firstlibra, /* inioptable */
-    *location; /* getsym */
-
-#define LOC2INT(e) (((size_t)e - (size_t)env->symtab) / sizeof(Entry))
-#define INT2LOC(x) ((Entry*)((x + (size_t)env->symtab)) * sizeof(Entry))
-
-#define MEM2INT(n) (((size_t)n - (size_t)memory) / sizeof(Node))
-#define INT2MEM(x) ((Node*)((x + (size_t)memory) * sizeof(Node)))
+CLASS pEntry /* symbol table */
+    symtabindex,
+    display[DISPLAYMAX], firstlibra, /* inioptable */
+    location; /* getsym */
 
 /* GOOD REFS:
         005.133l H4732		A LISP interpreter in C
@@ -307,52 +292,50 @@ CLASS Entry /* symbol table */
 */
 
 /* Public procedures: */
-PUBLIC void exeterm(pEnv env, Node* n);
+PUBLIC void exeterm(pEnv env, Node *n);
 PUBLIC void inisymboltable(pEnv env); /* initialise */
-PUBLIC char* opername(int o);
+PUBLIC char *opername(int o);
 PUBLIC void (*operproc(int o))(pEnv env);
 PUBLIC void lookup(pEnv env, int priv);
 PUBLIC void abortexecution_(pEnv env);
-PUBLIC void execerror(char* message, char* op);
+PUBLIC void execerror(char *message, char *op);
 PUBLIC void quit_(pEnv env);
-PUBLIC void inilinebuffer(char* filnam);
+PUBLIC void inilinebuffer(char *filnam);
 PUBLIC int getlinenum(void);
 PUBLIC void resetlinebuffer(int linenum);
-PUBLIC void error(char* message);
-PUBLIC void doinclude(char* filnam);
+PUBLIC void error(char *message);
+PUBLIC void doinclude(char *filnam);
 PUBLIC void getsym(pEnv env);
-PUBLIC void inimem1(void);
-PUBLIC void inimem2(void);
-PUBLIC void printnode(Node* p);
+PUBLIC void printnode(Node *p);
 PUBLIC void gc_(pEnv env);
-PUBLIC Node* newnode(Operator o, Types u, Node* r);
+PUBLIC Node *newnode(Operator o, Types u, Node *r);
 PUBLIC void memoryindex_(pEnv env);
 PUBLIC void readfactor(pEnv env, int priv); /* read a JOY factor */
 PUBLIC void readterm(pEnv env, int priv);
-PUBLIC void writefactor(pEnv env, Node* n, FILE* stm);
-PUBLIC void writeterm(pEnv env, Node* n, FILE* stm);
+PUBLIC void writefactor(pEnv env, Node *n, FILE *stm);
+PUBLIC void writeterm(pEnv env, Node *n, FILE *stm);
 
 #ifdef FGET_FROM_FILE
-PUBLIC void redirect(FILE*);
+PUBLIC void redirect(FILE *);
 #endif
 
-#define NEWNODE(o, u, r) (env->bucket2.lis = newnode(o, u, r), env->bucket2.lis)
-#define USR_NEWNODE(u, r) (env->bucket2.ent = u, NEWNODE(USR_, env->bucket2, r))
+#define NEWNODE(o, u, r) (env->bucket.lis = newnode(o, u, r), env->bucket.lis)
+#define USR_NEWNODE(u, r) (env->bucket.ent = u, NEWNODE(USR_, env->bucket, r))
 #define ANON_FUNCT_NEWNODE(u, r)                                               \
-    (env->bucket2.proc = u, NEWNODE(ANON_FUNCT_, env->bucket2, r))
+    (env->bucket.proc = u, NEWNODE(ANON_FUNCT_, env->bucket, r))
 #define BOOLEAN_NEWNODE(u, r)                                                  \
-    (env->bucket2.num = u, NEWNODE(BOOLEAN_, env->bucket2, r))
+    (env->bucket.num = u, NEWNODE(BOOLEAN_, env->bucket, r))
 #define CHAR_NEWNODE(u, r)                                                     \
-    (env->bucket2.num = u, NEWNODE(CHAR_, env->bucket2, r))
+    (env->bucket.num = u, NEWNODE(CHAR_, env->bucket, r))
 #define INTEGER_NEWNODE(u, r)                                                  \
-    (env->bucket2.num = u, NEWNODE(INTEGER_, env->bucket2, r))
-#define SET_NEWNODE(u, r) (env->bucket2.num = u, NEWNODE(SET_, env->bucket2, r))
+    (env->bucket.num = u, NEWNODE(INTEGER_, env->bucket, r))
+#define SET_NEWNODE(u, r) (env->bucket.num = u, NEWNODE(SET_, env->bucket, r))
 #define STRING_NEWNODE(u, r)                                                   \
-    (env->bucket2.str = u, NEWNODE(STRING_, env->bucket2, r))
+    (env->bucket.str = u, NEWNODE(STRING_, env->bucket, r))
 #define LIST_NEWNODE(u, r)                                                     \
-    (env->bucket2.lis = u, NEWNODE(LIST_, env->bucket2, r))
+    (env->bucket.lis = u, NEWNODE(LIST_, env->bucket, r))
 #define FLOAT_NEWNODE(u, r)                                                    \
-    (env->bucket2.dbl = u, NEWNODE(FLOAT_, env->bucket2, r))
+    (env->bucket.dbl = u, NEWNODE(FLOAT_, env->bucket, r))
 #define FILE_NEWNODE(u, r)                                                     \
-    (env->bucket2.fil = u, NEWNODE(FILE_, env->bucket2, r))
+    (env->bucket.fil = u, NEWNODE(FILE_, env->bucket, r))
 #endif

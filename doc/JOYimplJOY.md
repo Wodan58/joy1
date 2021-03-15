@@ -190,5 +190,3 @@ This updated version of Joy is slowly drifting away from the legacy version.
 
 - The function `Compare` is used to enforce the same type of equality in all
   comparison operators.
-
-- C89 is still supported in the NOBDW version.

@@ -1,14 +1,14 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.23
- *  date    : 06/25/20
+ *  version : 1.26
+ *  date    : 03/14/21
  */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-#include <gc.h>
+#include "gc.h"
 #include "globals.h"
 
 PUBLIC void gc_(pEnv env) { GC_gcollect(); }
@@ -16,10 +16,7 @@ PUBLIC void gc_(pEnv env) { GC_gcollect(); }
 #ifdef STATS
 static double nodes;
 
-static void report_nodes(void)
-{
-    fprintf(stderr, "%.0f nodes used\n", nodes);
-}
+static void report_nodes(void) { fprintf(stderr, "%.0f nodes used\n", nodes); }
 
 static void count_nodes(void)
 {
@@ -28,9 +25,9 @@ static void count_nodes(void)
 }
 #endif
 
-PUBLIC Node* newnode(Operator o, Types u, Node* r)
+PUBLIC Node *newnode(Operator o, Types u, Node *r)
 {
-    Node* p;
+    Node *p;
 
     if ((p = GC_malloc(sizeof(Node))) == 0)
         execerror("memory", "allocator");
@@ -48,15 +45,20 @@ PUBLIC void memoryindex_(pEnv env)
     env->stck = INTEGER_NEWNODE(0, env->stck);
 }
 
-PUBLIC void readfactor(pEnv env, int priv) /* read a JOY factor	*/
+PUBLIC void readfactor(pEnv env, int priv) /* read a JOY factor */
 {
     long_t set = 0;
+    pEntry mod_fields;
+    Entry ent;
 
     switch (symb) {
     case ATOM:
         lookup(env, priv);
-        while (location && location->is_module) {
-            Entry* mod_fields = location->u.module_fields;
+        while (location) {
+            ent = vec_at(env->symtab, location);
+            if (!ent.is_module)
+                break;
+            mod_fields = ent.u.module_fields;
             getsym(env);
             if (symb != PERIOD)
                 error("period '.' expected after module name");
@@ -66,8 +68,12 @@ PUBLIC void readfactor(pEnv env, int priv) /* read a JOY factor	*/
                 error("atom expected as module field");
                 return;
             }
-            while (mod_fields && strcmp(ident, mod_fields->name) != 0)
-                mod_fields = mod_fields->next;
+            while (mod_fields) {
+                ent = vec_at(env->symtab, mod_fields);
+                if (!strcmp(ident, ent.name))
+                    break;
+                mod_fields = ent.next;
+            }
             if (mod_fields == NULL) {
                 error("no such field in module");
                 abortexecution_(env);
@@ -76,8 +82,8 @@ PUBLIC void readfactor(pEnv env, int priv) /* read a JOY factor	*/
         }
         if (!priv) {
             if (location < firstlibra) {
-                env->bucket.proc = location->u.proc;
-                env->stck = newnode(LOC2INT(location), env->bucket, env->stck);
+                env->yylval.proc = vec_at(env->symtab, location).u.proc;
+                env->stck = newnode(location, env->yylval, env->stck);
             } else
                 env->stck = USR_NEWNODE(location, env->stck);
         }
@@ -86,20 +92,20 @@ PUBLIC void readfactor(pEnv env, int priv) /* read a JOY factor	*/
     case INTEGER_:
     case CHAR_:
         if (!priv)
-            env->stck = newnode(symb, env->bucket, env->stck);
+            env->stck = newnode(symb, env->yylval, env->stck);
         return;
     case STRING_:
         if (!priv)
-            env->stck = newnode(symb, env->bucket, env->stck);
+            env->stck = newnode(symb, env->yylval, env->stck);
         return;
     case FLOAT_:
         if (!priv)
-            env->stck = FLOAT_NEWNODE(env->bucket.dbl, env->stck);
+            env->stck = FLOAT_NEWNODE(env->yylval.dbl, env->stck);
         return;
     case LBRACE:
         while (getsym(env), symb != RBRACE)
             if (symb == CHAR_ || symb == INTEGER_)
-                set |= ((long_t)1 << env->bucket.num);
+                set |= ((long_t)1 << env->yylval.num);
             else
                 error("numeric expected in set");
         if (!priv)
@@ -122,7 +128,7 @@ PUBLIC void readfactor(pEnv env, int priv) /* read a JOY factor	*/
 
 PUBLIC void readterm(pEnv env, int priv)
 {
-    Node** dump;
+    Node **dump;
 
     if (!priv) {
         env->stck = LIST_NEWNODE(0, env->stck);
@@ -140,9 +146,9 @@ PUBLIC void readterm(pEnv env, int priv)
     }
 }
 
-PUBLIC void writefactor(pEnv env, Node* n, FILE* stm)
+PUBLIC void writefactor(pEnv env, Node *n, FILE *stm)
 {
-    char* p;
+    char *p;
     int i;
     long_t set;
 
@@ -153,11 +159,7 @@ PUBLIC void writefactor(pEnv env, Node* n, FILE* stm)
         fprintf(stm, "%s", n->u.num ? "true" : "false");
         return;
     case INTEGER_:
-#ifdef BIT_32
-        fprintf(stm, "%ld", (long)n->u.num);
-#else
-        fprintf(stm, "%lld", n->u.num);
-#endif
+        fprintf(stm, "%ld", (long)n->u.num); /* BIT_32 */
         return;
     case FLOAT_:
         fprintf(stm, "%g", n->u.dbl);
@@ -192,7 +194,7 @@ PUBLIC void writefactor(pEnv env, Node* n, FILE* stm)
         fprintf(stm, "%s", "]");
         return;
     case USR_:
-        fprintf(stm, "%s", n->u.ent->name);
+        fprintf(stm, "%s", vec_at(env->symtab, n->u.ent).name);
         return;
     case FILE_:
         if (n->u.fil == NULL)
@@ -204,7 +206,7 @@ PUBLIC void writefactor(pEnv env, Node* n, FILE* stm)
         else if (n->u.fil == stderr)
             fprintf(stm, "file:stderr");
         else
-            fprintf(stm, "file:%p", (void*)n->u.fil);
+            fprintf(stm, "file:%p", (void *)n->u.fil);
         return;
     default:
         fprintf(stm, "%s", opername(n->op));
@@ -212,7 +214,7 @@ PUBLIC void writefactor(pEnv env, Node* n, FILE* stm)
     }
 }
 
-PUBLIC void writeterm(pEnv env, Node* n, FILE* stm)
+PUBLIC void writeterm(pEnv env, Node *n, FILE *stm)
 {
     while (n != NULL) {
         writefactor(env, n, stm);
