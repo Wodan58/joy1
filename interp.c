@@ -1,7 +1,7 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.44
+ *  version : 1.45
  *  date    : 03/15/21
  */
 
@@ -563,7 +563,7 @@ PRIVATE void format_(pEnv env)
     width = env->stck->u.num;
     POP(env->stck);
     CHARACTER("format");
-    spec = env->stck->u.num;
+    spec = (char)env->stck->u.num;
     POP(env->stck);
     if (!strchr("dioxX", spec))
         execerror("one of: d i o x X", "format");
@@ -1091,14 +1091,14 @@ PRIVATE double Compare(pEnv env, Node *first, Node *second, int *error)
             if (error)                                                         \
                 BADDATA(NAME);                                                 \
             else {                                                             \
-                comp = (cmp OPR 0);                                            \
+                comp = (int)(cmp OPR 0);                                       \
                 if (comp < 0)                                                  \
                     comp = -1;                                                 \
                 else if (comp > 0)                                             \
                     comp = 1;                                                  \
             }                                                                  \
         }                                                                      \
-        env->stck = CONSTRUCTOR((int)comp, env->stck->next->next);             \
+        env->stck = CONSTRUCTOR(comp, env->stck->next->next);                  \
     }
 
 COMPREL(eql_, "=", BOOLEAN_NEWNODE, ==, i == j)
