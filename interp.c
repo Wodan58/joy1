@@ -1,8 +1,8 @@
 /* FILE: interp.c */
 /*
  *  module  : interp.c
- *  version : 1.45
- *  date    : 03/15/21
+ *  version : 1.47
+ *  date    : 04/28/21
  */
 
 /*
@@ -51,68 +51,68 @@ PRIVATE void manual_list_(pEnv env);
 
 #define ONEPARAM(NAME)                                                         \
     if (env->stck == NULL)                                                     \
-    execerror("one parameter", NAME)
+    execerror(env, "one parameter", NAME)
 #define TWOPARAMS(NAME)                                                        \
     if (env->stck == NULL || env->stck->next == NULL)                          \
-    execerror("two parameters", NAME)
+    execerror(env, "two parameters", NAME)
 #define THREEPARAMS(NAME)                                                      \
     if (env->stck == NULL || env->stck->next == NULL                           \
         || env->stck->next->next == NULL)                                      \
-    execerror("three parameters", NAME)
+    execerror(env, "three parameters", NAME)
 #define FOURPARAMS(NAME)                                                       \
     if (env->stck == NULL || env->stck->next == NULL                           \
         || env->stck->next->next == NULL                                       \
         || env->stck->next->next->next == NULL)                                \
-    execerror("four parameters", NAME)
+    execerror(env, "four parameters", NAME)
 #define FIVEPARAMS(NAME)                                                       \
     if (env->stck == NULL || env->stck->next == NULL                           \
         || env->stck->next->next == NULL                                       \
         || env->stck->next->next->next == NULL                                 \
         || env->stck->next->next->next->next == NULL)                          \
-    execerror("five parameters", NAME)
+    execerror(env, "five parameters", NAME)
 #define ONEQUOTE(NAME)                                                         \
     if (env->stck->op != LIST_)                                                \
-    execerror("quotation as top parameter", NAME)
+    execerror(env, "quotation as top parameter", NAME)
 #define TWOQUOTES(NAME)                                                        \
     ONEQUOTE(NAME);                                                            \
     if (env->stck->next->op != LIST_)                                          \
-    execerror("quotation as second parameter", NAME)
+    execerror(env, "quotation as second parameter", NAME)
 #define THREEQUOTES(NAME)                                                      \
     TWOQUOTES(NAME);                                                           \
     if (env->stck->next->next->op != LIST_)                                    \
-    execerror("quotation as third parameter", NAME)
+    execerror(env, "quotation as third parameter", NAME)
 #define FOURQUOTES(NAME)                                                       \
     THREEQUOTES(NAME);                                                         \
     if (env->stck->next->next->next->op != LIST_)                              \
-    execerror("quotation as fourth parameter", NAME)
+    execerror(env, "quotation as fourth parameter", NAME)
 #define SAME2TYPES(NAME)                                                       \
     if (env->stck->op != env->stck->next->op)                                  \
-    execerror("two parameters of the same type", NAME)
+    execerror(env, "two parameters of the same type", NAME)
 #define STRING(NAME)                                                           \
     if (env->stck->op != STRING_)                                              \
-    execerror("string", NAME)
+    execerror(env, "string", NAME)
 #define STRING2(NAME)                                                          \
     if (env->stck->next->op != STRING_)                                        \
-    execerror("string as second parameter", NAME)
+    execerror(env, "string as second parameter", NAME)
 #define INTEGER(NAME)                                                          \
     if (env->stck->op != INTEGER_)                                             \
-    execerror("integer", NAME)
+    execerror(env, "integer", NAME)
 #define INTEGER2(NAME)                                                         \
     if (env->stck->next->op != INTEGER_)                                       \
-    execerror("integer as second parameter", NAME)
+    execerror(env, "integer as second parameter", NAME)
 #define CHARACTER(NAME)                                                        \
     if (env->stck->op != CHAR_)                                                \
-    execerror("character", NAME)
+    execerror(env, "character", NAME)
 #define INTEGERS2(NAME)                                                        \
     if (env->stck->op != INTEGER_ || env->stck->next->op != INTEGER_)          \
-    execerror("two integers", NAME)
+    execerror(env, "two integers", NAME)
 #define NUMERICTYPE(NAME)                                                      \
     if (env->stck->op != INTEGER_ && env->stck->op != CHAR_                    \
         && env->stck->op != BOOLEAN_)                                          \
-    execerror("numeric", NAME)
+    execerror(env, "numeric", NAME)
 #define NUMERIC2(NAME)                                                         \
     if (env->stck->next->op != INTEGER_ && env->stck->next->op != CHAR_)       \
-    execerror("numeric second parameter", NAME)
+    execerror(env, "numeric second parameter", NAME)
 #define FLOATABLE (env->stck->op == INTEGER_ || env->stck->op == FLOAT_)
 #define FLOATABLE2                                                             \
     ((env->stck->op == FLOAT_ && env->stck->next->op == FLOAT_)                \
@@ -120,11 +120,11 @@ PRIVATE void manual_list_(pEnv env);
         || (env->stck->op == INTEGER_ && env->stck->next->op == FLOAT_))
 #define FLOAT(NAME)                                                            \
     if (!FLOATABLE)                                                            \
-        execerror("float or integer", NAME);
+        execerror(env, "float or integer", NAME);
 #define FLOAT2(NAME)                                                           \
     if (!(FLOATABLE2 || (env->stck->op == INTEGER_                             \
                             && env->stck->next->op == INTEGER_)))              \
-    execerror("two floats or integers", NAME)
+    execerror(env, "two floats or integers", NAME)
 #define FLOATVAL                                                               \
     (env->stck->op == FLOAT_ ? env->stck->u.dbl : (double)env->stck->u.num)
 #define FLOATVAL2                                                              \
@@ -147,37 +147,37 @@ PRIVATE void manual_list_(pEnv env);
     }
 #define FILE(NAME)                                                             \
     if (env->stck->op != FILE_ || env->stck->u.fil == NULL)                    \
-    execerror("file", NAME)
+    execerror(env, "file", NAME)
 #define CHECKZERO(NAME)                                                        \
     if (env->stck->u.num == 0)                                                 \
-    execerror("non-zero operand", NAME)
+    execerror(env, "non-zero operand", NAME)
 #define LIST(NAME)                                                             \
     if (env->stck->op != LIST_)                                                \
-    execerror("list", NAME)
+    execerror(env, "list", NAME)
 #define LIST2(NAME)                                                            \
     if (env->stck->next->op != LIST_)                                          \
-    execerror("list as second parameter", NAME)
+    execerror(env, "list as second parameter", NAME)
 #define USERDEF(NAME)                                                          \
     if (env->stck->op != USR_)                                                 \
-    execerror("user defined symbol", NAME)
+    execerror(env, "user defined symbol", NAME)
 #define CHECKLIST(OPR, NAME)                                                   \
     if (OPR != LIST_)                                                          \
-    execerror("internal list", NAME)
+    execerror(env, "internal list", NAME)
 #define CHECKSETMEMBER(NODE, NAME)                                             \
     if ((NODE->op != INTEGER_ && NODE->op != CHAR_) || NODE->u.num >= SETSIZE) \
-    execerror("small numeric", NAME)
+    execerror(env, "small numeric", NAME)
 #define CHECKEMPTYSET(SET, NAME)                                               \
     if (SET == 0)                                                              \
-    execerror("non-empty set", NAME)
+    execerror(env, "non-empty set", NAME)
 #define CHECKEMPTYSTRING(STRING, NAME)                                         \
     if (*STRING == '\0')                                                       \
-    execerror("non-empty string", NAME)
+    execerror(env, "non-empty string", NAME)
 #define CHECKEMPTYLIST(LIST, NAME)                                             \
     if (LIST == NULL)                                                          \
-    execerror("non-empty list", NAME)
-#define INDEXTOOLARGE(NAME) execerror("smaller index", NAME)
-#define BADAGGREGATE(NAME) execerror("aggregate parameter", NAME)
-#define BADDATA(NAME) execerror("different type", NAME)
+    execerror(env, "non-empty list", NAME)
+#define INDEXTOOLARGE(NAME) execerror(env, "smaller index", NAME)
+#define BADAGGREGATE(NAME) execerror(env, "aggregate parameter", NAME)
+#define BADDATA(NAME) execerror(env, "different type", NAME)
 
 #define DMP dump->u.lis
 #define DMP1 dump1->u.lis
@@ -200,12 +200,13 @@ PRIVATE void manual_list_(pEnv env);
     env->stck = CONSTRUCTOR(VALUE, env->stck->next)
 #define BINARY(CONSTRUCTOR, VALUE)                                             \
     env->stck = CONSTRUCTOR(VALUE, env->stck->next->next)
-#define GNULLARY(TYPE, VALUE) env->stck = newnode(TYPE, (VALUE), env->stck)
-#define GUNARY(TYPE, VALUE) env->stck = newnode(TYPE, (VALUE), env->stck->next)
+#define GNULLARY(TYPE, VALUE) env->stck = newnode(env, TYPE, (VALUE), env->stck)
+#define GUNARY(TYPE, VALUE)                                                    \
+    env->stck = newnode(env, TYPE, (VALUE), env->stck->next)
 #define GBINARY(TYPE, VALUE)                                                   \
-    env->stck = newnode(TYPE, (VALUE), env->stck->next->next)
+    env->stck = newnode(env, TYPE, (VALUE), env->stck->next->next)
 #define GTERNARY(TYPE, VALUE)                                                  \
-    env->stck = newnode(TYPE, (VALUE), env->stck->next->next->next)
+    env->stck = newnode(env, TYPE, (VALUE), env->stck->next->next->next)
 
 #define GETSTRING(NODE)                                                        \
     (NODE->op == STRING_                                                       \
@@ -286,7 +287,7 @@ PRIVATE void intern_(pEnv env)
             if (!isalnum((int)*p) && !strchr("=_-", *p))
                 break;
     if (!p || *p)
-        execerror("valid name", ident);
+        execerror(env, "valid name", ident);
     lookup(env, 0);
     if (location < firstlibra) {
         env->yylval.proc = vec_at(env->symtab, location).u.proc;
@@ -502,7 +503,7 @@ PRIVATE void divide_(pEnv env)
     TWOPARAMS("/");
     if ((env->stck->op == FLOAT_ && env->stck->u.dbl == 0.0)
         || (env->stck->op == INTEGER_ && env->stck->u.num == 0))
-        execerror("non-zero divisor", "/");
+        execerror(env, "non-zero divisor", "/");
     FLOAT_I(/);
     INTEGERS2("/");
     BINARY(INTEGER_NEWNODE, env->stck->next->u.num / env->stck->u.num);
@@ -566,7 +567,7 @@ PRIVATE void format_(pEnv env)
     spec = (char)env->stck->u.num;
     POP(env->stck);
     if (!strchr("dioxX", spec))
-        execerror("one of: d i o x X", "format");
+        execerror(env, "one of: d i o x X", "format");
     strcpy(format, "%*.*ld");
     format[5] = spec;
     NUMERICTYPE("format");
@@ -599,7 +600,7 @@ PRIVATE void formatf_(pEnv env)
     spec = (char)env->stck->u.num;
     POP(env->stck);
     if (!strchr("eEfgG", spec))
-        execerror("one of: e E f g G", "formatf");
+        execerror(env, "one of: e E f g G", "formatf");
     strcpy(format, "%*.*lg");
     format[5] = spec;
     FLOAT("formatf");
@@ -1201,7 +1202,7 @@ PRIVATE void fput_(pEnv env)
     TWOPARAMS("fput");
     stm = NULL;
     if (env->stck->next->op != FILE_ || (stm = env->stck->next->u.fil) == NULL)
-        execerror("file", "fput");
+        execerror(env, "file", "fput");
     writefactor(env, env->stck, stm);
     fprintf(stm, " ");
     POP(env->stck);
@@ -1214,8 +1215,8 @@ PRIVATE void fget_(pEnv env)
 
     ONEPARAM("fget");
     if (env->stck->op != FILE_ || (stm = env->stck->u.fil) == NULL)
-        execerror("file", "fget");
-    redirect(stm);
+        execerror(env, "file", "fget");
+    redirect(env, stm);
     getsym(env);
     readfactor(env, 0);
 }
@@ -1241,7 +1242,7 @@ PRIVATE void fputchars_(
     TWOPARAMS("fputchars");
     stm = NULL;
     if (env->stck->next->op != FILE_ || (stm = env->stck->next->u.fil) == NULL)
-        execerror("file", "fputchars");
+        execerror(env, "file", "fputchars");
     fprintf(stm, "%s", env->stck->u.str);
     POP(env->stck);
 }
@@ -1274,7 +1275,7 @@ PRIVATE void fwrite_(pEnv env)
     LIST("fwrite");
     for (n = env->stck->u.lis, length = 0; n; n = n->next, length++)
         if (n->op != INTEGER_)
-            execerror("numeric list", "fwrite");
+            execerror(env, "numeric list", "fwrite");
     buff = GC_malloc_atomic(length);
     for (n = env->stck->u.lis, i = 0; n; n = n->next, i++)
         buff[i] = (unsigned char)n->u.num;
@@ -1491,7 +1492,7 @@ INHAS(has_, "has", env->stck->next, env->stck)
     {                                                                          \
         TWOPARAMS(NAME);                                                       \
         if (INDEX->op != INTEGER_ || INDEX->u.num < 0)                         \
-            execerror("non-negative integer", NAME);                           \
+            execerror(env, "non-negative integer", NAME);                      \
         switch (AGGR->op) {                                                    \
         case SET_: {                                                           \
             int i, indx = INDEX->u.num;                                        \
@@ -1538,11 +1539,11 @@ PRIVATE void choice_(pEnv env)
 {
     THREEPARAMS("choice");
     if (env->stck->next->next->u.num)
-        env->stck = newnode(env->stck->next->op, env->stck->next->u,
+        env->stck = newnode(env, env->stck->next->op, env->stck->next->u,
             env->stck->next->next->next);
     else
-        env->stck
-            = newnode(env->stck->op, env->stck->u, env->stck->next->next->next);
+        env->stck = newnode(
+            env, env->stck->op, env->stck->u, env->stck->next->next->next);
 }
 
 PRIVATE void case_(pEnv env)
@@ -1588,7 +1589,8 @@ PRIVATE void opcase_(pEnv env)
         TWOPARAMS(NAME);                                                       \
         switch (AGGR->op) {                                                    \
         case LIST_:                                                            \
-            BINARY(LIST_NEWNODE, newnode(ELEM->op, ELEM->u, AGGR->u.lis));     \
+            BINARY(                                                            \
+                LIST_NEWNODE, newnode(env, ELEM->op, ELEM->u, AGGR->u.lis));   \
             break;                                                             \
         case SET_:                                                             \
             CHECKSETMEMBER(ELEM, NAME);                                        \
@@ -1597,7 +1599,7 @@ PRIVATE void opcase_(pEnv env)
         case STRING_: {                                                        \
             char *s;                                                           \
             if (ELEM->op != CHAR_)                                             \
-                execerror("character", NAME);                                  \
+                execerror(env, "character", NAME);                             \
             s = GC_malloc_atomic(strlen(AGGR->u.str) + 2);                     \
             *s = (char)ELEM->u.num;                                            \
             strcpy(s + 1, AGGR->u.str);                                        \
@@ -1700,11 +1702,11 @@ PRIVATE void take_(pEnv env)
         while (my_dump1 != NULL && i-- > 0) {
             if (my_dump2 == NULL) /* first */
             {
-                my_dump2 = newnode(my_dump1->op, my_dump1->u, NULL);
+                my_dump2 = newnode(env, my_dump1->op, my_dump1->u, NULL);
                 my_dump3 = my_dump2;
             } else /* further */
             {
-                my_dump3->next = newnode(my_dump1->op, my_dump1->u, NULL);
+                my_dump3->next = newnode(env, my_dump1->op, my_dump1->u, NULL);
                 my_dump3 = my_dump3->next;
             }
             my_dump1 = my_dump1->next;
@@ -1748,11 +1750,11 @@ PRIVATE void concat_(pEnv env)
         while (my_dump1 != NULL) {
             if (my_dump2 == NULL) /* first */
             {
-                my_dump2 = newnode(my_dump1->op, my_dump1->u, NULL);
+                my_dump2 = newnode(env, my_dump1->op, my_dump1->u, NULL);
                 my_dump3 = my_dump2;
             } else /* further */
             {
-                my_dump3->next = newnode(my_dump1->op, my_dump1->u, NULL);
+                my_dump3->next = newnode(env, my_dump1->op, my_dump1->u, NULL);
                 my_dump3 = my_dump3->next;
             };
             my_dump1 = my_dump1->next;
@@ -1914,7 +1916,7 @@ USETOP(
     setundeferror_, "setundeferror", NUMERICTYPE, undeferror = env->stck->u.num)
 USETOP(settracegc_, "settracegc", NUMERICTYPE, tracegc = env->stck->u.num)
 USETOP(srand_, "srand", INTEGER, my_srand((unsigned)env->stck->u.num))
-USETOP(include_, "include", STRING, doinclude(env->stck->u.str))
+USETOP(include_, "include", STRING, doinclude(env, env->stck->u.str))
 USETOP(system_, "system", STRING, (void)system(env->stck->u.str))
 
 PRIVATE void undefs_(pEnv env)
@@ -2077,12 +2079,12 @@ start:
         case LIST_:
         case FLOAT_:
         case FILE_:
-            env->stck = newnode(n->op, n->u, env->stck);
+            env->stck = newnode(env, n->op, n->u, env->stck);
             break;
         case USR_:
             ent = vec_at(env->symtab, n->u.ent);
             if (!ent.u.body && undeferror)
-                execerror("definition", ent.name);
+                execerror(env, "definition", ent.name);
             if (!n->next) {
                 n = ent.u.body;
                 goto start;
@@ -2141,8 +2143,8 @@ PRIVATE void dip_(pEnv env)
         top = TOP;                                                             \
         exeterm(env, save->u.lis);                                             \
         if (env->stck == NULL)                                                 \
-            execerror("value to push", NAME);                                  \
-        env->stck = newnode(env->stck->op, env->stck->u, top);                 \
+            execerror(env, "value to push", NAME);                             \
+        env->stck = newnode(env, env->stck->op, env->stck->u, top);            \
     }
 
 N_ARY(nullary_, "nullary", ONEPARAM, env->stck)
@@ -2206,8 +2208,8 @@ PRIVATE void cleave_(pEnv env)
     env->stck = save;
     exeterm(env, program[1]); /* [P2] */
     result[1] = env->stck;
-    env->stck = newnode(result[0]->op, result[0]->u, save->next); /* X1 */
-    env->stck = newnode(result[1]->op, result[1]->u, env->stck); /* X2 */
+    env->stck = newnode(env, result[0]->op, result[0]->u, save->next); /* X1 */
+    env->stck = newnode(env, result[1]->op, result[1]->u, env->stck); /* X2 */
 }
 
 PRIVATE void app11_(pEnv env)
@@ -2234,8 +2236,9 @@ PRIVATE void unary2_(pEnv env)
     env->stck->next = save; /* just Z on top */
     exeterm(env, program); /* execute P */
     result[1] = env->stck; /* save P(Z) */
-    env->stck = newnode(result[0]->op, result[0]->u, save); /*  Y'	*/
-    env->stck = newnode(result[1]->op, result[1]->u, env->stck); /*  Z'	*/
+    env->stck = newnode(env, result[0]->op, result[0]->u, save); /*  Y'	*/
+    env->stck
+        = newnode(env, result[1]->op, result[1]->u, env->stck); /*  Z'	*/
 }
 
 PRIVATE void unary3_(pEnv env)
@@ -2259,9 +2262,11 @@ PRIVATE void unary3_(pEnv env)
     env->stck->next = save; /* just Z on top */
     exeterm(env, program); /* execute P */
     result[2] = env->stck; /* save P(Z) */
-    env->stck = newnode(result[0]->op, result[0]->u, save); /*  X'	*/
-    env->stck = newnode(result[1]->op, result[1]->u, env->stck); /*  Y'	*/
-    env->stck = newnode(result[2]->op, result[2]->u, env->stck); /*  Z'	*/
+    env->stck = newnode(env, result[0]->op, result[0]->u, save); /*  X'	*/
+    env->stck
+        = newnode(env, result[1]->op, result[1]->u, env->stck); /*  Y'	*/
+    env->stck
+        = newnode(env, result[2]->op, result[2]->u, env->stck); /*  Z'	*/
 }
 
 PRIVATE void unary4_(pEnv env)
@@ -2290,10 +2295,13 @@ PRIVATE void unary4_(pEnv env)
     env->stck->next = save;
     exeterm(env, program); /* execute P */
     result[3] = env->stck; /* save P(W) */
-    env->stck = newnode(result[0]->op, result[0]->u, save); /*  X'	*/
-    env->stck = newnode(result[1]->op, result[1]->u, env->stck); /*  Y'	*/
-    env->stck = newnode(result[2]->op, result[2]->u, env->stck); /*  Z'	*/
-    env->stck = newnode(result[3]->op, result[3]->u, env->stck); /*  W'	*/
+    env->stck = newnode(env, result[0]->op, result[0]->u, save); /*  X'	*/
+    env->stck
+        = newnode(env, result[1]->op, result[1]->u, env->stck); /*  Y'	*/
+    env->stck
+        = newnode(env, result[2]->op, result[2]->u, env->stck); /*  Z'	*/
+    env->stck
+        = newnode(env, result[3]->op, result[3]->u, env->stck); /*  W'	*/
 }
 
 PRIVATE void app12_(pEnv env)
@@ -2319,17 +2327,18 @@ PRIVATE void map_(pEnv env)
     case LIST_: {
         my_dump1 = env->stck->u.lis;
         while (my_dump1 != NULL) {
-            env->stck = newnode(my_dump1->op, my_dump1->u, save);
+            env->stck = newnode(env, my_dump1->op, my_dump1->u, save);
             exeterm(env, program);
             if (env->stck == NULL)
-                execerror("non-empty stack", "map");
+                execerror(env, "non-empty stack", "map");
             if (my_dump2 == NULL) /* first */
             {
-                my_dump2 = newnode(env->stck->op, env->stck->u, NULL);
+                my_dump2 = newnode(env, env->stck->op, env->stck->u, NULL);
                 my_dump3 = my_dump2;
             } else /* further */
             {
-                my_dump3->next = newnode(env->stck->op, env->stck->u, NULL);
+                my_dump3->next
+                    = newnode(env, env->stck->op, env->stck->u, NULL);
                 my_dump3 = my_dump3->next;
             }
             my_dump1 = my_dump1->next;
@@ -2509,17 +2518,18 @@ PRIVATE void filter_(pEnv env)
     case LIST_: {
         my_dump1 = env->stck->u.lis;
         while (my_dump1 != NULL) {
-            env->stck = newnode(my_dump1->op, my_dump1->u, save);
+            env->stck = newnode(env, my_dump1->op, my_dump1->u, save);
             exeterm(env, program);
             if (env->stck->u.num) /* test */
             {
                 if (my_dump2 == NULL) /* first */
                 {
-                    my_dump2 = newnode(my_dump1->op, my_dump1->u, NULL);
+                    my_dump2 = newnode(env, my_dump1->op, my_dump1->u, NULL);
                     my_dump3 = my_dump2;
                 } else /* further */
                 {
-                    my_dump3->next = newnode(my_dump1->op, my_dump1->u, NULL);
+                    my_dump3->next
+                        = newnode(env, my_dump1->op, my_dump1->u, NULL);
                     my_dump3 = my_dump3->next;
                 }
             }
@@ -2588,26 +2598,27 @@ PRIVATE void split_(pEnv env)
     case LIST_: {
         my_dump1 = env->stck->u.lis;
         while (my_dump1 != NULL) {
-            env->stck = newnode(my_dump1->op, my_dump1->u, save);
+            env->stck = newnode(env, my_dump1->op, my_dump1->u, save);
             exeterm(env, program);
             if (env->stck->u.num) /* pass */
                 if (my_dump2 == NULL) /* first */
                 {
-                    my_dump2 = newnode(my_dump1->op, my_dump1->u, NULL);
+                    my_dump2 = newnode(env, my_dump1->op, my_dump1->u, NULL);
                     my_dump3 = my_dump2;
                 } else /* further */
                 {
-                    my_dump3->next = newnode(my_dump1->op, my_dump1->u, NULL);
+                    my_dump3->next
+                        = newnode(env, my_dump1->op, my_dump1->u, NULL);
                     my_dump3 = my_dump3->next;
                 }
             else /* fail */
                 if (my_dump4 == NULL) /* first */
             {
-                my_dump4 = newnode(my_dump1->op, my_dump1->u, NULL);
+                my_dump4 = newnode(env, my_dump1->op, my_dump1->u, NULL);
                 my_dump5 = my_dump4;
             } else /* further */
             {
-                my_dump5->next = newnode(my_dump1->op, my_dump1->u, NULL);
+                my_dump5->next = newnode(env, my_dump1->op, my_dump1->u, NULL);
                 my_dump5 = my_dump5->next;
             }
             my_dump1 = my_dump1->next;
@@ -2659,7 +2670,7 @@ PRIVATE void split_(pEnv env)
         case LIST_: {                                                          \
             my_dump = env->stck->u.lis;                                        \
             while (my_dump != NULL && result == INITIAL) {                     \
-                env->stck = newnode(my_dump->op, my_dump->u, save);            \
+                env->stck = newnode(env, my_dump->op, my_dump->u, save);       \
                 exeterm(env, program);                                         \
                 if (env->stck->u.num != INITIAL)                               \
                     result = 1 - INITIAL;                                      \
@@ -2692,15 +2703,15 @@ PRIVATE void primrec_(pEnv env)
     case LIST_: {
         Node *current = data->u.lis;
         while (current != NULL) {
-            env->stck = newnode(current->op, current->u, env->stck);
+            env->stck = newnode(env, current->op, current->u, env->stck);
             current = current->next;
             n++;
         }
         break;
     }
     case STRING_: {
-        char *s;
-        for (s = data->u.str; *s != '\0'; s++) {
+        char *s, *volatile ptr;
+        for (ptr = s = data->u.str; *s != '\0'; s++) {
             env->stck = CHAR_NEWNODE(*s, env->stck);
             n++;
         }
@@ -2780,7 +2791,8 @@ PRIVATE void construct_(pEnv env)
     while (second != NULL) {
         env->stck = save3; /* restore new stack	*/
         exeterm(env, second->u.lis);
-        save2 = newnode(env->stck->op, env->stck->u, save2); /* result	*/
+        save2 = newnode(
+            env, env->stck->op, env->stck->u, save2); /* result	*/
         second = second->next;
     }
     env->stck = save2;
@@ -3882,7 +3894,7 @@ PRIVATE void make_manual(int style /* 0=plain, 1=HTML, 2=Latex */)
         printf("<HTML>\n<DL>\n");
     for (i = BOOLEAN_; optable[i].name != 0; i++) {
         char *n = optable[i].name;
-/* clang-format off */
+        /* clang-format off */
         HEADER(n, " truth value type", "literal") else
 	HEADER(n, "false", "operand") else
 	HEADER(n, "id", "operator") else
@@ -3890,7 +3902,7 @@ PRIVATE void make_manual(int style /* 0=plain, 1=HTML, 2=Latex */)
 	HEADER(n, "i", "combinator") else
 	HEADER(n, "help", "miscellaneous commands")
 	if (n[0] != '_') {
-/* clang-format on */
+            /* clang-format on */
             if (HTML)
                 printf("\n<DT>");
             else if (LATEX) {

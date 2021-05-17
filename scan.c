@@ -1,8 +1,8 @@
 /* FILE: scan.c */
 /*
  *  module  : scan.c
- *  version : 1.27
- *  date    : 03/15/21
+ *  version : 1.28
+ *  date    : 04/28/21
  */
 #include <stdio.h>
 #include <string.h>
@@ -120,12 +120,12 @@ PUBLIC void error(char *message)
 #endif
 }
 
-PUBLIC void doinclude(char *filnam)
+PUBLIC void doinclude(pEnv env, char *filnam)
 {
     FILE *fp;
 
     if (ilevel + 1 == INPSTACKMAX)
-        execerror("fewer include files", "include");
+        execerror(env, "fewer include files", "include");
     infile[ilevel].fp = srcfile;
     infile[ilevel].linenum = linenumber;
     linenumber = 0;
@@ -138,16 +138,16 @@ PUBLIC void doinclude(char *filnam)
         infile[ilevel].linenum = 0;
         return;
     }
-    execerror("valid file name", "include");
+    execerror(env, "valid file name", "include");
 }
 
 #ifdef FGET_FROM_FILE
-PUBLIC void redirect(FILE *fp)
+PUBLIC void redirect(pEnv env, FILE *fp)
 {
     if (infile[ilevel].fp == fp)
         return;
     if (ilevel + 1 == INPSTACKMAX)
-        execerror("fewer include files", "redirect");
+        execerror(env, "fewer include files", "redirect");
     infile[++ilevel].fp = srcfile = fp;
 #if 0
     infile[ilevel].name[0] = 0;

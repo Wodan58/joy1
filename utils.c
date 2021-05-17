@@ -1,8 +1,8 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.26
- *  date    : 03/14/21
+ *  version : 1.27
+ *  date    : 04/28/21
  */
 #include <stdio.h>
 #include <string.h>
@@ -25,12 +25,12 @@ static void count_nodes(void)
 }
 #endif
 
-PUBLIC Node *newnode(Operator o, Types u, Node *r)
+PUBLIC Node *newnode(pEnv env, Operator o, Types u, Node *r)
 {
     Node *p;
 
     if ((p = GC_malloc(sizeof(Node))) == 0)
-        execerror("memory", "allocator");
+        execerror(env, "memory", "allocator");
     p->op = o;
     p->u = u;
     p->next = r;
@@ -83,20 +83,20 @@ PUBLIC void readfactor(pEnv env, int priv) /* read a JOY factor */
         if (!priv) {
             if (location < firstlibra) {
                 env->yylval.proc = vec_at(env->symtab, location).u.proc;
-                env->stck = newnode(location, env->yylval, env->stck);
+                env->stck = newnode(env, location, env->yylval, env->stck);
             } else
                 env->stck = USR_NEWNODE(location, env->stck);
         }
         return;
     case BOOLEAN_:
-    case INTEGER_:
     case CHAR_:
+    case INTEGER_:
         if (!priv)
-            env->stck = newnode(symb, env->yylval, env->stck);
+            env->stck = newnode(env, symb, env->yylval, env->stck);
         return;
     case STRING_:
         if (!priv)
-            env->stck = newnode(symb, env->yylval, env->stck);
+            env->stck = newnode(env, symb, env->yylval, env->stck);
         return;
     case FLOAT_:
         if (!priv)
@@ -128,19 +128,19 @@ PUBLIC void readfactor(pEnv env, int priv) /* read a JOY factor */
 
 PUBLIC void readterm(pEnv env, int priv)
 {
-    Node **dump;
+    Node **my_dump;
 
     if (!priv) {
         env->stck = LIST_NEWNODE(0, env->stck);
-        dump = &env->stck->u.lis;
+        my_dump = &env->stck->u.lis;
     }
     while (symb <= ATOM) {
         readfactor(env, priv);
         if (!priv) {
-            *dump = env->stck;
-            dump = &env->stck->next;
-            env->stck = *dump;
-            *dump = 0;
+            *my_dump = env->stck;
+            my_dump = &env->stck->next;
+            env->stck = *my_dump;
+            *my_dump = 0;
         }
         getsym(env);
     }
@@ -148,12 +148,12 @@ PUBLIC void readterm(pEnv env, int priv)
 
 PUBLIC void writefactor(pEnv env, Node *n, FILE *stm)
 {
-    char *p;
     int i;
+    char *p;
     long_t set;
 
     if (n == NULL)
-        execerror("non-empty stack", "print");
+        execerror(env, "non-empty stack", "print");
     switch (n->op) {
     case BOOLEAN_:
         fprintf(stm, "%s", n->u.num ? "true" : "false");

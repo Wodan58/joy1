@@ -1,8 +1,8 @@
 /* FILE: main.c */
 /*
  *  module  : main.c
- *  version : 1.35
- *  date    : 03/15/21
+ *  version : 1.36
+ *  date    : 04/28/21
  */
 
 /*
@@ -135,6 +135,9 @@ PUBLIC void inisymboltable(pEnv env) /* initialise */
     Entry ent;
     khiter_t key;
 
+#ifdef NOBDW
+    env->memory = GC_malloc(MEMORYMAX * sizeof(Node));
+#endif
     env->symtab = 0;
     env->hash = kh_init(Symtab);
     for (i = 0; (ent.name = opername(i)) != 0; i++) {
@@ -262,8 +265,8 @@ PRIVATE void definition(pEnv env, int priv)
     readterm(env, priv);
     if (!priv) {
         if (here != NULL)
-            vec_at(env->symtab, here).u.body = env->stck->u.lis;
-        env->stck = env->stck->next;
+            vec_at(env->symtab, here).u.body = nodevalue(env->stck).lis;
+        env->stck = nextnode1(env->stck);
     }
 }
 
@@ -280,10 +283,10 @@ PRIVATE void defsequence(pEnv env, int priv)
     }
 }
 
-PRIVATE void enterdisplay(void)
+PRIVATE void enterdisplay(pEnv env)
 {
     if (++display_enter >= DISPLAYMAX)
-        execerror("index", "display");
+        execerror(env, "index", "display");
 }
 
 PRIVATE void compound_def(pEnv env, int priv)
@@ -305,7 +308,7 @@ PRIVATE void compound_def(pEnv env, int priv)
         }
         getsym(env);
         ++display_lookup;
-        enterdisplay();
+        enterdisplay(env);
         if (priv)
             display[display_enter] = NULL;
         compound_def(env, priv);
@@ -320,25 +323,25 @@ PRIVATE void compound_def(pEnv env, int priv)
     case HIDE:
         if (!priv) {
             if ((offset = ftell(srcfile)) < 0)
-                execerror("ftell", "HIDE");
+                execerror(env, "ftell", "HIDE");
             linenum = getlinenum();
             compound_def(env, 1);
             if (fseek(srcfile, offset, 0))
-                execerror("fseek", "HIDE");
+                execerror(env, "fseek", "HIDE");
             resetlinebuffer(linenum);
         }
         getsym(env);
         if (display_lookup > display_enter) {
             /* already inside module or hide */
             oldplace = display[display_lookup];
-            enterdisplay();
+            enterdisplay(env);
             defsequence(env, priv);
             --display_enter;
             compound_def(env, priv);
             display[display_lookup] = oldplace;
         } else {
             ++display_lookup;
-            enterdisplay();
+            enterdisplay(env);
             if (priv)
                 display[display_enter] = NULL;
             defsequence(env, priv);
@@ -361,34 +364,59 @@ PRIVATE void compound_def(pEnv env, int priv)
 
 jmp_buf begin;
 
-PUBLIC void abortexecution_(pEnv env) { longjmp(begin, 0); }
+PUBLIC void abortexecution_(pEnv env)
+{
+#ifdef NOBDW
+    env->conts = env->dump = NULL;
+    env->dump1 = env->dump2 = env->dump3 = env->dump4 = env->dump5 = NULL;
+#endif
+    longjmp(begin, 0);
+}
 
-PUBLIC void execerror(char *message, char *op)
+PUBLIC void execerror(pEnv env, char *message, char *op)
 {
     printf("run time error: %s needed for %s\n", message, op);
-    abortexecution_(0);
+    abortexecution_(env);
 }
 
 PUBLIC void quit_(pEnv env) { exit(0); }
 
 static int mustinclude = 1;
 
+#define CHECK(D, NAME)                                                         \
+    if (D) {                                                                   \
+        printf("->  %s is not empty:\n", NAME);                                \
+        writeterm(&env, D, stdout);                                            \
+        printf("\n");                                                          \
+    }
+
 #ifdef STATS
 static void report_clock(void)
 {
     double timediff;
 
+#ifdef NOBDW
+    double gclock, gcdiff;
+
+    timediff = clock() - startclock;
+    gcdiff = (double)gc_clock * 100 / timediff;
+    timediff /= CLOCKS_PER_SEC;
+    gclock = (double)gc_clock / CLOCKS_PER_SEC;
+#else
     timediff = (double)(clock() - startclock) / CLOCKS_PER_SEC;
+#endif
     fprintf(stderr, "%.2f seconds CPU to execute\n", timediff);
+#ifdef NOBDW
+    fprintf(stderr, "%.2f seconds CPU for gc (=%.0f%%)\n", gclock, gcdiff);
+#endif
 }
 #endif
 
 int start_main(int argc, char **argv)
 {
     FILE *fp;
-    Node *prog;
 
-    Env env; /* symbol table, stack, and buckets */
+    Env env; /* memory, symbol table, stack, and buckets */
 
     g_argc = argc;
     g_argv = argv;
@@ -426,14 +454,21 @@ int start_main(int argc, char **argv)
     } else {
         srcfile = stdin;
         inilinebuffer(0);
+#ifdef NOBDW
+        printf("JOY  -  compiled at %s on %s (NOBDW)\n", __TIME__, __DATE__);
+#else
 #ifdef GC_BDW
         printf("JOY  -  compiled at %s on %s (BDW)\n", __TIME__, __DATE__);
 #else
         printf("JOY  -  compiled at %s on %s (MINBDW)\n", __TIME__, __DATE__);
 #endif
+#endif
         printf("Copyright 2001 by Manfred von Thun\n");
     }
     startclock = clock();
+#ifdef NOBDW
+    gc_clock = 0;
+#endif
 #ifdef STATS
     atexit(report_clock);
 #endif
@@ -443,6 +478,10 @@ int start_main(int argc, char **argv)
     inisymboltable(&env);
     display[0] = NULL;
     env.stck = NULL;
+#ifdef NOBDW
+    inimem1(&env);
+    inimem2(&env);
+#endif
     setjmp(begin);
     setbuf(stdout, 0);
     while (1) {
@@ -450,26 +489,55 @@ int start_main(int argc, char **argv)
             mustinclude = 0;
             if ((fp = fopen("usrlib.joy", "r")) != 0) {
                 fclose(fp);
-                doinclude("usrlib.joy");
+                doinclude(&env, "usrlib.joy");
             }
         }
         getsym(&env);
-        if (symb == LIBRA || symb == HIDE || symb == MODULE)
+        if (symb == LIBRA || symb == HIDE || symb == MODULE) {
+#ifdef NOBDW
+            inimem1(&env);
+#endif
             compound_def(&env, 0);
-        else {
+#ifdef NOBDW
+            inimem2(&env);
+#endif
+        } else {
             readterm(&env, 0);
             if (env.stck != NULL) {
-                prog = env.stck->u.lis;
+#ifdef NOBDW
+                env.prog = env.memory[env.stck].u.lis;
+                env.stck = env.memory[env.stck].next;
+                env.conts = NULL;
+#else
+                env.prog = env.stck->u.lis;
                 env.stck = env.stck->next;
-                exeterm(&env, prog);
+#endif
+                exeterm(&env, env.prog);
             }
+#ifdef NOBDW
+            if (env.conts || env.dump || env.dump1 || env.dump2 || env.dump3
+                || env.dump4 || env.dump5) {
+                printf("the dumps are not empty\n");
+                CHECK(env.conts, "conts");
+                CHECK(env.dump, "dump");
+                CHECK(env.dump1, "dump1");
+                CHECK(env.dump2, "dump2");
+                CHECK(env.dump3, "dump3");
+                CHECK(env.dump4, "dump4");
+                CHECK(env.dump5, "dump5");
+            }
+#endif
             if (autoput == 2 && env.stck != NULL) {
                 writeterm(&env, env.stck, stdout);
                 printf("\n");
             } else if (autoput == 1 && env.stck != NULL) {
                 writefactor(&env, env.stck, stdout);
                 printf("\n");
+#ifdef NOBDW
+                env.stck = env.memory[env.stck].next;
+#else
                 env.stck = env.stck->next;
+#endif
             }
         }
     }
