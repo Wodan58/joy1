@@ -1,7 +1,7 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.3
-#   date    : 03/14/21
+#   version : 1.4
+#   date    : 05/21/21
 #
 cmake_minimum_required(VERSION 3.0)
 project(Joy VERSION 1.0)
@@ -16,7 +16,7 @@ endif()
 if(REAL_BDW)
 add_definitions(-DGC_BDW)
 include_directories(bdwgc/include)
-add_executable(joy interp.c scan.c utils.c main.c srand.c rand.c)
+add_executable(joy interp.c scan.c utils.c main.c srand.c rand.c factor.c)
 if(WIN32)
 target_link_libraries(joy gc-lib)
 else()
@@ -24,11 +24,17 @@ target_link_libraries(joy gc-lib m)
 endif()
 add_subdirectory(bdwgc)
 else()
-add_executable(joy interp.c scan.c utils.c main.c srand.c rand.c gc.c)
+add_executable(joy interp.c scan.c utils.c main.c srand.c rand.c factor.c gc.c)
 endif()
 if(WIN32)
 else()
 target_link_libraries(joy m)
+add_dependencies(joy always)
+add_custom_target(always
+		  COMMAND sh banner.sh ${PROJECT_NAME} ${PROJECT_VERSION}
+		  COMMAND sh table.sh
+		  COMMAND sh prims.sh
+		 )
 add_subdirectory(lib)
 add_subdirectory(test)
 endif()

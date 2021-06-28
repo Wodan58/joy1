@@ -12,7 +12,13 @@ Changes
 -------
 
 Changes are mentioned in globals.h and documented in the `doc` directory.
-Some builtins have been added: fget, getch, and sametype.
+Some builtins have been added: `fget`, `getch`, and `sametype`. Some have been
+removed: `conts`, `__dump`, `__memoryindex`, `__memorymax`, and `__settracegc`.
+It is always possible to extract an up-to-date version of the manual:
+
+    echo '__html_manual.' | ./joy | lynx -stdin
+
+The lynx browser even adds some color.
 The original version can be seen [here](https://github.com/alekar/joy).
 
 Installation

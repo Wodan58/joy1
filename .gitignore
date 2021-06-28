@@ -2,8 +2,9 @@ bdwgc
 CMakeCache.txt
 CMakeFiles
 cmake_install.cmake
-demo*.txt
 joy
 Makefile
-SCCS
-test*.txt
+test/test*.txt
+builtin.c
+builtin.h
+table.c

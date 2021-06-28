@@ -1,7 +1,7 @@
 usrlib  is loaded
 inilib  is loaded
 agglib  is loaded
-	0 __settracegc. 
+	# 0 __settracegc. 
 	
 	(* R E C U R S I V E   D E F I N I T I O N  *) 
 	

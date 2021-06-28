@@ -1,0 +1,53 @@
+/*
+    module  : condnestrec.c
+    version : 1.1
+    date    : 05/21/21
+*/
+#ifndef CONDNESTREC_C
+#define CONDNESTREC_C
+
+PRIVATE void condnestrecaux(pEnv env, Node *list)
+{
+    int result = 0;
+    Node *my_dump, *save;
+
+    my_dump = list;
+    save = env->stck;
+    while (result == 0 && my_dump != NULL && my_dump->next != NULL) {
+        env->stck = save;
+        exeterm(env, my_dump->u.lis->u.lis);
+        result = env->stck->u.num;
+        if (!result)
+            my_dump = my_dump->next;
+    }
+    env->stck = save;
+    my_dump = result ? my_dump->u.lis->next : my_dump->u.lis;
+    exeterm(env, my_dump->u.lis);
+    my_dump = my_dump->next;
+    while (my_dump != NULL) {
+        condnestrecaux(env, list);
+        exeterm(env, my_dump->u.lis);
+        my_dump = my_dump->next;
+    }
+}
+
+/**
+2770  condnestrec  :  [ [C1] [C2] .. [D] ]  ->  ...
+A generalisation of condlinrec.
+Each [Ci] is of the form [[B] [R1] [R2] .. [Rn]] and [D] is of the form
+[[R1] [R2] .. [Rn]]. Tries each B, or if all fail, takes the default [D].
+For the case taken, executes each [Ri] but recurses between any two
+consecutive [Ri] (n > 3 would be exceptional.)
+*/
+PRIVATE void condnestrec_(pEnv env)
+{
+    Node *list;
+
+    ONEPARAM("condnestrec");
+    LIST("condnestrec");
+    CHECKEMPTYLIST(env->stck->u.lis, "condnestrec");
+    list = env->stck->u.lis;
+    POP(env->stck);
+    condnestrecaux(env, list);
+}
+#endif

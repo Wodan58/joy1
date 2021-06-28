@@ -71,6 +71,6 @@ gmtime localtime trunc tanh tan sqrt sinh sin pow modf log10 log ldexp
 frexp floor exp cosh cos ceil atan2 atan asin acos abs chr ord neg sign 
 div rem / * - + not and xor or choice pop rotated rolldownd rollupd 
 swapd dupd popd rotate rolldown rollup swap dup id stderr stdout stdin 
-rand time clock echo undefs undeferror autoput conts stack setsize 
-maxint true false  file type  float type  list type  string type 
- set type  integer type  character type  truth value type 
+rand time clock echo undefs undeferror autoput stack setsize maxint
+true false  file type  float type  list type  string type set type 
+integer type  character type  truth value type 

@@ -200,7 +200,7 @@ nfib-fix.
 
 6 nfib-fix-a i swap putln trace.
 
-0 __settracegc.
+# 0 __settracegc.
 (*
 30 nfib-fix-c i swap putln steps.
 *)
