@@ -1,7 +1,7 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.4
-#   date    : 05/21/21
+#   version : 1.5
+#   date    : 06/28/21
 #
 cmake_minimum_required(VERSION 3.0)
 project(Joy VERSION 1.0)
@@ -25,10 +25,11 @@ endif()
 add_subdirectory(bdwgc)
 else()
 add_executable(joy interp.c scan.c utils.c main.c srand.c rand.c factor.c gc.c)
-endif()
 if(WIN32)
 else()
 target_link_libraries(joy m)
+endif()
+endif()
 add_dependencies(joy always)
 add_custom_target(always
 		  COMMAND sh banner.sh ${PROJECT_NAME} ${PROJECT_VERSION}
@@ -37,4 +38,3 @@ add_custom_target(always
 		 )
 add_subdirectory(lib)
 add_subdirectory(test)
-endif()
