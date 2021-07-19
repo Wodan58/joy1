@@ -1,7 +1,7 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.5
-#   date    : 06/28/21
+#   version : 1.6
+#   date    : 07/12/21
 #
 cmake_minimum_required(VERSION 3.0)
 project(Joy VERSION 1.0)
@@ -36,5 +36,8 @@ add_custom_target(always
 		  COMMAND sh table.sh
 		  COMMAND sh prims.sh
 		 )
+if(WIN32)
+else()
 add_subdirectory(lib)
 add_subdirectory(test)
+endif()
