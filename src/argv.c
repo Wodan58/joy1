@@ -1,7 +1,7 @@
 /*
-    module  : %M%
-    version : %I%
-    date    : %G%
+    module  : argv.c
+    version : 1.2
+    date    : 07/20/21
 */
 #ifndef ARGV_C
 #define ARGV_C

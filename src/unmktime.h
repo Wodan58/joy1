@@ -1,7 +1,7 @@
 /*
-    module  : %M%
-    version : %I%
-    date    : %G%
+    module  : unmktime.h
+    version : 1.2
+    date    : 07/20/21
 */
 #ifndef UNMKTIME_H
 #define UNMKTIME_H

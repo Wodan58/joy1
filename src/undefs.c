@@ -1,7 +1,7 @@
 /*
-    module  : %M%
-    version : %I%
-    date    : %G%
+    module  : undefs.c
+    version : 1.2
+    date    : 07/20/21
 */
 #ifndef UNDEFS_C
 #define UNDEFS_C

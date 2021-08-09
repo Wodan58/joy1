@@ -1,7 +1,7 @@
 /*
-    module  : %M%
-    version : %I%
-    date    : %G%
+    module  : __manual_list.c
+    version : 1.2
+    date    : 07/20/21
 */
 #ifndef __MANUAL_LIST_C
 #define __MANUAL_LIST_C

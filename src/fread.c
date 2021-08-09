@@ -1,7 +1,7 @@
 /*
-    module  : %M%
-    version : %I%
-    date    : %G%
+    module  : fread.c
+    version : 1.2
+    date    : 07/20/21
 */
 #ifndef FREAD_C
 #define FREAD_C
