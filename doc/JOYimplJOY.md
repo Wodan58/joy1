@@ -175,8 +175,8 @@ This updated version of Joy is slowly drifting away from the legacy version.
 
 - Some builtins have been added: `fget`, `getch`, and `sametype`.
 
-- When compiling with BDW enabled, `dump`, `conts`, and `memoryindex` are no
-  longer used.
+- When compiling with BDW enabled, `conts`, `__dump`, `__memoryindex`,
+`__memorymax`, and `__settracegc` are no longer used.
 
 - The paper j09imp.html states: "When input reverts to an earlier file, the
   earlier line numbering is resumed." That functionality was added in this
