@@ -1,6 +1,6 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.9
+#   version : 1.10
 #   date    : 04/13/22
 #
 cmake_minimum_required(VERSION 3.0)
@@ -48,9 +48,9 @@ add_custom_target(always
 		  COMMAND sh ${CMAKE_SOURCE_DIR}/table.sh ${CMAKE_SOURCE_DIR}
 		  COMMAND sh ${CMAKE_SOURCE_DIR}/prims.sh ${CMAKE_SOURCE_DIR}
 		 )
-endif()
 if(RUN_TESTS)
 add_subdirectory(lib)
 add_subdirectory(test)
 add_subdirectory(test2)
+endif()
 endif()
