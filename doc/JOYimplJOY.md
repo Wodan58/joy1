@@ -45,8 +45,8 @@ CORRECT_TYPE_COMPARE, CORRECT_CASE_COMPARE
 It would be good to have only one definition of equality. `Compare` compares
 each type with every other type and is a robust way to enforce the same kind of
 equality in `compare,equal,case,in,has,=,<` and other comparison operators. But
-`in` has a problem: it would break grmtst.joy and therefore `Compare` is not
-used in `in`.
+`in` has a problem: it breaks `grmtst.joy`. This has been dealt with by
+redefining `in` for `grmtst.joy` only.
 
 ONLY_LOGICAL_NOT
 ----------------
@@ -71,7 +71,10 @@ characters that do not adhere to the naming restrictions of identifiers. This
 looks like a mistake, but it is not necessary to have this corrected. After
 all, there exists a different way of accessing symbols: `"symbol" intern ==
 [symbol] first`. In both cases, the symbol `symbol` will be placed on the
-stack.
+stack. There are 3 exceptions to the equality of `intern` and `[ .. ] first`:
+`false`, `true`, and `maxint`. Thus: `"false" intern != [false] first`. The
+word `intern` returns the function `false`, whereas the construct with `first`
+returns the value `false`.
 
 REST_OF_UNIX_ESCAPES
 --------------------
@@ -95,7 +98,7 @@ NO_HELP_LOCAL_SYMBOLS
 
 Symbols from the PRIVATE section of a module or symbols that are defined
 between HIDE and IN end up in the symbol table. This change prevents them from
-showing up in the symbol table. This means that the output of alljoy.joy will
+showing up in the symbol table. This means that the output of `alljoy.joy` will
 be different when this change is enabled. Not having local symbols shown seems
 good to have, because they cannot be used outside their respective PUBLIC
 sections. This is now accepted and not present in the source anymore.
@@ -107,14 +110,17 @@ This definition makes it possible that local symbols can call each other.
 The only way to make it a 100% solution is to read the PRIVATE sections twice:
 during the first time defined symbols are registered in the symbol table and
 during the second time normal processing is done. The benefit of this
-definition is that symbols, because they can be made local, do not show up in
-the symbol table.
+approach is that symbols, because they can be made local, do not show up in
+the symbol table. There is an other approach that requires no change: simply
+use forward declarations in the PRIVATE sections. For some implementations of
+the symbol table this might be easier to implement.
 
 CORRECT_INHAS_COMPARE
 ---------------------
 
-This definition would break grmtst.joy and that is not allowed. A redefinition
-in grmtst.joy is used; all comparison operators now use the Compare function.
+This definition would break `grmtst.joy` and that is not allowed. A
+redefinition in `grmtst.joy` is used; all comparison operators now use the
+Compare function.
 
 Existing changes
 ================
@@ -151,7 +157,7 @@ TRACK_USED_SYMBOLS
 ------------------
 
 This definition uses the program to generate a list of symbols that are used in
-the Joy source files; it can be used to detect what the greatest length of a
+the Joy source files; it can be used to detect what the largest length of a
 symbol is.
 
 NOT_ALSO_FOR_FLOAT, NOT_ALSO_FOR_FILE
@@ -175,10 +181,10 @@ This updated version of Joy is slowly drifting away from the legacy version.
 
 - Some builtins have been added: `fget`, `getch`, and `sametype`.
 
-- When compiling with BDW enabled, `conts`, `__dump`, `__memoryindex`,
-`__memorymax`, and `__settracegc` are no longer used.
+- When compiling with BDW enabled, `__dump`, `__memoryindex`, and
+`__memorymax` are no longer used.
 
-- The paper j09imp.html states: "When input reverts to an earlier file, the
+- The paper `j09imp.html` states: "When input reverts to an earlier file, the
   earlier line numbering is resumed." That functionality was added in this
   version.
 
@@ -186,7 +192,8 @@ This updated version of Joy is slowly drifting away from the legacy version.
   kept the same as the integer size.
 
 - Local symbols are now fully supported: they can call each other and do not
-  show up in the symbol table.
+  show up in the symbol table. The first facility should be considered as an
+  implementation dependent feature.
 
 - The function `Compare` is used to enforce the same type of equality in all
   comparison operators.

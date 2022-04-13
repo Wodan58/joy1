@@ -1,22 +1,28 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.6
-#   date    : 07/12/21
+#   version : 1.9
+#   date    : 04/13/22
 #
 cmake_minimum_required(VERSION 3.0)
 project(Joy VERSION 1.0)
-set(CMAKE_BUILD_TYPE Release)
+if("${CMAKE_BUILD_TYPE}" STREQUAL "")
+set(CMAKE_BUILD_TYPE "Debug")
+endif()
 option(REAL_BDW "Use BDW garbage collector" OFF)
+option(RUN_TESTS "Run standard tests" ON)
+add_definitions(-DTRACING)
 if(WIN32)
 add_definitions(-DGC_NOT_DLL -D_CRT_SECURE_NO_WARNINGS)
 else()
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 --coverage -fprofile-arcs -ftest-coverage") # debug, no optimization
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage") # enabling coverage
 endif()
+endif()
 if(REAL_BDW)
-add_definitions(-DGC_BDW)
+add_definitions(-DGC_BDW -DJVERSION="BDW")
 include_directories(bdwgc/include)
-add_executable(joy interp.c scan.c utils.c main.c srand.c rand.c factor.c)
+add_executable(joy interp.c scan.c utils.c main.c factor.c module.c)
 if(WIN32)
 target_link_libraries(joy gc-lib)
 else()
@@ -24,20 +30,27 @@ target_link_libraries(joy gc-lib m)
 endif()
 add_subdirectory(bdwgc)
 else()
-add_executable(joy interp.c scan.c utils.c main.c srand.c rand.c factor.c gc.c)
+add_definitions(-DJVERSION="MINGC")
+add_executable(joy interp.c scan.c utils.c main.c factor.c module.c gc.c)
+endif()
 if(WIN32)
-else()
-target_link_libraries(joy m)
-endif()
-endif()
 add_dependencies(joy always)
 add_custom_target(always
-		  COMMAND sh banner.sh ${PROJECT_NAME} ${PROJECT_VERSION}
-		  COMMAND sh table.sh
-		  COMMAND sh prims.sh
+		  COMMAND sh ${CMAKE_SOURCE_DIR}/table.sh ${CMAKE_SOURCE_DIR}
+		  COMMAND sh ${CMAKE_SOURCE_DIR}/prims.sh ${CMAKE_SOURCE_DIR}
 		 )
-if(WIN32)
 else()
+target_link_libraries(joy m)
+add_dependencies(joy always)
+add_custom_target(always
+		  COMMAND sh ${CMAKE_SOURCE_DIR}/banner.sh ${PROJECT_NAME}
+                                                           ${PROJECT_VERSION}
+		  COMMAND sh ${CMAKE_SOURCE_DIR}/table.sh ${CMAKE_SOURCE_DIR}
+		  COMMAND sh ${CMAKE_SOURCE_DIR}/prims.sh ${CMAKE_SOURCE_DIR}
+		 )
+endif()
+if(RUN_TESTS)
 add_subdirectory(lib)
 add_subdirectory(test)
+add_subdirectory(test2)
 endif()

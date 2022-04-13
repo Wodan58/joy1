@@ -1,30 +1,11 @@
-"../seqlib.joy" include.
+(*
+    module  : test04.joy
+    version : 1.2
+    date    : 04/11/22
+*)
+DEFINE	n-l == '\n putch.
 
-time localtime.
-
-"test04.joy" "r" fopen
-16 fread 5 take put fclose.
-
-undefs.
-
-0 [[1 2 3] 4 [5 6]] [-] treemap. pop.
-
-10 [small] [] [pred dup pred] [+] binrec.
-
-true ["true\n"] ["false\n"] branch putchars.
-false ["true\n"] ["false\n"] branch putchars.
-
-treesample treeflatten.
-
-5 [1] [*] primrec.
-[1 2 3 4 5] [0] [+] primrec.
-
-DEFINE g-fib == [small] [] [pred dup pred] [app2 +] genrec.
-
-10 g-fib.
-
-[1 [2 3] [[[4]]] 5] [dup *] [map] treerec.
-
-[2 3] [[-] [+] [*] [/]] construct....
-
-1 2 3 4 5 [+] unary3.
+(* testing compile.c *)
+argv 1 at 10
+"test04.joy" "r" fopen dup [true 'A {1 2 3} "test" 3.14 stdin] swap [] cons cons
+"test" put n-l put n-l put n-l.

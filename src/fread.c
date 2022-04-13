@@ -1,7 +1,7 @@
 /*
     module  : fread.c
-    version : 1.2
-    date    : 07/20/21
+    version : 1.3
+    date    : 04/11/22
 */
 #ifndef FREAD_C
 #define FREAD_C
@@ -16,7 +16,7 @@ PRIVATE void fread_(pEnv env)
     FILE *fp;
     Index *my_dump;
     size_t i, count;
-    unsigned char *buf;
+    unsigned char *volatile buf;
 
     TWOPARAMS("fread");
     INTEGER("fread");

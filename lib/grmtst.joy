@@ -6,7 +6,7 @@ DEFINE old_in == in;
            in == [[string] [pop false]] dip [old_in] cons ifte.
 
 "grmlib" libload.
-# 0 __settracegc.
+0 __settracegc.
 1 setecho.
 
 # the library grmlib.joy defines operators for

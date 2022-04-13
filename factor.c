@@ -1,131 +1,136 @@
 /* FILE: factor.c */
 /*
  *  module  : factor.c
- *  version : 1.2
- *  date    : 05/23/21
+ *  version : 1.7
+ *  date    : 04/13/22
  */
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include "globals.h"
 
+/*
+    readfactor - read a factor from srcfile and push it on the stack.
+                 In case of LPAREN nothing gets pushed.
+*/
 PUBLIC void readfactor(pEnv env, int priv) /* read a JOY factor */
 {
     long_t set = 0;
-    pEntry mod_fields;
-    Entry ent;
 
-    switch (symb) {
+    switch (env->symb) {
     case ATOM:
-        lookup(env, priv);
-        while (location) {
-            ent = vec_at(env->symtab, location);
-            if (!ent.is_module)
-                break;
-            mod_fields = ent.u.module_fields;
-            getsym(env);
-            if (symb != PERIOD)
-                error("period '.' expected after module name");
-            else
-                getsym(env);
-            if (symb != ATOM) {
-                error("atom expected as module field");
-                return;
-            }
-            while (mod_fields) {
-                ent = vec_at(env->symtab, mod_fields);
-                if (!strcmp(ident, ent.name))
-                    break;
-                mod_fields = ent.next;
-            }
-            if (mod_fields == NULL) {
-                error("no such field in module");
-                abortexecution_(env);
-            }
-            location = mod_fields;
-        }
         if (!priv) {
-            if (location < firstlibra) {
-                env->yylval.proc = vec_at(env->symtab, location).u.proc;
-                env->stck = newnode(env, location, env->yylval, env->stck);
-            } else
-                env->stck = USR_NEWNODE(location, env->stck);
+            lookup(env);
+            if (env->location < env->firstlibra) {
+                env->yylval.proc = vec_at(env->symtab, env->location).u.proc;
+                env->stck = newnode(env, env->location, env->yylval, env->stck);
+            } else {
+                env->bucket.ent = env->location;
+                env->stck = newnode(env, USR_, env->bucket, env->stck);
+            }
         }
         return;
     case BOOLEAN_:
     case CHAR_:
     case INTEGER_:
-        if (!priv)
-            env->stck = newnode(env, symb, env->yylval, env->stck);
-        return;
     case STRING_:
-        if (!priv)
-            env->stck = newnode(env, symb, env->yylval, env->stck);
-        return;
     case FLOAT_:
         if (!priv)
-            env->stck = FLOAT_NEWNODE(env->yylval.dbl, env->stck);
+            env->stck = newnode(env, env->symb, env->yylval, env->stck);
         return;
     case LBRACE:
-        while (getsym(env), symb != RBRACE)
-            if (symb == CHAR_ || symb == INTEGER_)
-                set |= ((long_t)1 << env->yylval.num);
+        while (getsym(env), env->symb != RBRACE)
+            if ((env->symb != CHAR_ && env->symb != INTEGER_)
+                || env->yylval.num < 0 || env->yylval.num >= SETSIZE)
+                error(env, "small numeric expected in set");
             else
-                error("numeric expected in set");
-        if (!priv)
-            env->stck = SET_NEWNODE(set, env->stck);
+                set |= ((long_t)1 << env->yylval.num);
+        if (!priv) {
+            env->bucket.set = set;
+            env->stck = newnode(env, SET_, env->bucket, env->stck);
+        }
         return;
     case LBRACK:
         getsym(env);
         readterm(env, priv);
-        if (symb != RBRACK)
-            error("']' expected");
+        if (env->symb != RBRACK)
+            error(env, "']' expected");
         return;
     case LPAREN:
-        error("'(' not implemented");
+        error(env, "'(' not implemented");
         getsym(env);
         return;
     default:
-        error("a factor cannot begin with this symbol");
+        error(env, "a factor cannot begin with this symbol");
     }
 }
 
-PUBLIC void my_writefactor(pEnv env, Node *n, FILE *stm)
+/*
+    readterm - read a term from srcfile and push this on the stack as a list.
+*/
+PUBLIC void readterm(pEnv env, int priv)
+{
+    Index *dump = 0;
+
+    if (!priv) {
+        env->bucket.lis = 0;
+        env->stck = newnode(env, LIST_, env->bucket, env->stck);
+        dump = &nodevalue(env->stck).lis;
+    }
+    while (env->symb <= ATOM) {
+        readfactor(env, priv);
+        if (!priv && env->stck) {
+            *dump = env->stck;
+            dump = &nextnode1(env->stck);
+            env->stck = *dump;
+            *dump = 0;
+        }
+        getsym(env);
+    }
+}
+
+/*
+    writefactor - print a factor in readable format.
+*/
+PUBLIC void writefactor(pEnv env, Index n, FILE *stm)
 {
     int i;
     char *p;
     long_t set;
 
-    if (n == NULL)
+#if 0
+/*
+    This cannot happen. Factor has a small number of customers: writeterm,
+    main, put, fput. They all check that the stack is not empty, so this code
+    only serves as a reminder for future customers.
+*/
+    if (!n)
         execerror(env, "non-empty stack", "print");
-    switch (n->op) {
+#endif
+    switch (opertype(nodetype(n))) {
+    case USR_:
+        fprintf(stm, "%s", vec_at(env->symtab, nodevalue(n).ent).name);
+        return;
     case BOOLEAN_:
-        fprintf(stm, "%s", n->u.num ? "true" : "false");
+        fprintf(stm, "%s", nodevalue(n).num ? "true" : "false");
+        return;
+    case CHAR_:
+        fprintf(stm, "'%c", (char)nodevalue(n).num);
         return;
     case INTEGER_:
-        fprintf(stm, "%ld", (long)n->u.num); /* BIT_32 */
-        return;
-    case FLOAT_:
-        fprintf(stm, "%g", n->u.dbl);
+        fprintf(stm, "%ld", (long)nodevalue(n).num); /* BIT_32 */
         return;
     case SET_:
-        set = n->u.set;
-        fprintf(stm, "{");
-        for (i = 0; i < SETSIZE; i++)
+        fputc('{', stm);
+        for (i = 0, set = nodevalue(n).set; i < SETSIZE; i++)
             if (set & ((long_t)1 << i)) {
                 fprintf(stm, "%d", i);
                 set &= ~((long_t)1 << i);
-                if (set != 0)
-                    fprintf(stm, " ");
+                if (set)
+                    fputc(' ', stm);
             }
-        fprintf(stm, "}");
-        return;
-    case CHAR_:
-        fprintf(stm, "'%c", (char)n->u.num);
+        fputc('}', stm);
         return;
     case STRING_:
         fputc('"', stm);
-        for (p = n->u.str; p && *p; p++) {
+        for (p = nodevalue(n).str; p && *p; p++) {
             if (*p == '"' || *p == '\\' || *p == '\n')
                 fputc('\\', stm);
             fputc(*p == '\n' ? 'n' : *p, stm);
@@ -133,27 +138,39 @@ PUBLIC void my_writefactor(pEnv env, Node *n, FILE *stm)
         fputc('"', stm);
         return;
     case LIST_:
-        fprintf(stm, "%s", "[");
-        writeterm(env, n->u.lis, stm);
-        fprintf(stm, "%s", "]");
+        fputc('[', stm);
+        writeterm(env, nodevalue(n).lis, stm);
+        fputc(']', stm);
         return;
-    case USR_:
-        fprintf(stm, "%s", vec_at(env->symtab, n->u.ent).name);
+    case FLOAT_:
+        fprintf(stm, "%g", nodevalue(n).dbl);
         return;
     case FILE_:
-        if (n->u.fil == NULL)
+        if (!nodevalue(n).fil)
             fprintf(stm, "file:NULL");
-        else if (n->u.fil == stdin)
+        else if (nodevalue(n).fil == stdin)
             fprintf(stm, "file:stdin");
-        else if (n->u.fil == stdout)
+        else if (nodevalue(n).fil == stdout)
             fprintf(stm, "file:stdout");
-        else if (n->u.fil == stderr)
+        else if (nodevalue(n).fil == stderr)
             fprintf(stm, "file:stderr");
         else
-            fprintf(stm, "file:%p", (void *)n->u.fil);
+            fprintf(stm, "file:%p", nodevalue(n).fil);
         return;
     default:
-        fprintf(stm, "%s", opername(n->op));
+        fprintf(stm, "%s", opername(nodetype(n)));
         return;
+    }
+}
+
+/*
+    writeterm - print the contents of a list in readable format.
+*/
+PUBLIC void writeterm(pEnv env, Index n, FILE *stm)
+{
+    while (n) {
+        writefactor(env, n, stm);
+        if ((n = nextnode1(n)) != 0)
+            fputc(' ', stm);
     }
 }

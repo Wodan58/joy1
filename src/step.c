@@ -1,7 +1,7 @@
 /*
     module  : step.c
-    version : 1.1
-    date    : 05/21/21
+    version : 1.2
+    date    : 04/11/22
 */
 #ifndef STEP_C
 #define STEP_C
@@ -24,7 +24,7 @@ PRIVATE void step_(pEnv env)
     switch (data->op) {
     case LIST_: {
         my_dump = data->u.lis;
-        while (my_dump != NULL) {
+        while (my_dump) {
             GNULLARY(my_dump->op, my_dump->u);
             exeterm(env, program);
             my_dump = my_dump->next;
@@ -32,8 +32,8 @@ PRIVATE void step_(pEnv env)
         break;
     }
     case STRING_: {
-        char *s;
-        for (s = data->u.str; *s != '\0'; s++) {
+        char *s, *volatile ptr;
+        for (s = ptr = data->u.str; *s != '\0'; s++) {
             env->stck = CHAR_NEWNODE(*s, env->stck);
             exeterm(env, program);
         }
