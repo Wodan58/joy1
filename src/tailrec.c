@@ -1,11 +1,16 @@
 /*
     module  : tailrec.c
-    version : 1.1
-    date    : 05/21/21
+    version : 1.2
+    date    : 05/02/22
 */
 #ifndef TAILREC_C
 #define TAILREC_C
 
+/**
+2740  tailrec  :  [P] [T] [R1]  ->  ...
+Executes P. If that yields true, executes T.
+Else executes R1, recurses.
+*/
 PRIVATE void tailrecaux(pEnv env, Node *first, Node *second, Node *third)
 {
     Node *save;
@@ -14,6 +19,7 @@ PRIVATE void tailrecaux(pEnv env, Node *first, Node *second, Node *third)
 tailrec:
     save = env->stck;
     exeterm(env, first);
+    CHECKSTACK("tailrec");
     result = env->stck->u.num;
     env->stck = save;
     if (result)
@@ -24,11 +30,6 @@ tailrec:
     }
 }
 
-/**
-2740  tailrec  :  [P] [T] [R1]  ->  ...
-Executes P. If that yields true, executes T.
-Else executes R1, recurses.
-*/
 PRIVATE void tailrec_(pEnv env)
 {
     Node *first, *second, *third;

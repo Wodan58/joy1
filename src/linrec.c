@@ -1,11 +1,16 @@
 /*
     module  : linrec.c
-    version : 1.1
-    date    : 05/21/21
+    version : 1.2
+    date    : 05/02/22
 */
 #ifndef LINREC_C
 #define LINREC_C
 
+/**
+2730  linrec  :  [P] [T] [R1] [R2]  ->  ...
+Executes P. If that yields true, executes T.
+Else executes R1, recurses, executes R2.
+*/
 PRIVATE void linrecaux(
     pEnv env, Node *first, Node *second, Node *third, Node *fourth)
 {
@@ -14,6 +19,7 @@ PRIVATE void linrecaux(
 
     save = env->stck;
     exeterm(env, first);
+    CHECKSTACK("linrec");
     result = env->stck->u.num;
     env->stck = save;
     if (result)
@@ -25,11 +31,6 @@ PRIVATE void linrecaux(
     }
 }
 
-/**
-2730  linrec  :  [P] [T] [R1] [R2]  ->  ...
-Executes P. If that yields true, executes T.
-Else executes R1, recurses, executes R2.
-*/
 PRIVATE void linrec_(pEnv env)
 {
     Node *first, *second, *third, *fourth;

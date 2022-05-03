@@ -1,7 +1,7 @@
 /*
     module  : primrec.c
-    version : 1.1
-    date    : 05/21/21
+    version : 1.2
+    date    : 05/02/22
 */
 #ifndef PRIMREC_C
 #define PRIMREC_C
@@ -37,9 +37,9 @@ PRIVATE void primrec_(pEnv env)
         break;
     }
     case STRING_: {
-        char *s, *volatile ptr;
-        for (ptr = s = data->u.str; *s != '\0'; s++) {
-            env->stck = CHAR_NEWNODE(*s, env->stck);
+        char *volatile ptr = data->u.str;
+        for (i = 0; ptr[i]; i++) {
+            env->stck = CHAR_NEWNODE(ptr[i], env->stck);
             n++;
         }
         break;

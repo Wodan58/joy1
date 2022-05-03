@@ -1,7 +1,7 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.10
-#   date    : 04/13/22
+#   version : 1.11
+#   date    : 05/02/22
 #
 cmake_minimum_required(VERSION 3.0)
 project(Joy VERSION 1.0)
@@ -20,7 +20,7 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage") # enabling co
 endif()
 endif()
 if(REAL_BDW)
-add_definitions(-DGC_BDW -DJVERSION="BDW")
+add_definitions(-DGC_BDW -DJVERSION="BDW ${CMAKE_BUILD_TYPE} ${CMAKE_PROJECT_VERSION}")
 include_directories(bdwgc/include)
 add_executable(joy interp.c scan.c utils.c main.c factor.c module.c)
 if(WIN32)
@@ -30,26 +30,24 @@ target_link_libraries(joy gc-lib m)
 endif()
 add_subdirectory(bdwgc)
 else()
-add_definitions(-DJVERSION="MINGC")
+add_definitions(-DJVERSION="MINGC ${CMAKE_BUILD_TYPE} ${CMAKE_PROJECT_VERSION}")
+include_directories(.)
 add_executable(joy interp.c scan.c utils.c main.c factor.c module.c gc.c)
 endif()
 if(WIN32)
 add_dependencies(joy always)
 add_custom_target(always
 		  COMMAND sh ${CMAKE_SOURCE_DIR}/table.sh ${CMAKE_SOURCE_DIR}
-		  COMMAND sh ${CMAKE_SOURCE_DIR}/prims.sh ${CMAKE_SOURCE_DIR}
-		 )
+		  COMMAND sh ${CMAKE_SOURCE_DIR}/prims.sh ${CMAKE_SOURCE_DIR})
 else()
 target_link_libraries(joy m)
 add_dependencies(joy always)
 add_custom_target(always
-		  COMMAND sh ${CMAKE_SOURCE_DIR}/banner.sh ${PROJECT_NAME}
-                                                           ${PROJECT_VERSION}
+		  COMMAND sh ${CMAKE_SOURCE_DIR}/banner.sh ${PROJECT_NAME} ${PROJECT_VERSION}
 		  COMMAND sh ${CMAKE_SOURCE_DIR}/table.sh ${CMAKE_SOURCE_DIR}
-		  COMMAND sh ${CMAKE_SOURCE_DIR}/prims.sh ${CMAKE_SOURCE_DIR}
-		 )
+		  COMMAND sh ${CMAKE_SOURCE_DIR}/prims.sh ${CMAKE_SOURCE_DIR})
 if(RUN_TESTS)
-add_subdirectory(lib)
+#add_subdirectory(lib)
 add_subdirectory(test)
 add_subdirectory(test2)
 endif()

@@ -1,7 +1,7 @@
 /*
     module  : filter.c
-    version : 1.1
-    date    : 05/21/21
+    version : 1.2
+    date    : 05/02/22
 */
 #ifndef FILTER_C
 #define FILTER_C
@@ -29,6 +29,7 @@ PRIVATE void filter_(pEnv env)
             if (set & ((long_t)1 << j)) {
                 env->stck = INTEGER_NEWNODE(j, save);
                 exeterm(env, program);
+                CHECKSTACK("filter");
                 if (env->stck->u.num)
                     resultset |= ((long_t)1 << j);
             }
@@ -44,6 +45,7 @@ PRIVATE void filter_(pEnv env)
         for (s = ptr; *s; s++) {
             env->stck = CHAR_NEWNODE(*s, save);
             exeterm(env, program);
+            CHECKSTACK("filter");
             if (env->stck->u.num)
                 resultstring[j++] = *s;
         }
@@ -56,6 +58,7 @@ PRIVATE void filter_(pEnv env)
         while (my_dump1 != NULL) {
             env->stck = newnode(env, my_dump1->op, my_dump1->u, save);
             exeterm(env, program);
+            CHECKSTACK("filter");
             if (env->stck->u.num) /* test */
             {
                 if (my_dump2 == NULL) /* first */

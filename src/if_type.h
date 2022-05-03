@@ -1,7 +1,7 @@
 /*
     module  : if_type.h
-    version : 1.1
-    date    : 05/21/21
+    version : 1.2
+    date    : 05/02/22
 */
 #ifndef IF_TYPE_H
 #define IF_TYPE_H
@@ -10,7 +10,7 @@
     PRIVATE void PROCEDURE(pEnv env)                                           \
     {                                                                          \
         Node *first, *second;                                                  \
-        TWOPARAMS(NAME);                                                       \
+        THREEPARAMS(NAME);                                                     \
         TWOQUOTES(NAME);                                                       \
         second = env->stck->u.lis;                                             \
         POP(env->stck);                                                        \

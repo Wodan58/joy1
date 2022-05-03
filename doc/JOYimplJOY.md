@@ -12,6 +12,23 @@ Recent changes
 
 The macro NEWNODE was added to globals.h, because of unspecified behaviour.
 
+READ_PRIVATE_AHEAD
+------------------
+
+This macro surrounds the code that enables local symbols and also public member
+functions to call each other. This feature is not supported by all versions of
+Joy and thus should be considered implementation dependent. Also, there is an
+easy workaround: insert an empty forward declaration.
+
+SEARCH_ARGV0_DIRECTORY
+----------------------
+
+This macro was added in order to support out-of-source builds with Cmake. It
+can be helpful during operating Joy as well: Joy loads `usrlib.joy` and searches
+this library in the current directory. With this macro enabled Joy can locate
+`usrlib.joy` also in another directory: the same the directory as used by
+`argv[0]`.
+
 Accepted changes
 ================
 
@@ -192,7 +209,7 @@ This updated version of Joy is slowly drifting away from the legacy version.
   kept the same as the integer size.
 
 - Local symbols are now fully supported: they can call each other and do not
-  show up in the symbol table. The first facility should be considered as an
+  show up in the symbol table. This feature should be considered an
   implementation dependent feature.
 
 - The function `Compare` is used to enforce the same type of equality in all

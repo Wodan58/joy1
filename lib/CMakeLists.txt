@@ -1,7 +1,7 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.1
-#   date    : 04/11/22
+#   version : 1.2
+#   date    : 05/02/22
 #
 macro(exe9 src)
 add_custom_target(${src}.out ALL

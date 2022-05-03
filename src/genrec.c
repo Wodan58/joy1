@@ -1,11 +1,16 @@
 /*
     module  : genrec.c
-    version : 1.1
-    date    : 05/21/21
+    version : 1.2
+    date    : 05/02/22
 */
 #ifndef GENREC_C
 #define GENREC_C
 
+/**
+2760  genrec  :  [B] [T] [R1] [R2]  ->  ...
+Executes B, if that yields true, executes T.
+Else executes R1 and then [[[B] [T] [R1] R2] genrec] R2.
+*/
 PRIVATE void genrecaux(pEnv env)
 {
     int result;
@@ -15,6 +20,7 @@ PRIVATE void genrecaux(pEnv env)
     POP(env->stck);
     save = env->stck;
     exeterm(env, program->u.lis->u.lis); /*	[I]	*/
+    CHECKSTACK("genrec");
     result = env->stck->u.num;
     env->stck = save;
     if (result)
@@ -28,11 +34,6 @@ PRIVATE void genrecaux(pEnv env)
     } /*   [R2]	*/
 }
 
-/**
-2760  genrec  :  [B] [T] [R1] [R2]  ->  ...
-Executes B, if that yields true, executes T.
-Else executes R1 and then [[[B] [T] [R1] R2] genrec] R2.
-*/
 PRIVATE void genrec_(pEnv env)
 {
     FOURPARAMS("genrec");

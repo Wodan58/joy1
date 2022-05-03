@@ -1,7 +1,7 @@
 /*
     module  : inhas.h
-    version : 1.2
-    date    : 04/11/22
+    version : 1.3
+    date    : 05/02/22
 */
 #ifndef INHAS_H
 #define INHAS_H
@@ -11,21 +11,25 @@
     {                                                                          \
         int found = 0;                                                         \
         TWOPARAMS(NAME);                                                       \
-        switch (AGGR->op) {                                                    \
+        switch (nodetype(AGGR)) {                                              \
         case SET_:                                                             \
-            found = ((AGGR->u.set) & ((long_t)1 << ELEM->u.num)) > 0;          \
+            CHECKSETMEMBER(ELEM, NAME);                                        \
+            found                                                              \
+                = ((nodevalue(AGGR).set) & ((long_t)1 << nodevalue(ELEM).num)) \
+                > 0;                                                           \
             break;                                                             \
         case STRING_: {                                                        \
             char *s;                                                           \
-            for (s = AGGR->u.str; s && *s != '\0' && *s != ELEM->u.num; s++)   \
+            for (s = nodevalue(AGGR).str;                                      \
+                 *s != '\0' && *s != nodevalue(ELEM).num; s++)                 \
                 ;                                                              \
-            found = s && *s != '\0';                                           \
+            found = *s != '\0';                                                \
             break;                                                             \
         }                                                                      \
         case LIST_: {                                                          \
-            Node *n = AGGR->u.lis;                                             \
+            Index n = nodevalue(AGGR).lis;                                     \
             while (n && Compare(env, n, ELEM))                                 \
-                n = n->next;                                                   \
+                n = nextnode1(n);                                              \
             found = n != NULL;                                                 \
             break;                                                             \
         }                                                                      \

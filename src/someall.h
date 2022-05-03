@@ -1,7 +1,7 @@
 /*
     module  : someall.h
-    version : 1.1
-    date    : 05/21/21
+    version : 1.2
+    date    : 05/02/22
 */
 #ifndef SOMEALL_H
 #define SOMEALL_H
@@ -24,6 +24,7 @@
                 if (set & ((long_t)1 << j)) {                                  \
                     env->stck = INTEGER_NEWNODE(j, save);                      \
                     exeterm(env, program);                                     \
+                    CHECKSTACK(NAME);                                          \
                     if (env->stck->u.num != INITIAL)                           \
                         result = 1 - INITIAL;                                  \
                 }                                                              \
@@ -36,6 +37,7 @@
             for (s = ptr; *s != '\0' && result == INITIAL; s++) {              \
                 env->stck = CHAR_NEWNODE(*s, save);                            \
                 exeterm(env, program);                                         \
+                CHECKSTACK(NAME);                                              \
                 if (env->stck->u.num != INITIAL)                               \
                     result = 1 - INITIAL;                                      \
             }                                                                  \
@@ -46,6 +48,7 @@
             while (my_dump != NULL && result == INITIAL) {                     \
                 env->stck = newnode(env, my_dump->op, my_dump->u, save);       \
                 exeterm(env, program);                                         \
+                CHECKSTACK(NAME);                                              \
                 if (env->stck->u.num != INITIAL)                               \
                     result = 1 - INITIAL;                                      \
                 my_dump = my_dump->next;                                       \

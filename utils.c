@@ -1,15 +1,21 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.31
- *  date    : 04/12/22
+ *  version : 1.32
+ *  date    : 05/02/22
  */
 #include "globals.h"
 
 #ifdef STATS
 static double nodes;
 
-PRIVATE void report_nodes(void) { fprintf(stderr, "%.0f nodes used\n", nodes); }
+PRIVATE void report_nodes(void)
+{
+    fprintf(stderr, "%.0f nodes used\n", nodes);
+#ifdef GC_BDW
+    fprintf(stderr, "%.0f garbage collections\n", (double)GC_get_gc_no());
+#endif
+}
 
 PRIVATE void count_nodes(void)
 {
@@ -26,7 +32,7 @@ PUBLIC Node *newnode(pEnv env, Operator o, Types u, Node *r)
     Node *p;
 
     if ((p = GC_malloc(sizeof(Node))) == 0)
-        execerror(env, "memory", "allocator");
+        execerror("memory", "allocator");
     p->op = o;
     p->u = u;
     p->next = r;

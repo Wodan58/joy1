@@ -1,7 +1,7 @@
 /*
     module  : while.c
-    version : 1.1
-    date    : 05/21/21
+    version : 1.2
+    date    : 05/02/22
 */
 #ifndef WHILE_C
 #define WHILE_C
@@ -24,6 +24,7 @@ PRIVATE void while_(pEnv env)
     for (;;) {
         save = env->stck;
         exeterm(env, test);
+        CHECKSTACK("while");
         num = env->stck->u.num;
         env->stck = save;
         if (!num)
