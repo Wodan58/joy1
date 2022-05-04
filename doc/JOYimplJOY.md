@@ -10,8 +10,6 @@ changes is at the end of this page.
 Recent changes
 ==============
 
-The macro NEWNODE was added to globals.h, because of unspecified behaviour.
-
 READ_PRIVATE_AHEAD
 ------------------
 
@@ -26,8 +24,9 @@ SEARCH_ARGV0_DIRECTORY
 This macro was added in order to support out-of-source builds with Cmake. It
 can be helpful during operating Joy as well: Joy loads `usrlib.joy` and searches
 this library in the current directory. With this macro enabled Joy can locate
-`usrlib.joy` also in another directory: the same the directory as used by
-`argv[0]`.
+`usrlib.joy` also in another directory: the same directory as used by `argv[0]`.
+
+The macro NEWNODE was added to globals.h, because of unspecified behaviour.
 
 Accepted changes
 ================
@@ -62,8 +61,8 @@ CORRECT_TYPE_COMPARE, CORRECT_CASE_COMPARE
 It would be good to have only one definition of equality. `Compare` compares
 each type with every other type and is a robust way to enforce the same kind of
 equality in `compare,equal,case,in,has,=,<` and other comparison operators. But
-`in` has a problem: it breaks `grmtst.joy`. This has been dealt with by
-redefining `in` for `grmtst.joy` only.
+`in` has a problem: it breaks `grmtst.joy`. This was finally solved by using a
+nickname: plus and ast instead of + and *.
 
 ONLY_LOGICAL_NOT
 ----------------
@@ -135,9 +134,9 @@ the symbol table this might be easier to implement.
 CORRECT_INHAS_COMPARE
 ---------------------
 
-This definition would break `grmtst.joy` and that is not allowed. A
-redefinition in `grmtst.joy` is used; all comparison operators now use the
-Compare function.
+This definition would break `grmtst.joy` and that is not allowed.
+All comparison operators now use the Compare function and a redefinition of
+`in` in `grmtst.joy` is no longer necessary.
 
 Existing changes
 ================
@@ -198,8 +197,7 @@ This updated version of Joy is slowly drifting away from the legacy version.
 
 - Some builtins have been added: `fget`, `getch`, and `sametype`.
 
-- When compiling with BDW enabled, `__dump`, `__memoryindex`, and
-`__memorymax` are no longer used.
+- When compiling with BDW enabled `__dump` is not used.
 
 - The paper `j09imp.html` states: "When input reverts to an earlier file, the
   earlier line numbering is resumed." That functionality was added in this
@@ -209,8 +207,8 @@ This updated version of Joy is slowly drifting away from the legacy version.
   kept the same as the integer size.
 
 - Local symbols are now fully supported: they can call each other and do not
-  show up in the symbol table. This feature should be considered an
-  implementation dependent feature.
+  show up in the symbol table. This feature should be considered
+  implementation dependent.
 
 - The function `Compare` is used to enforce the same type of equality in all
   comparison operators.
