@@ -1,7 +1,7 @@
 /*
     module  : concat.c
-    version : 1.1
-    date    : 05/21/21
+    version : 1.2
+    date    : 05/17/22
 */
 #ifndef CONCAT_C
 #define CONCAT_C
@@ -32,19 +32,17 @@ PRIVATE void concat_(pEnv env)
         return;
     }
     case LIST_:
-        if (env->stck->next->u.lis == NULL) {
+        if (!env->stck->next->u.lis) {
             BINARY(LIST_NEWNODE, env->stck->u.lis);
             return;
         }
         my_dump1 = env->stck->next->u.lis; /* old */
-        while (my_dump1 != NULL) {
-            if (my_dump2 == NULL) /* first */
-            {
-                my_dump2 = newnode(env, my_dump1->op, my_dump1->u, NULL);
+        while (my_dump1) {
+            if (!my_dump2) { /* first */
+                my_dump2 = newnode(env, my_dump1->op, my_dump1->u, 0);
                 my_dump3 = my_dump2;
-            } else /* further */
-            {
-                my_dump3->next = newnode(env, my_dump1->op, my_dump1->u, NULL);
+            } else { /* further */
+                my_dump3->next = newnode(env, my_dump1->op, my_dump1->u, 0);
                 my_dump3 = my_dump3->next;
             }
             my_dump1 = my_dump1->next;

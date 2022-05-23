@@ -1,7 +1,7 @@
 /*
     module  : construct.c
-    version : 1.1
-    date    : 05/21/21
+    version : 1.2
+    date    : 05/17/22
 */
 #ifndef CONSTRUCT_C
 #define CONSTRUCT_C
@@ -24,7 +24,7 @@ PRIVATE void construct_(pEnv env)
     save2 = env->stck; /* save old stack	*/
     exeterm(env, first); /* [P]			*/
     save3 = env->stck; /* save current stack	*/
-    while (second != NULL) {
+    while (second) {
         env->stck = save3; /* restore new stack	*/
         exeterm(env, second->u.lis);
         save2 = newnode(

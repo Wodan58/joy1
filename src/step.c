@@ -1,7 +1,7 @@
 /*
     module  : step.c
-    version : 1.2
-    date    : 04/11/22
+    version : 1.3
+    date    : 05/17/22
 */
 #ifndef STEP_C
 #define STEP_C
@@ -41,9 +41,9 @@ PRIVATE void step_(pEnv env)
     }
     case SET_: {
         int i;
-        long_t set = data->u.set;
+        long set = data->u.set;
         for (i = 0; i < SETSIZE; i++)
-            if (set & ((long_t)1 << i)) {
+            if (set & ((long)1 << i)) {
                 env->stck = INTEGER_NEWNODE(i, env->stck);
                 exeterm(env, program);
             }

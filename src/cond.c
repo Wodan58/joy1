@@ -1,7 +1,7 @@
 /*
     module  : cond.c
-    version : 1.1
-    date    : 05/21/21
+    version : 1.2
+    date    : 05/17/22
 */
 #ifndef COND_C
 #define COND_C
@@ -24,7 +24,7 @@ PRIVATE void cond_(pEnv env)
         CHECKLIST(my_dump->u.lis->op, "cond");
     my_dump = env->stck->u.lis;
     save = env->stck->next;
-    while (result == 0 && my_dump != NULL && my_dump->next != NULL) {
+    while (!result && my_dump && my_dump->next) {
         env->stck = save;
         exeterm(env, my_dump->u.lis->u.lis);
         result = env->stck->u.num;

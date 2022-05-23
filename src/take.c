@@ -1,7 +1,7 @@
 /*
     module  : take.c
-    version : 1.2
-    date    : 05/02/22
+    version : 1.3
+    date    : 05/17/22
 */
 #ifndef TAKE_C
 #define TAKE_C
@@ -23,12 +23,12 @@ PRIVATE void take_(pEnv env)
     switch (env->stck->next->op) {
     case SET_: {
         int i;
-        long_t result = 0;
+        long result = 0;
         for (i = 0; i < SETSIZE; i++)
-            if (env->stck->next->u.set & ((long_t)1 << i)) {
+            if (env->stck->next->u.set & ((long)1 << i)) {
                 if (n > 0) {
                     --n;
-                    result |= ((long_t)1 << i);
+                    result |= ((long)1 << i);
                 } else
                     break;
             }
@@ -58,23 +58,21 @@ PRIVATE void take_(pEnv env)
     case LIST_: {
         int i = env->stck->u.num;
         if (i < 1) {
-            BINARY(LIST_NEWNODE, NULL);
+            BINARY(LIST_NEWNODE, 0);
             return;
         } /* null string */
         my_dump1 = env->stck->next->u.lis;
-        while (my_dump1 != NULL && i-- > 0) {
-            if (my_dump2 == NULL) /* first */
-            {
-                my_dump2 = newnode(env, my_dump1->op, my_dump1->u, NULL);
+        while (my_dump1 && i-- > 0) {
+            if (!my_dump2) { /* first */
+                my_dump2 = newnode(env, my_dump1->op, my_dump1->u, 0);
                 my_dump3 = my_dump2;
-            } else /* further */
-            {
-                my_dump3->next = newnode(env, my_dump1->op, my_dump1->u, NULL);
+            } else { /* further */
+                my_dump3->next = newnode(env, my_dump1->op, my_dump1->u, 0);
                 my_dump3 = my_dump3->next;
             }
             my_dump1 = my_dump1->next;
         }
-        my_dump3->next = NULL;
+        my_dump3->next = 0;
         BINARY(LIST_NEWNODE, my_dump2);
         return;
     }

@@ -1,7 +1,7 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.8
-#   date    : 05/02/22
+#   version : 1.10
+#   date    : 05/21/22
 #
 macro(exe9 src)
 add_custom_target(${src}.out ALL
@@ -23,12 +23,10 @@ exe9(test13)
 exe9(test14)
 exe9(test15)
 exe9(test16)
-exe9(test18)
 exe9(test19)
 exe9(test20)
 exe9(test21)
 exe9(test22)
-exe9(test24)
 exe9(test25)
 exe9(test28)
 exe9(m0)
@@ -52,6 +50,7 @@ exe9(m17)
 exe9(m18)
 exe9(m19)
 exe9(m20)
+exe9(m21)
 exe9(modtst)
 
 #
@@ -92,3 +91,10 @@ add_custom_target(test26.out ALL
 add_custom_target(test27.out ALL
 		  DEPENDS joy ${CMAKE_SOURCE_DIR}/test/test27.joy
 		  COMMAND joy -hs ${CMAKE_SOURCE_DIR}/test/test27.joy >test27.out)
+
+#
+#  Test not open file
+#
+add_custom_target(test24.out ALL
+		  DEPENDS joy
+		  COMMAND joy nonexist)

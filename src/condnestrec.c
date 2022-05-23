@@ -1,7 +1,7 @@
 /*
     module  : condnestrec.c
-    version : 1.1
-    date    : 05/21/21
+    version : 1.2
+    date    : 05/17/22
 */
 #ifndef CONDNESTREC_C
 #define CONDNESTREC_C
@@ -13,7 +13,7 @@ PRIVATE void condnestrecaux(pEnv env, Node *list)
 
     my_dump = list;
     save = env->stck;
-    while (result == 0 && my_dump != NULL && my_dump->next != NULL) {
+    while (!result && my_dump && my_dump->next) {
         env->stck = save;
         exeterm(env, my_dump->u.lis->u.lis);
         result = env->stck->u.num;
@@ -24,7 +24,7 @@ PRIVATE void condnestrecaux(pEnv env, Node *list)
     my_dump = result ? my_dump->u.lis->next : my_dump->u.lis;
     exeterm(env, my_dump->u.lis);
     my_dump = my_dump->next;
-    while (my_dump != NULL) {
+    while (my_dump) {
         condnestrecaux(env, list);
         exeterm(env, my_dump->u.lis);
         my_dump = my_dump->next;

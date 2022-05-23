@@ -1,7 +1,7 @@
 /*
     module  : condlinrec.c
-    version : 1.1
-    date    : 05/21/21
+    version : 1.2
+    date    : 05/17/22
 */
 #ifndef CONDLINREC_C
 #define CONDLINREC_C
@@ -13,7 +13,7 @@ PRIVATE void condlinrecaux(pEnv env, Node *list)
 
     my_dump = list;
     save = env->stck;
-    while (result == 0 && my_dump != NULL && my_dump->next != NULL) {
+    while (!result && my_dump && my_dump->next) {
         env->stck = save;
         exeterm(env, my_dump->u.lis->u.lis);
         result = env->stck->u.num;
@@ -23,13 +23,13 @@ PRIVATE void condlinrecaux(pEnv env, Node *list)
     env->stck = save;
     if (result) {
         exeterm(env, my_dump->u.lis->next->u.lis);
-        if (my_dump->u.lis->next->next != NULL) {
+        if (my_dump->u.lis->next->next) {
             condlinrecaux(env, list);
             exeterm(env, my_dump->u.lis->next->next->u.lis);
         }
     } else {
         exeterm(env, my_dump->u.lis->u.lis);
-        if (my_dump->u.lis->next != NULL) {
+        if (my_dump->u.lis->next) {
             condlinrecaux(env, list);
             exeterm(env, my_dump->u.lis->next->u.lis);
         }

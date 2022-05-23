@@ -18,7 +18,7 @@ It is always possible to extract an up-to-date version of the manual:
     echo '__html_manual.' | ./joy | lynx -stdin
 
 The lynx browser even adds some color.
-The original version can be seen [here](https://github.com/alekar/joy).
+The legacy version can be seen [here](https://github.com/alekar/joy).
 
 Installation
 ------------
@@ -28,5 +28,5 @@ without:
 
     mkdir build
     cd build
-    cmake ..
+    CC=../gcc.sh cmake ..
     cmake --build .

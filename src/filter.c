@@ -1,7 +1,7 @@
 /*
     module  : filter.c
-    version : 1.2
-    date    : 05/02/22
+    version : 1.3
+    date    : 05/17/22
 */
 #ifndef FILTER_C
 #define FILTER_C
@@ -24,14 +24,14 @@ PRIVATE void filter_(pEnv env)
     switch (env->stck->op) {
     case SET_: {
         int j;
-        long_t set = env->stck->u.set, resultset = 0;
+        long set = env->stck->u.set, resultset = 0;
         for (j = 0; j < SETSIZE; j++) {
-            if (set & ((long_t)1 << j)) {
+            if (set & ((long)1 << j)) {
                 env->stck = INTEGER_NEWNODE(j, save);
                 exeterm(env, program);
                 CHECKSTACK("filter");
                 if (env->stck->u.num)
-                    resultset |= ((long_t)1 << j);
+                    resultset |= ((long)1 << j);
             }
         }
         env->stck = SET_NEWNODE(resultset, save);
@@ -55,20 +55,18 @@ PRIVATE void filter_(pEnv env)
     }
     case LIST_: {
         my_dump1 = env->stck->u.lis;
-        while (my_dump1 != NULL) {
+        while (my_dump1) {
             env->stck = newnode(env, my_dump1->op, my_dump1->u, save);
             exeterm(env, program);
             CHECKSTACK("filter");
             if (env->stck->u.num) /* test */
             {
-                if (my_dump2 == NULL) /* first */
-                {
-                    my_dump2 = newnode(env, my_dump1->op, my_dump1->u, NULL);
+                if (!my_dump2) { /* first */
+                    my_dump2 = newnode(env, my_dump1->op, my_dump1->u, 0);
                     my_dump3 = my_dump2;
-                } else /* further */
-                {
+                } else { /* further */
                     my_dump3->next
-                        = newnode(env, my_dump1->op, my_dump1->u, NULL);
+                        = newnode(env, my_dump1->op, my_dump1->u, 0);
                     my_dump3 = my_dump3->next;
                 }
             }

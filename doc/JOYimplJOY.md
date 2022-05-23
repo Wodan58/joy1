@@ -10,6 +10,8 @@ changes is at the end of this page.
 Recent changes
 ==============
 
+The macro NEWNODE was added to globals.h, because of unspecified behaviour.
+
 READ_PRIVATE_AHEAD
 ------------------
 
@@ -26,20 +28,19 @@ can be helpful during operating Joy as well: Joy loads `usrlib.joy` and searches
 this library in the current directory. With this macro enabled Joy can locate
 `usrlib.joy` also in another directory: the same directory as used by `argv[0]`.
 
-The macro NEWNODE was added to globals.h, because of unspecified behaviour.
-
 Accepted changes
 ================
 
 Changes that have been accepted, because they corrected simple mistakes are not
-mentioned here. The ones that are mentioned are open for discussion.
+mentioned here. They are still present in globals.h, because these changes are
+sometimes undone or moved from accepted to not accepted or someting like that.
 
 FGET_FROM_FILE
 --------------
 
 There are a number of builtins that read from stdin; the same number of
 builtins should be available for reading from a different file descriptor.
-`fget` fills that gap.
+`fget` fills part of that gap.
 
 GETCH_AS_BUILTIN
 ----------------
@@ -114,9 +115,9 @@ NO_HELP_LOCAL_SYMBOLS
 
 Symbols from the PRIVATE section of a module or symbols that are defined
 between HIDE and IN end up in the symbol table. This change prevents them from
-showing up in the symbol table. This means that the output of `alljoy.joy` will
-be different when this change is enabled. Not having local symbols shown seems
-good to have, because they cannot be used outside their respective PUBLIC
+showing up in the symbol table. This also means that the output of `alljoy.joy`
+will be different when this change is enabled. Not having local symbols shown
+seems good to have, because they cannot be used outside their respective PUBLIC
 sections. This is now accepted and not present in the source anymore.
 
 USE_UNKNOWN_SYMBOLS
@@ -124,8 +125,8 @@ USE_UNKNOWN_SYMBOLS
 
 This definition makes it possible that local symbols can call each other.
 The only way to make it a 100% solution is to read the PRIVATE sections twice:
-during the first time defined symbols are registered in the symbol table and
-during the second time normal processing is done. The benefit of this
+during the first read defined symbols are registered in the symbol table and
+during the second read normal processing is done. The benefit of this
 approach is that symbols, because they can be made local, do not show up in
 the symbol table. There is an other approach that requires no change: simply
 use forward declarations in the PRIVATE sections. For some implementations of
@@ -141,8 +142,7 @@ All comparison operators now use the Compare function and a redefinition of
 Existing changes
 ================
 
-Some existing functionality has been guarded with defines, because they are
-open for discussion.
+Some existing functionality has been guarded with defines.
 
 USE_SHELL_ESCAPE
 ----------------
@@ -153,15 +153,17 @@ might be a security issue here.
 ENABLE_TRACEGC
 --------------
 
-Likewise, existing behaviour. It reports on memory allocations when GC_BDW is
-not used.
+Likewise, existing behaviour. It reports on memory allocations in the NOBDW
+version.
 
-RUNTIME_CHECKS
---------------
+RUNTIME_CHECKS, NCHECK
+----------------------
 
 Likewise, existing behaviour. It is not recommended to turn this off, because
 it takes very little time to check parameters and it is a good thing to have,
-catching bugs when running a program.
+catching bugs when running a program. The new name is now NCHECK with reverse
+meaning. NCHECK looks line NDEBUG, but NDEBUG is turned on automatically by
+Cmake in the Release version; turning off or on should be a deliberate decision.
 
 Unaccepted changes
 ==================
@@ -193,22 +195,21 @@ then issues the error about a missing END or period.
 Summary
 =======
 
-This updated version of Joy is slowly drifting away from the legacy version.
+This updated version of Joy is slowly drifting away from the legacy version,
+this version: JOY  -  compiled at 16:57:51 on Mar 17 2003.
 
-- Some builtins have been added: `fget`, `getch`, and `sametype`.
-
-- When compiling with BDW enabled `__dump` is not used.
+- Some builtins have been added since that date: `condnestrec`, `fget`,
+  `getch`, and `sametype`.
 
 - The paper `j09imp.html` states: "When input reverts to an earlier file, the
-  earlier line numbering is resumed." That functionality was added in this
-  version.
+  earlier line numbering is resumed." That functionality was added.
 
-- There is the option of compiling with BIT_64; also the floating point size is
-  kept the same as the integer size.
+- The program is 64 bits by default. There is the option of compiling with
+  BIT_32, but that is no longer tested.
 
-- Local symbols are now fully supported: they can call each other and do not
-  show up in the symbol table. This feature should be considered
-  implementation dependent.
+- Local symbols are fully supported: they can call each other and do not
+  show up in the symbol table. This should be considered as implementation
+  dependent.
 
 - The function `Compare` is used to enforce the same type of equality in all
   comparison operators.

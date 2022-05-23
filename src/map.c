@@ -1,7 +1,7 @@
 /*
     module  : map.c
-    version : 1.2
-    date    : 05/02/22
+    version : 1.3
+    date    : 05/17/22
 */
 #ifndef MAP_C
 #define MAP_C
@@ -25,18 +25,16 @@ PRIVATE void map_(pEnv env)
     switch (env->stck->op) {
     case LIST_: {
         my_dump1 = env->stck->u.lis;
-        while (my_dump1 != NULL) {
+        while (my_dump1) {
             env->stck = newnode(env, my_dump1->op, my_dump1->u, save);
             exeterm(env, program);
             CHECKSTACK("map");
-            if (my_dump2 == NULL) /* first */
-            {
-                my_dump2 = newnode(env, env->stck->op, env->stck->u, NULL);
+            if (!my_dump2) { /* first */
+                my_dump2 = newnode(env, env->stck->op, env->stck->u, 0);
                 my_dump3 = my_dump2;
-            } else /* further */
-            {
+            } else { /* further */
                 my_dump3->next
-                    = newnode(env, env->stck->op, env->stck->u, NULL);
+                    = newnode(env, env->stck->op, env->stck->u, 0);
                 my_dump3 = my_dump3->next;
             }
             my_dump1 = my_dump1->next;
@@ -61,13 +59,13 @@ PRIVATE void map_(pEnv env)
     }
     case SET_: {
         int i;
-        long_t set = env->stck->u.set, resultset = 0;
+        long set = env->stck->u.set, resultset = 0;
         for (i = 0; i < SETSIZE; i++)
-            if (set & ((long_t)1 << i)) {
+            if (set & ((long)1 << i)) {
                 env->stck = INTEGER_NEWNODE(i, save);
                 exeterm(env, program);
                 CHECKSTACK("map");
-                resultset |= ((long_t)1 << env->stck->u.num);
+                resultset |= ((long)1 << env->stck->u.num);
             }
         env->stck = SET_NEWNODE(resultset, save);
         break;

@@ -6,14 +6,16 @@
 #ifndef GC_H
 #define GC_H
 
-#define USE_GC_GET_HEAP_SIZE
 #ifdef __linux__
 #define SIGNAL_HANDLING
 #endif
+#define USE_GC_GET_HEAP_SIZE
+#if 0
+#define STACK_GROWS_UPWARD
+#define SCAN_BSS_MEMORY
+#define USE_GC_MALLOC_UNCOLLECTABLE
+#endif
 #define FREE_ON_EXIT
-/* #define SCAN_BSS_MEMORY */
-/* #define STACK_GROWS_UPWARD */
-/* #define USE_GC_MALLOC_UNCOLLECTABLE */
 #define USE_GC_MALLOC_ATOMIC
 #define USE_GC_MALLOC
 #define USE_GC_REALLOC
@@ -30,3 +32,16 @@ size_t GC_get_memory_use(void);
 void *GC_malloc_uncollectable(size_t size);
 void *GC_realloc_uncollectable(void *old, size_t size);
 #endif
+
+#if 0
+#define SIGNAL_HANDLING
+#define STACK_GROWS_UPWARD
+#define SCAN_BSS_MEMORY
+#define USE_GC_GET_HEAP_SIZE
+#define USE_GC_MALLOC_UNCOLLECTABLE
+#endif
+#define FREE_ON_EXIT
+#define USE_GC_MALLOC_ATOMIC
+#define USE_GC_MALLOC
+#define USE_GC_REALLOC
+#define USE_GC_STRDUP

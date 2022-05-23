@@ -1,7 +1,7 @@
 /*
     module  : treegenrec.c
-    version : 1.2
-    date    : 05/02/22
+    version : 1.3
+    date    : 05/17/22
 */
 #ifndef TREEGENREC_C
 #define TREEGENREC_C
@@ -21,7 +21,7 @@ PRIVATE void treegenrecaux(pEnv env)
     if (env->stck->op == LIST_) {
         exeterm(env, save->u.lis->next->u.lis); /*	[O2]	*/
         GNULLARY(save->op, save->u);
-        NULLARY(LIST_NEWNODE, ANON_FUNCT_NEWNODE(treegenrecaux, NULL));
+        NULLARY(LIST_NEWNODE, ANON_FUNCT_NEWNODE(treegenrecaux, 0));
         cons_(env);
         exeterm(env, env->stck->u.lis->u.lis->next->next); /*	[C]	*/
     } else
