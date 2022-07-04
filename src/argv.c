@@ -1,7 +1,7 @@
 /*
     module  : argv.c
-    version : 1.3
-    date    : 04/11/22
+    version : 1.4
+    date    : 06/20/22
 */
 #ifndef ARGV_C
 #define ARGV_C
@@ -13,13 +13,10 @@ Creates an aggregate A containing the interpreter's command line arguments.
 PRIVATE void argv_(pEnv env)
 {
     int i;
-    Index *my_dump;
+    Index list = 0;
 
-    NULLARY(LIST_NEWNODE, 0);
-    my_dump = &nodevalue(env->stck).lis;
-    for (i = 0; i < env->g_argc; i++) {
-        *my_dump = STRING_NEWNODE(env->g_argv[i], 0);
-        my_dump = &nextnode1(*my_dump);
-    }
+    for (i = env->g_argc - 1; i >= 0; i--)
+        list = STRING_NEWNODE(env->g_argv[i], list);
+    NULLARY(LIST_NEWNODE, list);
 }
 #endif

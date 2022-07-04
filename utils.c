@@ -1,8 +1,8 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.33
- *  date    : 05/03/22
+ *  version : 1.34
+ *  date    : 06/20/22
  */
 #include "globals.h"
 
@@ -32,7 +32,7 @@ PUBLIC Node *newnode(pEnv env, Operator o, Types u, Node *r)
     Node *p;
 
     if ((p = GC_malloc(sizeof(Node))) == 0)
-        execerror("memory", "allocator");
+        execerror(env, "memory", "allocator");
     p->op = o;
     p->u = u;
     p->next = r;

@@ -1,7 +1,7 @@
 /*
     module  : __manual_list.c
-    version : 1.2
-    date    : 07/20/21
+    version : 1.3
+    date    : 06/23/22
 */
 #ifndef __MANUAL_LIST_C
 #define __MANUAL_LIST_C
@@ -17,7 +17,7 @@ PRIVATE void __manual_list_(pEnv env)
 
     NULLARY(LIST_NEWNODE, 0);
     my_dump = &nodevalue(env->stck).lis;
-    for (i = 0; optable[i].name; i++) {
+    for (i = 1; optable[i].name; i++) {
         *my_dump = LIST_NEWNODE(0, 0);
         my_dump2 = &nodevalue(*my_dump).lis;
 	*my_dump2 = STRING_NEWNODE(optable[i].name, 0);

@@ -18,7 +18,8 @@ READ_PRIVATE_AHEAD
 This macro surrounds the code that enables local symbols and also public member
 functions to call each other. This feature is not supported by all versions of
 Joy and thus should be considered implementation dependent. Also, there is an
-easy workaround: insert an empty forward declaration.
+easy workaround: insert an empty forward declaration. Except that this
+workaround is not always available.
 
 SEARCH_ARGV0_DIRECTORY
 ----------------------

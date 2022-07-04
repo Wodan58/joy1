@@ -8,6 +8,17 @@ status|[![Travis CI build status](https://app.travis-ci.com/Wodan58/joy1.svg?bra
 This is the BDW version of [Joy](https://github.com/Wodan58/Joy). The two
 versions are drifting apart.
 
+Build instructions
+------------------
+
+Build with the [BDW garbage collector](https://github.com/ivmai/bdwgc), or
+without:
+
+    mkdir build
+    cd build
+    CC=../gcc.sh cmake ..
+    cmake --build .
+
 Changes
 -------
 
@@ -18,15 +29,4 @@ It is always possible to extract an up-to-date version of the manual:
     echo '__html_manual.' | ./joy | lynx -stdin
 
 The lynx browser even adds some color.
-The legacy version can be seen [here](https://github.com/alekar/joy).
-
-Installation
-------------
-
-Build with the [BDW garbage collector](https://github.com/ivmai/bdwgc), or
-without:
-
-    mkdir build
-    cd build
-    CC=../gcc.sh cmake ..
-    cmake --build .
+The original version can be seen [here](https://github.com/Wodan58/joy0).

@@ -1,7 +1,7 @@
 /*
     module  : fread.c
-    version : 1.3
-    date    : 04/11/22
+    version : 1.4
+    date    : 06/20/22
 */
 #ifndef FREAD_C
 #define FREAD_C
@@ -14,8 +14,8 @@ and returned as a list of I integers.
 PRIVATE void fread_(pEnv env)
 {
     FILE *fp;
-    Index *my_dump;
-    size_t i, count;
+    int i, count;
+    Index list = 0;
     unsigned char *volatile buf;
 
     TWOPARAMS("fread");
@@ -25,12 +25,9 @@ PRIVATE void fread_(pEnv env)
     FILE("fread");
     fp = nodevalue(env->stck).fil;	// file descriptor
     buf = GC_malloc_atomic(count);	// buffer for characters to read
-    NULLARY(LIST_NEWNODE, 0);		// list of integers
-    my_dump = &nodevalue(env->stck).lis;
     count = fread(buf, 1, count, fp);	// number of characters read
-    for (i = 0; i < count; i++) {
-        *my_dump = INTEGER_NEWNODE(buf[i], 0);
-        my_dump = &nextnode1(*my_dump);
-    }
+    for (i = count - 1; i >= 0; i--)
+	list = INTEGER_NEWNODE(buf[i], list);
+    NULLARY(LIST_NEWNODE, list);
 }
 #endif
