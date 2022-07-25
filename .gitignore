@@ -7,3 +7,6 @@ build
 builtin.c
 builtin.h
 table.c
+vergelijk.sh
+files
+t

@@ -1,17 +1,20 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.11
-#   date    : 05/02/22
+#   version : 1.12
+#   date    : 07/25/22
 #
 cmake_minimum_required(VERSION 3.0)
 project(Joy VERSION 1.0)
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
 set(CMAKE_BUILD_TYPE "Debug")
 endif()
+if(WIN32)
+option(WINDOWS "Use _MSC_VER compiler" ON)
+endif()
 option(REAL_BDW "Use BDW garbage collector" OFF)
 option(RUN_TESTS "Run standard tests" ON)
 add_definitions(-DTRACING)
-if(WIN32)
+if(WINDOWS)
 add_definitions(-DGC_NOT_DLL -D_CRT_SECURE_NO_WARNINGS)
 else()
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
@@ -23,7 +26,7 @@ if(REAL_BDW)
 add_definitions(-DGC_BDW -DJVERSION="BDW ${CMAKE_BUILD_TYPE} ${CMAKE_PROJECT_VERSION}")
 include_directories(bdwgc/include)
 add_executable(joy interp.c scan.c utils.c main.c factor.c module.c)
-if(WIN32)
+if(WINDOWS)
 target_link_libraries(joy gc-lib)
 else()
 target_link_libraries(joy gc-lib m)
@@ -34,7 +37,7 @@ add_definitions(-DJVERSION="MINGC ${CMAKE_BUILD_TYPE} ${CMAKE_PROJECT_VERSION}")
 include_directories(.)
 add_executable(joy interp.c scan.c utils.c main.c factor.c module.c gc.c)
 endif()
-if(WIN32)
+if(WINDOWS)
 add_dependencies(joy always)
 add_custom_target(always
 		  COMMAND sh ${CMAKE_SOURCE_DIR}/table.sh ${CMAKE_SOURCE_DIR}
