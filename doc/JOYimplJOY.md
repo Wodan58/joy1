@@ -12,6 +12,19 @@ Recent changes
 
 The macro NEWNODE was added to globals.h, because of unspecified behaviour.
 
+CORRECT_INTERN_LOOKUP
+---------------------
+
+The builtin `intern` allows interning of symbols with spaces or other
+characters that do not adhere to the naming restrictions of identifiers. This
+looks like a mistake, but it is not necessary to have this corrected. After
+all, there exists a different way of accessing symbols: `"symbol" intern ==
+[symbol] first`. In both cases, the symbol `symbol` will be placed on the
+stack. There are 3 exceptions to the equality of `intern` and `[ .. ] first`:
+`false`, `true`, and `maxint`. Thus: `"false" intern != [false] first`. The
+word `intern` returns the function `false`, whereas the construct with `first`
+returns the value `false`.
+
 READ_PRIVATE_AHEAD
 ------------------
 
@@ -80,19 +93,6 @@ CORRECT_FREAD_PARAM
 The builtin `fread` throws away the file descriptor it reads from and that is
 different from the documentation. This looks like a mistake, but correcting it
 might break existing programs.
-
-CORRECT_INTERN_LOOKUP
----------------------
-
-The builtin `intern` allows interning of symbols with spaces or other
-characters that do not adhere to the naming restrictions of identifiers. This
-looks like a mistake, but it is not necessary to have this corrected. After
-all, there exists a different way of accessing symbols: `"symbol" intern ==
-[symbol] first`. In both cases, the symbol `symbol` will be placed on the
-stack. There are 3 exceptions to the equality of `intern` and `[ .. ] first`:
-`false`, `true`, and `maxint`. Thus: `"false" intern != [false] first`. The
-word `intern` returns the function `false`, whereas the construct with `first`
-returns the value `false`.
 
 REST_OF_UNIX_ESCAPES
 --------------------
@@ -164,7 +164,7 @@ Likewise, existing behaviour. It is not recommended to turn this off, because
 it takes very little time to check parameters and it is a good thing to have,
 catching bugs when running a program. The new name is now NCHECK with reverse
 meaning. NCHECK looks line NDEBUG, but NDEBUG is turned on automatically by
-Cmake in the Release version; turning off or on should be a deliberate decision.
+Cmake in the Release version; turning on or off should be a deliberate decision.
 
 Unaccepted changes
 ==================
