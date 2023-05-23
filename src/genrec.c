@@ -1,7 +1,7 @@
 /*
     module  : genrec.c
-    version : 1.3
-    date    : 06/28/22
+    version : 1.4
+    date    : 05/23/23
 */
 #ifndef GENREC_C
 #define GENREC_C
@@ -19,20 +19,20 @@ PRIVATE void genrecaux(pEnv env)
     program = env->stck;
     POP(env->stck);
     save = env->stck;
-    exeterm(env, program->u.lis->u.lis); /*	[I]	*/
+    exeterm(env, program->u.lis->u.lis);		/*	[B]	*/
     CHECKSTACK("genrec");
     result = env->stck->u.num;
     env->stck = save;
     if (result)
-        exeterm(env, program->u.lis->next->u.lis); /*	[T]	*/
+        exeterm(env, program->u.lis->next->u.lis);	/*	[T]	*/
     else {
-        exeterm(env, program->u.lis->next->next->u.lis); /*	[R1]	*/
+        exeterm(env, program->u.lis->next->next->u.lis);/*	[R1]	*/
         NULLARY(LIST_NEWNODE, program->u.lis);
         temp = ANON_FUNCT_NEWNODE(genrecaux, NULL);
         NULLARY(LIST_NEWNODE, temp);
         cons_(env);
-        exeterm(env, program->u.lis->next->next->next);
-    } /*   [R2]	*/
+        exeterm(env, program->u.lis->next->next->next);	/*	[R2]	*/
+    }
 }
 
 PRIVATE void genrec_(pEnv env)

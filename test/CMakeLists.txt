@@ -1,7 +1,7 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.11
-#   date    : 06/21/22
+#   version : 1.12
+#   date    : 05/23/23
 #
 macro(exe9 src)
 add_custom_target(${src}.out ALL
@@ -29,6 +29,7 @@ exe9(test21)
 exe9(test22)
 exe9(test25)
 exe9(test28)
+exe9(test30)
 exe9(m0)
 exe9(m1)
 exe9(m2)
@@ -51,7 +52,6 @@ exe9(m18)
 exe9(m19)
 exe9(m20)
 exe9(m21)
-exe9(modtst)
 
 #
 #  Taking options, parameter 10 and redirecting
