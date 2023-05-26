@@ -1,6 +1,6 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.13
+#   version : 1.14
 #   date    : 05/26/23
 #
 cmake_minimum_required(VERSION 3.0)
@@ -13,7 +13,7 @@ option(WINDOWS "Use _MSC_VER compiler" ON)
 endif()
 option(REAL_BDW "Use BDW garbage collector" OFF)
 option(RUN_TESTS "Run standard tests" OFF)
-add_definitions(-DTRACING)
+add_definitions(-DTRACING -Wunused-result)
 if(WINDOWS)
 add_definitions(-DGC_NOT_DLL -D_CRT_SECURE_NO_WARNINGS)
 else()
