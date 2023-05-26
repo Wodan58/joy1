@@ -1,7 +1,7 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.12
-#   date    : 07/25/22
+#   version : 1.13
+#   date    : 05/26/23
 #
 cmake_minimum_required(VERSION 3.0)
 project(Joy VERSION 1.0)
@@ -12,7 +12,7 @@ if(WIN32)
 option(WINDOWS "Use _MSC_VER compiler" ON)
 endif()
 option(REAL_BDW "Use BDW garbage collector" OFF)
-option(RUN_TESTS "Run standard tests" ON)
+option(RUN_TESTS "Run standard tests" OFF)
 add_definitions(-DTRACING)
 if(WINDOWS)
 add_definitions(-DGC_NOT_DLL -D_CRT_SECURE_NO_WARNINGS)
@@ -46,11 +46,10 @@ else()
 target_link_libraries(joy m)
 add_dependencies(joy always)
 add_custom_target(always
-		  COMMAND sh ${CMAKE_SOURCE_DIR}/banner.sh ${PROJECT_NAME} ${PROJECT_VERSION}
 		  COMMAND sh ${CMAKE_SOURCE_DIR}/table.sh ${CMAKE_SOURCE_DIR}
 		  COMMAND sh ${CMAKE_SOURCE_DIR}/prims.sh ${CMAKE_SOURCE_DIR})
 if(RUN_TESTS)
-#add_subdirectory(lib)
+add_subdirectory(lib)
 add_subdirectory(test)
 add_subdirectory(test2)
 endif()
