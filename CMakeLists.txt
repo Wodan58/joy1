@@ -1,6 +1,6 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.14
+#   version : 1.15
 #   date    : 05/26/23
 #
 cmake_minimum_required(VERSION 3.0)
@@ -13,10 +13,11 @@ option(WINDOWS "Use _MSC_VER compiler" ON)
 endif()
 option(REAL_BDW "Use BDW garbage collector" OFF)
 option(RUN_TESTS "Run standard tests" OFF)
-add_definitions(-DTRACING -Wunused-result)
+add_definitions(-DTRACING)
 if(WINDOWS)
 add_definitions(-DGC_NOT_DLL -D_CRT_SECURE_NO_WARNINGS)
 else()
+add_definitions(-Wno-unused-result)
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 --coverage -fprofile-arcs -ftest-coverage") # debug, no optimization
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage") # enabling coverage
