@@ -11,12 +11,11 @@ versions are drifting apart.
 Build instructions
 ------------------
 
-Build with the [BDW garbage collector](https://github.com/ivmai/bdwgc), or
-without:
+Build with the [BDW garbage collector](https://github.com/ivmai/bdwgc):
 
     mkdir build
     cd build
-    CC=../gcc.sh cmake ..
+    cmake ..
     cmake --build .
 
 Changes
