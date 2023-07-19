@@ -1,7 +1,7 @@
 /*
     module  : split.c
-    version : 1.3
-    date    : 05/17/22
+    version : 1.4
+    date    : 07/19/23
 */
 #ifndef SPLIT_C
 #define SPLIT_C
@@ -26,16 +26,16 @@ PRIVATE void split_(pEnv env)
     switch (env->stck->op) {
     case SET_: {
         int j;
-        long set = env->stck->u.set, yes_set = 0, no_set = 0;
+        uint64_t set = env->stck->u.set, yes_set = 0, no_set = 0;
         for (j = 0; j < SETSIZE; j++) {
-            if (set & ((long)1 << j)) {
+            if (set & ((int64_t)1 << j)) {
                 env->stck = INTEGER_NEWNODE(j, save);
                 exeterm(env, program);
                 CHECKSTACK("split");
                 if (env->stck->u.num)
-                    yes_set |= ((long)1 << j);
+                    yes_set |= ((int64_t)1 << j);
                 else
-                    no_set |= ((long)1 << j);
+                    no_set |= ((int64_t)1 << j);
             }
         }
         env->stck = SET_NEWNODE(yes_set, save);

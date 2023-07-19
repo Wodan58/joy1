@@ -1,4 +1,1 @@
-(*
-    Fibonacci, only for benchmarking.
-*)
 40 [small] [] [pred dup pred] [+] binrec.

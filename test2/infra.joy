@@ -9,4 +9,6 @@ DEFINE	test == [] [2 3 + 4 5 *] infra.
 
 DEFINE	test1 == [6 7 8 9 10] [] infra.
 
+[] unstack.
+
 test1 stack [[6 7 8 9 10]] equal.

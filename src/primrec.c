@@ -1,7 +1,7 @@
 /*
     module  : primrec.c
-    version : 1.3
-    date    : 05/17/22
+    version : 1.4
+    date    : 07/19/23
 */
 #ifndef PRIMREC_C
 #define PRIMREC_C
@@ -14,8 +14,7 @@ For aggregate X uses successive members and combines by C for new R.
 */
 PRIVATE void primrec_(pEnv env)
 {
-    int n = 0;
-    int i;
+    int64_t i, n = 0;
     Node *data, *second, *third;
 
     THREEPARAMS("primrec");
@@ -46,16 +45,16 @@ PRIVATE void primrec_(pEnv env)
     }
     case SET_: {
         int j;
-        long set = data->u.set;
+        uint64_t set = data->u.set;
         for (j = 0; j < SETSIZE; j++)
-            if (set & ((long)1 << j)) {
+            if (set & ((int64_t)1 << j)) {
                 env->stck = INTEGER_NEWNODE(j, env->stck);
                 n++;
             }
         break;
     }
     case INTEGER_: {
-        long j;
+        int64_t j;
         for (j = data->u.num; j > 0; j--) {
             env->stck = INTEGER_NEWNODE(j, env->stck);
             n++;

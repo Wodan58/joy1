@@ -1,7 +1,7 @@
 /*
     module  : filter.c
-    version : 1.3
-    date    : 05/17/22
+    version : 1.4
+    date    : 07/19/23
 */
 #ifndef FILTER_C
 #define FILTER_C
@@ -24,14 +24,14 @@ PRIVATE void filter_(pEnv env)
     switch (env->stck->op) {
     case SET_: {
         int j;
-        long set = env->stck->u.set, resultset = 0;
+        uint64_t set = env->stck->u.set, resultset = 0;
         for (j = 0; j < SETSIZE; j++) {
-            if (set & ((long)1 << j)) {
+            if (set & ((int64_t)1 << j)) {
                 env->stck = INTEGER_NEWNODE(j, save);
                 exeterm(env, program);
                 CHECKSTACK("filter");
                 if (env->stck->u.num)
-                    resultset |= ((long)1 << j);
+                    resultset |= ((int64_t)1 << j);
             }
         }
         env->stck = SET_NEWNODE(resultset, save);

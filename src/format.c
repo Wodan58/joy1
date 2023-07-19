@@ -1,7 +1,7 @@
 /*
-    module  : format.c
-    version : 1.2
-    date    : 05/02/22
+    module  : %M%
+    version : %I%
+    date    : %G%
 */
 #ifndef FORMAT_C
 #define FORMAT_C

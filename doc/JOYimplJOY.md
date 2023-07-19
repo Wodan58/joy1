@@ -205,8 +205,8 @@ this version: JOY  -  compiled at 16:57:51 on Mar 17 2003.
 - The paper `j09imp.html` states: "When input reverts to an earlier file, the
   earlier line numbering is resumed." That functionality was added.
 
-- The program is 64 bits by default. There is the option of compiling with
-  BIT_32, but that is no longer tested.
+- The program is 64 bits by default. There was the option to compile with
+  BIT_32, but this has been removed.
 
 - Local symbols are fully supported: they can call each other and do not
   show up in the symbol table. This should be considered as implementation
