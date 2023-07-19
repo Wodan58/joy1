@@ -13,7 +13,6 @@ Build instructions
 
 Build with the [BDW garbage collector](https://github.com/ivmai/bdwgc):
 
-    mkdir build
     cd build
     cmake ..
     cmake --build .
