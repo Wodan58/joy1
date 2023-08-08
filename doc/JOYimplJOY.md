@@ -34,7 +34,7 @@ Joy and thus should be considered implementation dependent. Also, there is an
 easy workaround: insert an empty forward declaration. Except that this
 workaround is not always available.
 
-SEARCH_ARGV0_DIRECTORY
+SEARCH_EXEC_DIRECTORY
 ----------------------
 
 This macro was added in order to support out-of-source builds with Cmake. It
@@ -76,8 +76,8 @@ CORRECT_TYPE_COMPARE, CORRECT_CASE_COMPARE
 It would be good to have only one definition of equality. `Compare` compares
 each type with every other type and is a robust way to enforce the same kind of
 equality in `compare,equal,case,in,has,=,<` and other comparison operators. But
-`in` has a problem: it breaks `grmtst.joy`. This was finally solved by using a
-nickname: plus and ast instead of + and *.
+`in` has a problem: it breaks `grmtst.joy`. This problem was finally mitigated
+by using a nickname: plus and ast instead of + and *.
 
 ONLY_LOGICAL_NOT
 ----------------
