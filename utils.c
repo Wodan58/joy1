@@ -1,8 +1,8 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.36
- *  date    : 07/18/23
+ *  version : 1.37
+ *  date    : 08/11/23
  */
 #include "globals.h"
 
@@ -18,7 +18,7 @@ PRIVATE void report_nodes(void)
 PRIVATE void count_nodes(void)
 {
     if (++nodes == 1)
-        atexit(report_nodes);
+	atexit(report_nodes);
 }
 #endif
 
@@ -30,7 +30,7 @@ PUBLIC Node *newnode(pEnv env, Operator o, Types u, Node *r)
     Node *p;
 
     if ((p = GC_malloc(sizeof(Node))) == 0)
-        execerror("memory", "allocator");
+	execerror("memory", "allocator");
     p->op = o;
     p->u = u;
     p->next = r;

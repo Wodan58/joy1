@@ -1,7 +1,7 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.16
-#   date    : 07/18/23
+#   version : 1.17
+#   date    : 08/11/23
 #
 cmake_minimum_required(VERSION 3.0)
 project(Joy VERSION 1.0)
@@ -9,7 +9,7 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "")
   set(CMAKE_BUILD_TYPE "Release")
 endif()
 option(RUN_TESTS "Run standard tests" OFF)
-add_definitions(-DCOPYRIGHT -DBDW -DJVERSION="BDW ${CMAKE_BUILD_TYPE} ${CMAKE_PROJECT_VERSION}")
+add_definitions(-DCOPYRIGHT -DJVERSION="BDW ${CMAKE_BUILD_TYPE} ${CMAKE_PROJECT_VERSION}")
 add_executable(joy interp.c scan.c utils.c main.c factor.c module.c)
 add_dependencies(joy always)
 add_custom_target(always
