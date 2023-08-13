@@ -1,12 +1,12 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.12
-#   date    : 05/23/23
+#   version : 1.11
+#   date    : 08/12/23
 #
 macro(exe9 src)
 add_custom_target(${src}.out ALL
 		  DEPENDS joy ${CMAKE_SOURCE_DIR}/test/${src}.joy
-		  COMMAND joy ${CMAKE_SOURCE_DIR}/test/${src}.joy >${src}.out 2>&1)
+		  COMMAND joy ${CMAKE_SOURCE_DIR}/test/${src}.joy >${src}.out)
 endmacro(exe9)
 
 exe9(test01)
@@ -23,6 +23,7 @@ exe9(test13)
 exe9(test14)
 exe9(test15)
 exe9(test16)
+exe9(test17)
 exe9(test19)
 exe9(test20)
 exe9(test21)
@@ -66,13 +67,6 @@ add_custom_target(test04.out ALL
 add_custom_target(test05.out ALL
 		  DEPENDS joy ${CMAKE_SOURCE_DIR}/test/test05.joy
 		  COMMAND joy -v ${CMAKE_SOURCE_DIR}/test/test05.joy ${CMAKE_SOURCE_DIR}/test/test05.joy >test05.out)
-
-#
-#  Debugging ILLEGAL
-#
-add_custom_target(test17.out ALL
-		  DEPENDS joy ${CMAKE_SOURCE_DIR}/test/test17.joy
-		  COMMAND joy ${CMAKE_SOURCE_DIR}/test/test17.joy >test17.out)
 
 #
 #  Test help

@@ -193,6 +193,23 @@ Existing behaviour, not accepted. The following program leads to an error and
 should not lead to an error: `get get +. 123 456`. The program prints `579` and
 then issues the error about a missing END or period.
 
+CLEAR_STACK_ON_ERROR
+--------------------
+
+After an error or after `abort` has been called, the rest of the program is
+skipped. The question is what to do with the stack. The stack should remain
+intact and that is why this definition is not accepted.
+
+SYMMETRIC_PLUS_MINUS
+--------------------
+
+There is asymmetry in plus and minus: adding or subtracting an integer is
+allowed when the first operand is a character; the character cannot appear as
+the second operand. There is a use case where it would be more efficient to
+allow such a construct: `2 "test" [+] map.`. This program needs to push the 2
+only once, using it again and again. It so happens that the efficiency reason
+does not apply to Moy and so this change is not accepted.
+
 Summary
 =======
 
@@ -206,11 +223,11 @@ this version: JOY  -  compiled at 16:57:51 on Mar 17 2003.
   earlier line numbering is resumed." That functionality was added.
 
 - The program is 64 bits by default. There was the option to compile with
-  BIT_32, but this has been removed.
+  32 bits, but this has been removed.
 
 - Local symbols are fully supported: they can call each other and do not
   show up in the symbol table. This should be considered as implementation
-  dependent.
+  dependent, until further notice.
 
 - The function `Compare` is used to enforce the same type of equality in all
   comparison operators.
