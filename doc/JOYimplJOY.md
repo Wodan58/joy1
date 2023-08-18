@@ -283,7 +283,7 @@ CORRECT_HEADERS
 ---------------
 
 The headers were not correctly displayed in HTML. The headers are now embedded
-in <DT><BR><B> and </B><BR><BR>.
+in `<DT><BR><B>` and `</B><BR><BR>`.
 
 HELP_CONDNESTREC
 ----------------
