@@ -20,7 +20,7 @@ Build with the [BDW garbage collector](https://github.com/ivmai/bdwgc):
 Changes
 -------
 
-Changes are mentioned in globals.h and documented in the `doc` directory.
+Changes are documented in the `doc` directory.
 Some builtins have been added: `fget`, `getch`, and `sametype`.
 It is always possible to extract an up-to-date version of the manual:
 

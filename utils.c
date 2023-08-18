@@ -1,8 +1,8 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.37
- *  date    : 08/11/23
+ *  version : 1.38
+ *  date    : 08/18/23
  */
 #include "globals.h"
 
@@ -11,6 +11,7 @@ static double nodes;
 
 PRIVATE void report_nodes(void)
 {
+    fflush(stdout);
     fprintf(stderr, "%.0f nodes used\n", nodes);
     fprintf(stderr, "%.0f garbage collections\n", (double)GC_get_gc_no());
 }

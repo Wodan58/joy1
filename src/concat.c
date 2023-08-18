@@ -1,7 +1,7 @@
 /*
     module  : concat.c
-    version : 1.3
-    date    : 08/13/23
+    version : 1.4
+    date    : 08/18/23
 */
 #ifndef CONCAT_C
 #define CONCAT_C
@@ -12,6 +12,7 @@ Sequence U is the concatenation of sequences S and T.
 */
 PRIVATE void concat_(pEnv env)
 {
+    char *str;
     Node *my_dump1 = 0; /* old  */
     Node *my_dump2 = 0; /* head */
     Node *my_dump3 = 0; /* last */
@@ -22,15 +23,13 @@ PRIVATE void concat_(pEnv env)
     case SET_:
         BINARY(SET_NEWNODE, env->stck->next->u.set | env->stck->u.set);
         return;
-    case STRING_: {
-        char *s, *p;
-        s = p = GC_malloc_atomic(
-            strlen(env->stck->next->u.str) + strlen(env->stck->u.str) + 1);
-        strcpy(s, env->stck->next->u.str);
-        strcat(s, env->stck->u.str);
-        BINARY(STRING_NEWNODE, s);
+    case STRING_:
+        str = GC_malloc_atomic(strlen(env->stck->next->u.str) +
+			       strlen(env->stck->u.str) + 1);
+        strcpy(str, env->stck->next->u.str);
+        strcat(str, env->stck->u.str);
+        BINARY(STRING_NEWNODE, str);
         return;
-    }
     case LIST_:
         if (!env->stck->next->u.lis) {
             BINARY(LIST_NEWNODE, env->stck->u.lis);
