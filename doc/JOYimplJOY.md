@@ -25,8 +25,8 @@ stack. There are 3 exceptions to the equality of `intern` and `[ .. ] first`:
 word `intern` returns the function `false`, whereas the construct with `first`
 returns the value `false`.
 
-READ_PRIVATE_AHEAD
-------------------
+READ_PRIVATE_AHEAD, APPLY_FORWARD_SYMBOL
+----------------------------------------
 
 This macro surrounds the code that enables local symbols and also public member
 functions to call each other. This feature is not supported by all versions of
@@ -406,7 +406,7 @@ The `neg` function creates a floating point from an integer when this function
 is called. The type of the data should remain intact. That is what this define
 accomplishes.
 
-CORRECT_STRFTIME_BUG
+CORRECT_STRFTIME_BUF
 --------------------
 
 The strftime allocates a buffer that is way too small. Try
@@ -647,8 +647,8 @@ This define should be activated in the makefile, because it allows the version
 to be displayed and more importantly it displays whether the version is BDW or
 NOBDW and whether the binary was compiled for Release or Debug.
 
-DUMP_TOKENS
------------
+DUMP_TOKENS, DEBUG_TOKENS
+-------------------------
 
 This define allows debugging of the token read ahead. And this read ahead needs
 debugging. There is no proof that there is an error but the token list shows
@@ -783,6 +783,45 @@ REMOVE_UNUSED_ERRORCOUNT
 The errorcount is not used and still present in `scan.c`. It is now surrounded
 by `#if 0` ... `#endif`. If errorcount is larger than 0, then the source code
 cannot be executed, because it will fail. The number of errors is not important.
+
+BIT_32
+------
+
+There was the possibility to compile for 32 bit computers. As this is not
+tested anymore, this option has been removed.
+
+COSMO
+-----
+
+Cosmopolitan is a library that allows the creation of binaries that can be
+executed under Windows, Linux, Unix. This library can be used without changes
+to the source code and that is why this define has been removed.
+
+SINGLE
+------
+
+This define allowed the source to be compiled for either Joy or joy1. Instead
+of that, the sources in the src-directory has been split.
+
+__linux__
+---------
+
+This define allowed the use of Linux-specific code to be executed. Such an
+approach is misguided: the source code should be portable among compilers and
+operating systems and thus should adhere to the current C standard. If that
+prevents certain facilities, so be it.
+
+TYPED_NODES
+-----------
+
+This defines was used to register extra type information in each of the nodes
+that are used in memory. The reason is lost in time.
+
+USE_TIME_REC
+------------
+
+This define was used to surround the use of gmtime_r and localtime_r. As it is
+now, there a substitute functions specific to WIN32.
 
 Summary
 =======
