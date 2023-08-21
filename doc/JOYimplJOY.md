@@ -12,6 +12,12 @@ Recent changes
 
 The macro NEWNODE was added to globals.h, because of unspecified behaviour.
 
+Accepted changes
+================
+
+Changes that have been accepted, because they corrected simple mistakes are
+also mentioned here. They have been removed from globals.h.
+
 CORRECT_INTERN_LOOKUP
 ---------------------
 
@@ -29,10 +35,8 @@ READ_PRIVATE_AHEAD, APPLY_FORWARD_SYMBOL
 ----------------------------------------
 
 This macro surrounds the code that enables local symbols and also public member
-functions to call each other. This feature is not supported by all versions of
-Joy and thus should be considered implementation dependent. Also, there is an
-easy workaround: insert an empty forward declaration. Except that this
-workaround is not always available.
+functions to call each other. There is a workaround: insert an empty forward
+declaration.
 
 SEARCH_EXEC_DIRECTORY
 ----------------------
@@ -41,13 +45,6 @@ This macro was added in order to support out-of-source builds with Cmake. It
 can be helpful during operating Joy as well: Joy loads `usrlib.joy` and searches
 this library in the current directory. With this macro enabled Joy can locate
 `usrlib.joy` also in another directory: the same directory as used by `argv[0]`.
-
-Accepted changes
-================
-
-Changes that have been accepted, because they corrected simple mistakes are not
-mentioned here. They are still present in globals.h, because these changes are
-sometimes undone or moved from accepted to not accepted or someting like that.
 
 USE_ONLY_STDIN
 --------------
@@ -839,8 +836,7 @@ this version: JOY  -  compiled at 16:57:51 on Mar 17 2003.
   32 bits, but this has been removed.
 
 - Local symbols are fully supported: they can call each other and do not
-  show up in the symbol table. This should be considered as implementation
-  dependent, until further notice.
+  show up in the symbol table.
 
 - The function `Compare` is used to enforce the same type of equality in all
   comparison operators.
