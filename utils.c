@@ -1,8 +1,8 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.38
- *  date    : 08/18/23
+ *  version : 1.39
+ *  date    : 08/23/23
  */
 #include "globals.h"
 
@@ -43,12 +43,12 @@ PUBLIC Node *newnode(pEnv env, Operator o, Types u, Node *r)
 
 PUBLIC void my_memoryindex(pEnv env)
 {
-    env->bucket.num = GC_get_heap_size();
+    env->bucket.num = GC_get_memory_use();
     env->stck = newnode(env, INTEGER_, env->bucket, env->stck);
 }
 
 PUBLIC void my_memorymax(pEnv env)
 {
-    env->bucket.num = GC_get_memory_use();
+    env->bucket.num = GC_get_memory_use() - GC_get_free_bytes();
     env->stck = newnode(env, INTEGER_, env->bucket, env->stck);
 }
