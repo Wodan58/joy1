@@ -1,8 +1,10 @@
 /*
     module  : stackavail.c
-    version : 1.1
+    version : 1.2
     date    : 08/24/23
 */
+#include <stddef.h>
+
 #ifdef WIN32
 #define WINDOWS_LEAN_AND_MEAN
 #include <windows.h>
