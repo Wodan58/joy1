@@ -21,7 +21,6 @@ Changes
 -------
 
 Changes are documented in the `doc` directory.
-Some builtins have been added: `fget`, `getch`, and `sametype`.
 It is always possible to extract an up-to-date version of the manual:
 
     echo '__html_manual.' | ./joy | lynx -stdin
