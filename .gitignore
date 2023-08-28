@@ -1,1 +1,6 @@
 joy1.tar
+CMakeCache.txt
+CMakeFiles
+Makefile
+cmake_install.cmake
+joy.exe
