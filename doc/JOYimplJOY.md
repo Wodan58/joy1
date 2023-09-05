@@ -4,7 +4,7 @@
 Introduction
 ============
 
-Changes that are mentioned in globals.h are described here. A summary of the
+Changes that were mentioned in globals.h are described here. A summary of the
 changes is at the end of this page.
 
 Recent changes
@@ -42,9 +42,10 @@ SEARCH_EXEC_DIRECTORY
 ----------------------
 
 This macro was added in order to support out-of-source builds with Cmake. It
-can be helpful during operating Joy as well: Joy loads `usrlib.joy` and searches
-this library in the current directory. With this macro enabled Joy can locate
-`usrlib.joy` also in another directory: the same directory as used by `argv[0]`.
+can be helpful during operating Joy as well: Joy loads `usrlib.joy` and
+searches this library in the current directory. With this macro enabled Joy can
+locate `usrlib.joy` also in another directory: the same directory as was used
+earlier on.
 
 USE_ONLY_STDIN
 --------------
@@ -72,7 +73,7 @@ NO_BANG_AS_PERIOD
 The old source code had a `!` as an alternative for the period at the end of a
 program. The reason was the processing of floating points. `1.` is a valid
 floating point in C. That may be true, but Joy can have its own definition of a
-floating point. In the Joy definition it is required to have a digits on both
+floating point. In the Joy definition it is required to have digits on both
 sides of the decimal separator. So, `1. ` with a non-digit character after the
 decimal point is parsed as an integer, followed by a full stop, followed by
 whatever comes thereafter. Joy is somewhat tied to C as the implementation
@@ -136,11 +137,11 @@ CORRECT_STRING_WRITE
 --------------------
 
 Ideally, the output from writefactor should be valid Joy source code. The old
-version prints a string as `"%s"` and that fails if the string contains a " or
-a newline. Also, if there are unreadable characters in the string, the output
-will look strange. This define tries to repair that. The best attitude towards
-this problem is to admit that the output of writefactor is not always valid
-Joy source code.
+version prints a string as `"%s"` and that fails if the string contains a `"`
+or a newline. Also, if there are unreadable characters in the string, the
+output will look strange. This define tries to repair that. The best attitude
+towards this problem is to admit that the output of writefactor is not always
+valid Joy source code.
 
 BDW_ALSO_IN_MAIN
 ----------------
@@ -166,7 +167,7 @@ USE_NEW_FUNCTION_SYNTAX
 -----------------------
 
 There were a number of functions that still used the old K&R style declarations.
-This define replaces them with the new ANSI syntax (new in 1989).
+This define replaced them with the new ANSI syntax (new in 1989).
 
 CORRECT_OCTAL_NUMBER
 --------------------
@@ -176,7 +177,7 @@ What that means is that as soon as an octal number has been spotted, it is
 reported as such. More specifically: `08` is parsed as two numbers, `0` and `8`.
 The reason that it cannot be an octal number is that `8` is not an octal digit.
 Spaces between tokens are only mandatory when needed to separate two tokens.
-Even more: `00` can be parsed as two numbers, both 0. That is not what is done
+Even more: `00` can be parsed as two numbers, both 0. That is not what was done
 in Joy (it is that way in Moy). 
 
 NO_EXECUTE_ERROR
@@ -190,7 +191,8 @@ DONT_ADD_MODULE_NAMES
 ---------------------
 
 It does not seem necessary to add module names to the symbol table, as the old
-version did. The define makes it possible not have modules in the symbol table.
+version did. The define makes it possible to not have modules in the symbol
+table.
 
 CHECK_SYMTABMAX
 ---------------
@@ -242,10 +244,10 @@ CORRECT_GETENV
 --------------
 
 The function `getenv` can return a NULL pointer and that should be replaced by
-"". A NULL pointer is not a valid string in Joy. If it would be accepted as
-such, all locations where a string is used, need protection against NULL
-pointers. It is better to tackle the problem at the source and replace the
-NULL with an empty string.
+"", an empty string. A NULL pointer is not a valid string in Joy. If it would
+be accepted as such, all locations where a string is used, need protection
+against NULL pointers. It is better to tackle the problem at the source and
+replace the NULL with an empty string.
 
 RESUME_EARLIER_LINENUM
 ----------------------
@@ -253,8 +255,8 @@ RESUME_EARLIER_LINENUM
 This behaviour was promised in `j09imp.html`, but not present in the old
 version. The input stack needs to remember not only the file pointer, but also
 the linenumber, such that this linenumber can be continued after an included
-file was processed. As it happens, the filename is also remembered, but
-currently not used.
+file was processed. As it happens, the filename is also remembered, and
+currently also used.
 
 CHECK_QUOTE_IN_SPLIT
 --------------------
@@ -267,14 +269,14 @@ CORRECT_HELPDETAIL
 
 The function `helpdetail` can be improved. In case of the values `false`,
 `true`, and `maxint`, it is desirable to print the description of the
-functions, not the descciption of the values. Thus some translation from
-value to function needs to take place. This define assists in that.
+functions, not the description of the values. Thus some translation from value
+to function needs to take place. This define assists in that.
 
 CHECK_QUOTES_IN_PRIMREC
 -----------------------
 
-The function `primrec` checks that there are three parameters. The two top
-most parameters must be quotations. This define adds that check.
+The function `primrec` checks that there are three parameters. The two top most
+parameters must be quotations. This define adds that check.
 
 CORRECT_HEADERS
 ---------------
@@ -393,8 +395,8 @@ CORRECT_INTERN_STRCPY
 
 The intern functions uses `strcpy` from the string parameter to the `id` buffer
 without checking the length of the string. This define truncates the string, if
-it is longer the ALEN, the size of the `id` buffer and makes sure that the last
-character is the 0 terminator of a string.
+it is longer than ALEN, the size of the `id` bufferm and makes sure that the
+last character is the 0 terminator of a string.
 
 CORRECT_NEG_INTEGER
 -------------------
@@ -432,7 +434,7 @@ opportunity to embellish the source code. This change is in the latter category.
 CORRECT_NOT_FOR_LIST
 --------------------
 
-The old code looks at the `num` field to decide whether is LIST_ is null or not.
+The old code looks at the `num` field to decide whether a LIST_ is null or not.
 That is not ok: the code should look at the `lis` field. These fields may not
 have the same size. This define corrects that.
 
@@ -478,7 +480,8 @@ There is the problem of the program `[1 2 3] [pop] map.` The builtin `map`
 needs an entry on the stack that can be used in the newly created list. The
 `pop` makes sure that such entry is not present. This causes a crash. The
 define checks that the stack is not empty, triggering a runtime error instead
-of a crash. The same problem also occurs in many other builtins.
+of a crash. The same problem also occurs in many other builtins and may not
+have been corrected everywhere.
 
 CORRECT_NULL_CASES
 ------------------
@@ -551,7 +554,7 @@ CORRECT_ALEN
 ------------
 
 The longest identifier in the sources is 21 characters long. Including the
-terminating 0, a buffer of 22 characters is needed. On the other hand, if
+terminating 0 byte, a buffer of 22 characters is needed. On the other hand, if
 identifiers are going to be stored in a database, the shorter definition of 20
 might be preferable. And no matter what value is given to ALEN, there will
 always be identifiers that are longer.
@@ -569,8 +572,8 @@ sections. This is now accepted and not present in the source anymore.
 USE_UNKNOWN_SYMBOLS
 -------------------
 
-This definition makes it possible that local symbols can call each other.
-The only way to make it a 100% solution is to read the PRIVATE sections twice:
+This definition makes it possible that local symbols can call each other. The
+only way to make it a 100% solution is to read the PRIVATE sections twice:
 during the first read defined symbols are registered in the symbol table and
 during the second read normal processing is done. The benefit of this
 approach is that symbols, because they can be made local, do not show up in
@@ -581,9 +584,9 @@ the symbol table this might be easier to implement.
 CORRECT_INHAS_COMPARE
 ---------------------
 
-This definition would break `grmtst.joy` and that is not allowed.
-All comparison operators now use the Compare function and a redefinition of
-`in` in `grmtst.joy` is no longer necessary.
+This definition would break `grmtst.joy` and that is not allowed. All
+comparison operators now use the Compare function and a redefinition of `in`
+in `grmtst.joy` is no longer necessary.
 
 CORRECT_SET_MEMBER
 ------------------
@@ -596,9 +599,9 @@ AUTOMATIC_NUM_TO_DBL
 --------------------
 
 The document `j09imp.html` warns that numeric constants should not be larger
-than what a machine word can contain. This define allows that restriction to
-be forgotten. Literals that are too large for an integer are automatically
-converted to double. With loss of precision. Without warning.
+than what a machine word can contain. This define allows that restriction to be
+forgotten. Literals that are too large for an integer are automatically
+converted to double. With loss of precision and without warning.
 
 Existing changes
 ================
@@ -623,7 +626,7 @@ RUNTIME_CHECKS, NCHECK
 Likewise, existing behaviour. It is not recommended to turn this off, because
 it takes very little time to check parameters and it is a good thing to have,
 catching bugs when running a program. The new name is now NCHECK with reverse
-meaning. NCHECK looks line NDEBUG, but NDEBUG is turned on automatically by
+meaning. NCHECK looks like NDEBUG, but NDEBUG is turned on automatically by
 Cmake in the Release version; turning on or off should be a deliberate decision.
 
 Available defines
@@ -648,13 +651,13 @@ DUMP_TOKENS, DEBUG_TOKENS
 -------------------------
 
 This define allows debugging of the token read ahead. And this read ahead needs
-debugging. There is no proof that there is an error but the token list shows
-that there are problems.
+debugging. There is no proof that there is an error but the token list showed
+that there were problems.
 
 JVERSION
 --------
 
-This version needs to be given on the command line when compiling and is built
+The version needs to be given on the command line when compiling and is built
 from a number of strings. The version is only visible when COPYRIGHT is also
 defined.
 
@@ -668,27 +671,27 @@ REMEMBER_FILENAME
 -----------------
 
 This define allows the filename to be remembered in the stack of input files.
-The filename is not used anywhere, but could be used in error messages.
+The filename is now used in error messages.
 
 STATS
 -----
 
 For statistical purposes, some counts can be remembered. These counts can be
-used in the comparison of various algorithms. Timing the binary is also possible
-and requires no change in the source code.
+used in the comparison of various algorithms. Timing the binary is also
+possible and requires no change in the source code.
 
 SYMBOLS
 -------
 
-This define allows the symbol table to be dumped at the end of execution.
-The symbol contains all builtins and all defined symbols. This define can be
+This define allows the symbol table to be dumped at the end of execution. The
+symbol table contains all builtins and all defined symbols. This define can be
 used to verify that everything has been arrived correctly in the symbol table.
 
 TRACING
 -------
 
 Tracing can be used to track the execution of a program. This looks very nice
-but is only usefule for small programs.
+but is only useful for small programs.
 
 _MSC_VER, WIN32
 ---------------
@@ -717,7 +720,7 @@ TRACK_USED_SYMBOLS
 ------------------
 
 This definition uses the program to generate a list of symbols that are used in
-the Joy source files; it can be used to detect what the largest length of a
+the Joy source files; it could be used to detect what the largest length of a
 symbol is.
 
 NOT_ALSO_FOR_FLOAT, NOT_ALSO_FOR_FILE
@@ -754,25 +757,25 @@ does not apply to Moy and so this change is not accepted.
 CORRECT_FLOAT_BUFFER
 --------------------
 
-This define was used to enlarge the buffer where floating points are read to
-the maximum possible value. Whatever the value, given the nature of formatf,
+This define was used to enlarge the buffer where floating points are collected
+to the maximum possible value. Whatever the value, given the nature of formatf,
 no buffer is large enough. The proper way is to use `snprintf`. If that
 function is not available, it should be created.
 
 GET_FROM_STDIN
 --------------
 
-The builtin `get` reads a factor from the same source code that is used as
-input for the Joy virtual processor a.k.a. `exeterm`. That is how it should be.
-The define redirected `get` to stdin, but this is a misguided change.
+The builtin `get` reads a factor from the same source that is used as input for
+the Joy virtual processor a.k.a. `exeterm`. That is how it should be. The
+define redirected `get` to stdin, but that is misguided.
 
 ORIGINAL_JOY
 ------------
 
 There was the option to undo all changes by allowing this define active. The
-number of defines became too large to handle and so have been removed. If it
-is really necessary to compare the behaviour of the current version with the
-old version, then the old version should be compiled separately.
+number of defines became too large to handle and so have been removed. If it is
+really necessary to compare the behaviour of the current version with the old
+version, then the old version should be compiled separately.
 
 REMOVE_UNUSED_ERRORCOUNT
 ------------------------
@@ -791,14 +794,14 @@ COSMO
 -----
 
 Cosmopolitan is a library that allows the creation of binaries that can be
-executed under Windows, Linux, Unix. This library can be used without changes
-to the source code and that is why this define has been removed.
+executed under Windows, Linux, Unix. The library can be used without changes to
+the source code and that is why this define has been removed.
 
 SINGLE
 ------
 
 This define allowed the source to be compiled for either Joy or joy1. Instead
-of that, the sources in the src-directory has been split.
+of that, the sources in the src-directory have been split.
 
 __linux__
 ---------
@@ -806,19 +809,19 @@ __linux__
 This define allowed the use of Linux-specific code to be executed. Such an
 approach is misguided: the source code should be portable among compilers and
 operating systems and thus should adhere to the current C standard. If that
-prevents certain facilities, so be it.
+prevents certain extensions, so be it.
 
 TYPED_NODES
 -----------
 
 This defines was used to register extra type information in each of the nodes
-that are used in memory. The reason is lost in time.
+that are used in memory. The reason why this was needed is lost in time.
 
 USE_TIME_REC
 ------------
 
 This define was used to surround the use of gmtime_r and localtime_r. As it is
-now, there a substitute functions specific to WIN32.
+now, they are substitute functions specific to WIN32.
 
 Summary
 =======
@@ -826,8 +829,9 @@ Summary
 This updated version of Joy is slowly drifting away from the legacy version,
 this version: JOY  -  compiled at 16:57:51 on Mar 17 2003.
 
-- Some builtins have been added since that date: `condnestrec`, `fget`,
-  `getch`, and `sametype`.
+- Some builtins have been added since that date: `condnestrec`, `casting`,
+  `fget`, `filetime`, `getch`, `over`, `pick`, `round`, `sametype`, and
+  ` typeof`.
 
 - The paper `j09imp.html` states: "When input reverts to an earlier file, the
   earlier line numbering is resumed." That functionality was added.

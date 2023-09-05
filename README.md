@@ -28,8 +28,8 @@ Build with the [BDW garbage collector](https://github.com/ivmai/bdwgc):
     SOURCE_DATE_EPOCH=1047920271 cmake ..
     cmake --build .
 
-Alternatives
-------------
+See also
+--------
 
 Implementation|Dependencies
 ---|---
