@@ -28,6 +28,8 @@ Build with the [BDW garbage collector](https://github.com/ivmai/bdwgc):
     SOURCE_DATE_EPOCH=1047920271 cmake ..
     cmake --build .
 
+There is a customized version of usrlib.joy waiting in the build directory.
+
 See also
 --------
 
