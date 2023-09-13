@@ -1,7 +1,7 @@
 #
 #   module  : makefile
-#   version : 1.5
-#   date    : 08/28/23
+#   version : 1.6
+#   date    : 09/13/23
 #
 .SUFFIXES:
 .SUFFIXES: .c .o
@@ -10,7 +10,7 @@ CC     = gcc
 CFLAGS = -DCOPYRIGHT -O3 -Wall -Wextra -Wno-unused-parameter -Werror \
 	 -DJVERSION="\"BDW Release 1.0\""
 HDRS   = globals.h
-OBJS   = interp.o scan.o utils.o main.o factor.o module.o stackavail.o
+OBJS   = interp.o scan.o utils.o main.o factor.o module.o
 
 joy:	prep $(OBJS)
 	$(CC) -o$@ $(OBJS) -lm -lgc
