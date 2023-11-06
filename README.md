@@ -35,6 +35,5 @@ See also
 
 Implementation|Dependencies
 ---|---
-[Joy - NOBDW](https://github.com/Wodan58/Joy)|
-[joy1 - BDW](https://github.com/Wodan58/joy1)|[BDW garbage collector](https://github.com/ivmai/bdwgc)
+[Joy](https://github.com/Wodan58/Joy)|
 [Moy](https://github.com/Wodan58/Moy)|[BDW garbage collector](https://github.com/ivmai/bdwgc) and [Lex & Yacc](https://sourceforge.net/projects/winflexbison/files/win_flex_bison-latest.zip)

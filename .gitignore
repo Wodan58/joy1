@@ -7,3 +7,5 @@ cmake_install.cmake
 joy.*
 builtin.*
 table.c
+test/test
+test2/test
