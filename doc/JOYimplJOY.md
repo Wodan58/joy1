@@ -396,7 +396,7 @@ CORRECT\_INTERN\_STRCPY
 
 The intern functions uses `strcpy` from the string parameter to the `id` buffer
 without checking the length of the string. This define truncates the string, if
-it is longer than ALEN, the size of the `id` bufferm and makes sure that the
+it is longer than ALEN, the size of the `id` buffer, and makes sure that the
 last character is the 0 terminator of a string.
 
 CORRECT\_NEG\_INTEGER
