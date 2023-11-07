@@ -1,7 +1,7 @@
 /* FILE: globals.h */
 /*
  *  module  : globals.h
- *  version : 1.79
+ *  version : 1.80
  *  date    : 11/07/23
  */
 #ifndef GLOBALS_H
@@ -54,8 +54,8 @@
 #define INIUNDEFERROR 0
 
 /* installation dependent	*/
-#define SETSIZE (CHAR_BIT * sizeof(uint64_t))	/* from limits.h */
-#define MAXINT INT64_MAX			/* from stdint.h */
+#define SETSIZE (int)(CHAR_BIT * sizeof(uint64_t))	/* from limits.h */
+#define MAXINT INT64_MAX				/* from stdint.h */
 
 /* symbols from getsym		*/
 #define ILLEGAL_ 0
