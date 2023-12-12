@@ -1,8 +1,8 @@
 /* FILE: globals.h */
 /*
  *  module  : globals.h
- *  version : 1.80
- *  date    : 11/07/23
+ *  version : 1.81
+ *  date    : 12/12/23
  */
 #ifndef GLOBALS_H
 #define GLOBALS_H
@@ -122,13 +122,13 @@ typedef void (*proc_t)(pEnv);	/* procedure */
 
 typedef union {
     int64_t num;	/* USR, BOOLEAN, CHAR, INTEGER */
+    proc_t proc;	/* ANON_FUNCT */
     uint64_t set;	/* SET */
     char *str;		/* STRING */
+    Index lis;		/* LIST */
     double dbl;		/* FLOAT */
     FILE *fil;		/* FILE */
-    Index lis;		/* LIST */
     pEntry ent;		/* SYMBOL */
-    proc_t proc;	/* ANON_FUNCT */
 } Types;
 
 typedef struct Node {
@@ -206,7 +206,7 @@ PUBLIC proc_t operproc(int o);
 PUBLIC int operflags(int o);
 PUBLIC int operindex(proc_t proc);
 /* factor.c */
-PUBLIC void readfactor(pEnv env) /* read a JOY factor */;
+PUBLIC void readfactor(pEnv env);	/* read a JOY factor */
 PUBLIC void readterm(pEnv env);
 PUBLIC void writefactor(pEnv env, Index n, FILE *fp);
 PUBLIC void writeterm(pEnv env, Index n, FILE *fp);
