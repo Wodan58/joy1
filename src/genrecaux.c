@@ -1,17 +1,17 @@
 /*
-    module  : _genrec.c
-    version : 1.2
-    date    : 09/04/23
+    module  : genrecaux.c
+    version : 1.4
+    date    : 02/01/24
 */
-#ifndef _GENREC_C
-#define _GENREC_C
+#ifndef GENRECAUX_C
+#define GENRECAUX_C
 
 /**
-OK 3140  (genrec)  :  [B] [T] [R1] [R2]  ->  ...
+OK 3240  #genrec  :  [[B] [T] [R1] R2]  ->  ...
 Executes B, if that yields true, executes T.
 Else executes R1 and then [[[B] [T] [R1] R2] genrec] R2.
 */
-PRIVATE void _genrec_(pEnv env)
+PRIVATE void genrecaux_(pEnv env)
 {
     int result;
     Node *program, *save, *temp;
@@ -20,7 +20,7 @@ PRIVATE void _genrec_(pEnv env)
     POP(env->stck);
     save = env->stck;
     exeterm(env, program->u.lis->u.lis);		/*	[B]	*/
-    CHECKSTACK("genrec");
+    CHECKSTACK("genrecaux");
     result = env->stck->u.num;
     env->stck = save;
     if (result)
@@ -28,7 +28,7 @@ PRIVATE void _genrec_(pEnv env)
     else {
 	exeterm(env, program->u.lis->next->next->u.lis);/*	[R1]	*/
 	NULLARY(LIST_NEWNODE, program->u.lis);
-	temp = ANON_FUNCT_NEWNODE(_genrec_, 0);
+	temp = ANON_FUNCT_NEWNODE(genrecaux_, 0);
 	NULLARY(LIST_NEWNODE, temp);
 	cons_(env);
 	exeterm(env, program->u.lis->next->next->next);	/*	[R2]	*/

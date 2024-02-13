@@ -1,11 +1,5 @@
 joy.exe
 joy1.tar
-CMakeCache.txt
-CMakeFiles
-Makefile
-cmake_install.cmake
-*.o
 builtin.*
 table.c
-test/test
-test2/test
+bdwgc

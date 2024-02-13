@@ -1,16 +1,18 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.41
- *  date    : 09/19/23
+ *  version : 1.43
+ *  date    : 02/12/24
  */
 #include "globals.h"
 
 #ifdef STATS
 static double nodes;
 
-PRIVATE void report_nodes(void)
+PRIVATE void report_nodes(pEnv env)
 {
+    if (!env->statistics)
+	return;
     fflush(stdout);
     fprintf(stderr, "%.0f nodes used\n", nodes);
     fprintf(stderr, "%.0f garbage collections\n", (double)GC_get_gc_no());
@@ -19,7 +21,7 @@ PRIVATE void report_nodes(void)
 PRIVATE void count_nodes(void)
 {
     if (++nodes == 1)
-	atexit(report_nodes);
+	my_atexit(report_nodes);
 }
 #endif
 
@@ -43,12 +45,18 @@ PUBLIC Node *newnode(pEnv env, Operator o, Types u, Node *r)
 
 PUBLIC void my_memoryindex(pEnv env)
 {
-    env->bucket.num = GC_get_memory_use();
+    if (env->ignore)
+	env->bucket.num = 0;
+    else
+	env->bucket.num = GC_get_memory_use();
     env->stck = newnode(env, INTEGER_, env->bucket, env->stck);
 }
 
 PUBLIC void my_memorymax(pEnv env)
 {
-    env->bucket.num = GC_get_memory_use() + GC_get_free_bytes();
+    if (env->ignore)
+	env->bucket.num = 0;
+    else
+	env->bucket.num = GC_get_memory_use() + GC_get_free_bytes();
     env->stck = newnode(env, INTEGER_, env->bucket, env->stck);
 }
