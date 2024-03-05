@@ -1,7 +1,7 @@
 /*
     module  : step.c
-    version : 1.6
-    date    : 09/04/23
+    version : 1.7
+    date    : 03/05/24
 */
 #ifndef STEP_C
 #define STEP_C
@@ -13,6 +13,9 @@ executes P for each member of A.
 */
 PRIVATE void step_(pEnv env)
 {
+    int i;
+    uint64_t set;
+    char *str, *volatile ptr;
     Node *program, *data, *my_dump;
 
     TWOPARAMS("step");
@@ -22,7 +25,7 @@ PRIVATE void step_(pEnv env)
     data = env->stck;
     POP(env->stck);
     switch (data->op) {
-    case LIST_: {
+    case LIST_:
         my_dump = data->u.lis;
         while (my_dump) {
             GNULLARY(my_dump->op, my_dump->u);
@@ -30,25 +33,21 @@ PRIVATE void step_(pEnv env)
             my_dump = my_dump->next;
         }
         break;
-    }
-    case STRING_: {
-        char *s, *volatile ptr;
-        for (s = ptr = data->u.str; *s != '\0'; s++) {
-            env->stck = CHAR_NEWNODE(*s, env->stck);
+    case STRING_:
+	ptr = data->u.str; /* remember this */
+        for (str = ptr; *str != '\0'; str++) {
+            env->stck = CHAR_NEWNODE(*str, env->stck);
             exeterm(env, program);
         }
         break;
-    }
-    case SET_: {
-        int i;
-        uint64_t set = data->u.set;
+    case SET_:
+        set = data->u.set;
         for (i = 0; i < SETSIZE; i++)
             if (set & ((int64_t)1 << i)) {
                 env->stck = INTEGER_NEWNODE(i, env->stck);
                 exeterm(env, program);
             }
         break;
-    }
     default:
         BADAGGREGATE("step");
     }

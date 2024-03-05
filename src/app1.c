@@ -1,23 +1,23 @@
 /*
     module  : app1.c
-    version : 1.3
-    date    : 09/04/23
+    version : 1.4
+    date    : 03/05/24
 */
 #ifndef APP1_C
 #define APP1_C
 
 /**
 OK 2440  app1  :  X [P]  ->  R
-Executes P, pushes result R on stack.
+Obsolescent.  Executes P, pushes result R on stack.
 */
 PRIVATE void app1_(pEnv env)
 {
-    Node *program;
+    Node *save;
 
     TWOPARAMS("app1");
     ONEQUOTE("app1");
-    program = env->stck->u.lis;
+    save = env->stck;
     POP(env->stck);
-    exeterm(env, program);
+    exeterm(env, save->u.lis);
 }
 #endif

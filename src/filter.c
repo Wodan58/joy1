@@ -1,7 +1,7 @@
 /*
     module  : filter.c
-    version : 1.6
-    date    : 09/04/23
+    version : 1.7
+    date    : 03/05/24
 */
 #ifndef FILTER_C
 #define FILTER_C
@@ -15,6 +15,10 @@ PRIVATE void filter_(pEnv env)
     Node *program, *my_dump1 = 0, /* step */
                    *my_dump2 = 0, /* head */
             *save, *my_dump3 = 0; /* last */
+    int i = 0;
+    char *volatile ptr;
+    char *str, *resultstr;
+    uint64_t set, resultset;
 
     TWOPARAMS("filter");
     ONEQUOTE("filter");
@@ -22,38 +26,32 @@ PRIVATE void filter_(pEnv env)
     POP(env->stck);
     save = env->stck->next;
     switch (env->stck->op) {
-    case SET_: {
-        int j;
-        uint64_t set = env->stck->u.set, resultset = 0;
-        for (j = 0; j < SETSIZE; j++) {
-            if (set & ((int64_t)1 << j)) {
-                env->stck = INTEGER_NEWNODE(j, save);
+    case SET_:
+        set = env->stck->u.set;
+        for (resultset = i = 0; i < SETSIZE; i++)
+            if (set & ((int64_t)1 << i)) {
+                env->stck = INTEGER_NEWNODE(i, save);
                 exeterm(env, program);
                 CHECKSTACK("filter");
                 if (env->stck->u.num)
-                    resultset |= ((int64_t)1 << j);
+                    resultset |= ((int64_t)1 << i);
             }
-        }
         env->stck = SET_NEWNODE(resultset, save);
         break;
-    }
-    case STRING_: {
-        char *s, *resultstring;
-        int j = 0;
-        char *volatile ptr = GC_strdup(env->stck->u.str);
-        resultstring = GC_malloc_atomic(strlen(ptr) + 1);
-        for (s = ptr; *s; s++) {
-            env->stck = CHAR_NEWNODE(*s, save);
+    case STRING_:
+        ptr = env->stck->u.str;	/* remember this */
+        resultstr = GC_malloc_atomic(strlen(ptr) + 1);
+        for (str = ptr; *str; str++) {
+            env->stck = CHAR_NEWNODE(*str, save);
             exeterm(env, program);
             CHECKSTACK("filter");
             if (env->stck->u.num)
-                resultstring[j++] = *s;
+                resultstr[i++] = *str;
         }
-        resultstring[j] = 0;
-        env->stck = STRING_NEWNODE(resultstring, save);
+        resultstr[i] = 0;
+        env->stck = STRING_NEWNODE(resultstr, save);
         break;
-    }
-    case LIST_: {
+    case LIST_:
         my_dump1 = env->stck->u.lis;
         while (my_dump1) {
             env->stck = newnode(env, my_dump1->op, my_dump1->u, save);
@@ -64,8 +62,7 @@ PRIVATE void filter_(pEnv env)
                     my_dump2 = newnode(env, my_dump1->op, my_dump1->u, 0);
                     my_dump3 = my_dump2;
                 } else { /* further */
-                    my_dump3->next
-                        = newnode(env, my_dump1->op, my_dump1->u, 0);
+                    my_dump3->next = newnode(env, my_dump1->op, my_dump1->u, 0);
                     my_dump3 = my_dump3->next;
                 }
             }
@@ -73,7 +70,6 @@ PRIVATE void filter_(pEnv env)
         }
         env->stck = LIST_NEWNODE(my_dump2, save);
         break;
-    }
     default:
         BADAGGREGATE("filter");
     }

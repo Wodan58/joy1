@@ -1,7 +1,7 @@
 /*
     module  : uncons.c
-    version : 1.5
-    date    : 09/04/23
+    version : 1.6
+    date    : 03/05/24
 */
 #ifndef UNCONS_C
 #define UNCONS_C
@@ -13,32 +13,32 @@ F and R are the first and the rest of non-empty aggregate A.
 PRIVATE void uncons_(pEnv env)
 {
     Node *save;
+    int i = 0;
+    char *str;
+    uint64_t set;
 
     ONEPARAM("uncons");
     switch (env->stck->op) {
-    case SET_: {
-        int i = 0;
-        uint64_t set = env->stck->u.set;
+    case SET_:
+        set = env->stck->u.set;
         CHECKEMPTYSET(set, "uncons");
         while (!(set & ((int64_t)1 << i)))
             i++;
         UNARY(INTEGER_NEWNODE, i);
         NULLARY(SET_NEWNODE, set & ~((int64_t)1 << i));
         break;
-    }
-    case STRING_: {
-        char *s = env->stck->u.str;
-        CHECKEMPTYSTRING(s, "uncons");
-        UNARY(CHAR_NEWNODE, *s);
-        NULLARY(STRING_NEWNODE, GC_strdup(++s));
+    case STRING_:
+        str = env->stck->u.str;
+        CHECKEMPTYSTRING(str, "uncons");
+        UNARY(CHAR_NEWNODE, *str);
+        NULLARY(STRING_NEWNODE, GC_strdup(++str));
         break;
-    }
     case LIST_:
         save = env->stck;
         CHECKEMPTYLIST(env->stck->u.lis, "uncons");
         GUNARY(env->stck->u.lis->op, env->stck->u.lis->u);
         NULLARY(LIST_NEWNODE, save->u.lis->next);
-        return;
+        break;
     default:
         BADAGGREGATE("uncons");
     }

@@ -1,7 +1,7 @@
 /*
     module  : concat.c
-    version : 1.5
-    date    : 09/04/23
+    version : 1.6
+    date    : 03/05/24
 */
 #ifndef CONCAT_C
 #define CONCAT_C
@@ -22,14 +22,14 @@ PRIVATE void concat_(pEnv env)
     switch (env->stck->op) {
     case SET_:
         BINARY(SET_NEWNODE, env->stck->next->u.set | env->stck->u.set);
-        return;
+        break;
     case STRING_:
         str = GC_malloc_atomic(strlen(env->stck->next->u.str) +
 			       strlen(env->stck->u.str) + 1);
         strcpy(str, env->stck->next->u.str);
         strcat(str, env->stck->u.str);
         BINARY(STRING_NEWNODE, str);
-        return;
+        break;
     case LIST_:
         if (!env->stck->next->u.lis) {
             BINARY(LIST_NEWNODE, env->stck->u.lis);
@@ -48,7 +48,7 @@ PRIVATE void concat_(pEnv env)
         }
         my_dump3->next = env->stck->u.lis;
         BINARY(LIST_NEWNODE, my_dump2);
-        return;
+        break;
     default:
         BADAGGREGATE("concat");
     }

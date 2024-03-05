@@ -1,7 +1,7 @@
 /*
     module  : split.c
-    version : 1.6
-    date    : 09/04/23
+    version : 1.7
+    date    : 03/05/24
 */
 #ifndef SPLIT_C
 #define SPLIT_C
@@ -17,6 +17,12 @@ PRIVATE void split_(pEnv env)
             *save, *my_dump3 = 0, /* last */
                    *my_dump4 = 0,
                    *my_dump5 = 0;
+    int i;
+    size_t leng;
+    char *volatile ptr;
+    int yesptr = 0, noptr = 0;
+    uint64_t set, yes_set = 0, no_set = 0;
+    char *str, *yesstring = 0, *nostring = 0;
 
     TWOPARAMS("split");
     ONEQUOTE("split");
@@ -24,33 +30,27 @@ PRIVATE void split_(pEnv env)
     POP(env->stck);
     save = env->stck->next;
     switch (env->stck->op) {
-    case SET_: {
-        int j;
-        uint64_t set = env->stck->u.set, yes_set = 0, no_set = 0;
-        for (j = 0; j < SETSIZE; j++) {
-            if (set & ((int64_t)1 << j)) {
-                env->stck = INTEGER_NEWNODE(j, save);
+    case SET_:
+        set = env->stck->u.set;
+        for (i = 0; i < SETSIZE; i++)
+            if (set & ((int64_t)1 << i)) {
+                env->stck = INTEGER_NEWNODE(i, save);
                 exeterm(env, program);
                 CHECKSTACK("split");
                 if (env->stck->u.num)
-                    yes_set |= ((int64_t)1 << j);
+                    yes_set |= ((int64_t)1 << i);
                 else
-                    no_set |= ((int64_t)1 << j);
+                    no_set |= ((int64_t)1 << i);
             }
-        }
         env->stck = SET_NEWNODE(yes_set, save);
         NULLARY(SET_NEWNODE, no_set);
         break;
-    }
-    case STRING_: {
-        char *yesstring = 0, *nostring = 0;
-        int yesptr = 0, noptr = 0;
-        char *volatile ptr = GC_strdup(env->stck->u.str);
-        char *str = ptr;
-        size_t leng = strlen(str) + 1;
+    case STRING_:
+        ptr = env->stck->u.str; /* remember this */
+        leng = strlen(ptr) + 1;
         yesstring = GC_malloc_atomic(leng);
         nostring = GC_malloc_atomic(leng);
-        for (; *str; str++) {
+        for (str = ptr; *str; str++) {
             env->stck = CHAR_NEWNODE(*str, save);
             exeterm(env, program);
             CHECKSTACK("split");
@@ -64,14 +64,13 @@ PRIVATE void split_(pEnv env)
         env->stck = STRING_NEWNODE(yesstring, save);
         NULLARY(STRING_NEWNODE, nostring);
         break;
-    }
-    case LIST_: {
+    case LIST_:
         my_dump1 = env->stck->u.lis;
         while (my_dump1) {
             env->stck = newnode(env, my_dump1->op, my_dump1->u, save);
             exeterm(env, program);
             CHECKSTACK("split");
-            if (env->stck->u.num) /* pass */
+            if (env->stck->u.num) { /* pass */
                 if (!my_dump2) { /* first */
                     my_dump2 = newnode(env, my_dump1->op, my_dump1->u, 0);
                     my_dump3 = my_dump2;
@@ -80,7 +79,7 @@ PRIVATE void split_(pEnv env)
                         = newnode(env, my_dump1->op, my_dump1->u, 0);
                     my_dump3 = my_dump3->next;
                 }
-            else /* fail */
+	    } else { /* fail */
                 if (!my_dump4) { /* first */
                     my_dump4 = newnode(env, my_dump1->op, my_dump1->u, 0);
                     my_dump5 = my_dump4;
@@ -88,12 +87,12 @@ PRIVATE void split_(pEnv env)
                     my_dump5->next = newnode(env, my_dump1->op, my_dump1->u, 0);
                     my_dump5 = my_dump5->next;
                 }
+	    }
             my_dump1 = my_dump1->next;
         }
         env->stck = LIST_NEWNODE(my_dump2, save);
         NULLARY(LIST_NEWNODE, my_dump4);
         break;
-    }
     default:
         BADAGGREGATE("split");
     }

@@ -1,7 +1,7 @@
 /*
     module  : take.c
-    version : 1.7
-    date    : 09/04/23
+    version : 1.8
+    date    : 03/05/24
 */
 #ifndef TAKE_C
 #define TAKE_C
@@ -12,7 +12,10 @@ Aggregate B is the result of retaining just the first N elements of A.
 */
 PRIVATE void take_(pEnv env)
 {
-    int n;
+    int i, n;
+    uint64_t resultset;
+    char *old, *ptr, *result;
+
     Node *my_dump1 = 0; /* old  */
     Node *my_dump2 = 0; /* head */
     Node *my_dump3 = 0; /* last */
@@ -21,50 +24,42 @@ PRIVATE void take_(pEnv env)
     POSITIVEINDEX(env->stck, "take");
     n = env->stck->u.num;
     switch (env->stck->next->op) {
-    case SET_: {
-        int i;
-        uint64_t result = 0;
-        for (i = 0; i < SETSIZE; i++)
+    case SET_:
+        for (resultset = i = 0; i < SETSIZE; i++)
             if (env->stck->next->u.set & ((int64_t)1 << i)) {
                 if (n > 0) {
                     --n;
-                    result |= ((int64_t)1 << i);
+                    resultset |= ((int64_t)1 << i);
                 } else
                     break;
             }
-        BINARY(SET_NEWNODE, result);
-        return;
-    }
-    case STRING_: {
-        int i;
-        char *old, *p, *result;
-        i = env->stck->u.num;
+        BINARY(SET_NEWNODE, resultset);
+        break;
+    case STRING_:
         old = env->stck->next->u.str;
         POP(env->stck);
         /* do not swap the order of the next two statements ! ! ! */
 #if 0
-        if (i < 0)
-            i = 0;
+        if (n < 0)
+            n = 0;
 #endif
-        if ((size_t)i >= strlen(old))
+        if (n >= (int)strlen(old))
             return; /* the old string unchanged */
-        p = result = GC_malloc_atomic(i + 1);
-        while (i-- > 0)
-            *p++ = *old++;
-        *p = 0;
+        ptr = result = GC_malloc_atomic(n + 1);
+        while (n-- > 0)
+            *ptr++ = *old++;
+        *ptr = 0;
         UNARY(STRING_NEWNODE, result);
-        return;
-    }
-    case LIST_: {
-        int i = env->stck->u.num;
+        break;
+    case LIST_:
 #if 0
-        if (i < 1) {
+        if (n < 1) {
             BINARY(LIST_NEWNODE, 0);
             return;
         } /* null string */
 #endif
         my_dump1 = env->stck->next->u.lis;
-        while (my_dump1 && i-- > 0) {
+        while (my_dump1 && n-- > 0) {
             if (!my_dump2) { /* first */
                 my_dump2 = newnode(env, my_dump1->op, my_dump1->u, 0);
                 my_dump3 = my_dump2;
@@ -77,8 +72,7 @@ PRIVATE void take_(pEnv env)
         if (my_dump3)
             my_dump3->next = 0;
         BINARY(LIST_NEWNODE, my_dump2);
-        return;
-    }
+        break;
     default:
         BADAGGREGATE("take");
     }
