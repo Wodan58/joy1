@@ -1,7 +1,7 @@
 /*
     module  : concat.c
-    version : 1.6
-    date    : 03/05/24
+    version : 1.7
+    date    : 03/21/24
 */
 #ifndef CONCAT_C
 #define CONCAT_C
@@ -10,7 +10,7 @@
 OK 2150  concat  :  S T  ->  U
 Sequence U is the concatenation of sequences S and T.
 */
-PRIVATE void concat_(pEnv env)
+void concat_(pEnv env)
 {
     char *str;
     Node *my_dump1 = 0; /* old  */

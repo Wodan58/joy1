@@ -1,7 +1,7 @@
 /*
     module  : split.c
-    version : 1.7
-    date    : 03/05/24
+    version : 1.8
+    date    : 03/21/24
 */
 #ifndef SPLIT_C
 #define SPLIT_C
@@ -10,7 +10,7 @@
 OK 2840  split  :  A [B]  ->  A1 A2
 Uses test B to split aggregate A into sametype aggregates A1 and A2.
 */
-PRIVATE void split_(pEnv env)
+void split_(pEnv env)
 {
     Node *program, *my_dump1 = 0, /* step */
                    *my_dump2 = 0, /* head */

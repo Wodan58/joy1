@@ -1,7 +1,7 @@
 /*
     module  : binrec.c
-    version : 1.3
-    date    : 09/04/23
+    version : 1.4
+    date    : 03/21/24
 */
 #ifndef BINREC_C
 #define BINREC_C
@@ -12,8 +12,7 @@ Executes P. If that yields true, executes T.
 Else uses R1 to produce two intermediates, recurses on both,
 then executes R2 to combine their results.
 */
-PRIVATE void binrecaux(
-    pEnv env, Node *first, Node *second, Node *third, Node *fourth)
+void binrecaux(pEnv env, Node *first, Node *second, Node *third, Node *fourth)
 {
     Node *save;
     int result;
@@ -35,7 +34,7 @@ PRIVATE void binrecaux(
     }
 }
 
-PRIVATE void binrec_(pEnv env)
+void binrec_(pEnv env)
 {
     Node *first, *second, *third, *fourth;
 

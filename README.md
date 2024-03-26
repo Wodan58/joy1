@@ -11,6 +11,7 @@ This is the [BDW](https://github.com/ivmai/bdwgc) version of
 Build instructions
 ------------------
 
+    mkdir build
     cd build
     cmake ..
     cmake --build .
@@ -18,10 +19,9 @@ Build instructions
 Build with MSVC
 ---------------
 
-After installing bdwgc in the bdwgc-directory use the CMake GUI to uncheck all
-boxes and then check the boxes in the lines that start with disable\_ and
-check the last one: without\_libatomic\_ops.
+Install bdwgc in a bdwgc-subdirectory.
 
+    mkdir build
     cd build
     cmake ..
     cmake --build . --config Release
@@ -30,7 +30,9 @@ check the last one: without\_libatomic\_ops.
 Running
 -------
 
-There is a copy of usrlib.joy in the build directory.
+    joy -h
+
+gives an overview of available options.
 
 See also
 --------
@@ -40,6 +42,7 @@ Implementation|Dependencies
 [42minjoy](https://github.com/Wodan58/42minjoy)|
 [joy0](https://github.com/Wodan58/joy0)|
 [Joy](https://github.com/Wodan58/Joy)|
+[Foy](https://github.com/Wodan58/Foy)|[BDW garbage collector](https://github.com/ivmai/bdwgc)
 [Moy](https://github.com/Wodan58/Moy)|[BDW garbage collector](https://github.com/ivmai/bdwgc) and [Lex & Yacc](https://sourceforge.net/projects/winflexbison/files/win_flex_bison-latest.zip)
 
 Documentation|

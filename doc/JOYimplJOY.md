@@ -1,8 +1,8 @@
  ![](Wynn.PNG)
 ==============
 
-Recent changes
-==============
+Changes
+=======
 
 The macro NEWNODE was added to globals.h, because of unspecified behaviour.
 

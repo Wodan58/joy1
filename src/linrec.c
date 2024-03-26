@@ -1,7 +1,7 @@
 /*
     module  : linrec.c
-    version : 1.4
-    date    : 09/04/23
+    version : 1.5
+    date    : 03/21/24
 */
 #ifndef LINREC_C
 #define LINREC_C
@@ -11,8 +11,7 @@ OK 2710  linrec  :  [P] [T] [R1] [R2]  ->  ...
 Executes P. If that yields true, executes T.
 Else executes R1, recurses, executes R2.
 */
-PRIVATE void linrecaux(
-    pEnv env, Node *first, Node *second, Node *third, Node *fourth)
+void linrecaux(pEnv env, Node *first, Node *second, Node *third, Node *fourth)
 {
     Node *save;
     int result;
@@ -31,7 +30,7 @@ PRIVATE void linrecaux(
     }
 }
 
-PRIVATE void linrec_(pEnv env)
+void linrec_(pEnv env)
 {
     Node *first, *second, *third, *fourth;
 
