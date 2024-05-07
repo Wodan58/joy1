@@ -1,7 +1,7 @@
 /*
     module  : times.c
-    version : 1.5
-    date    : 03/21/24
+    version : 1.6
+    date    : 04/29/24
 */
 #ifndef TIMES_C
 #define TIMES_C
@@ -19,7 +19,7 @@ void times_(pEnv env)
     ONEQUOTE("times");
     program = env->stck->u.lis;
     POP(env->stck);
-    INTEGER("times");
+    POSITIVEINTEGER("times");
     n = env->stck->u.num;
     POP(env->stck);
     for (i = 0; i < n; i++)
