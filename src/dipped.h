@@ -1,7 +1,7 @@
 /*
     module  : dipped.h
-    version : 1.3
-    date    : 03/21/24
+    version : 1.4
+    date    : 06/21/24
 */
 #ifndef DIPPED_H
 #define DIPPED_H
@@ -14,6 +14,6 @@
 	save = env->stck;						\
 	POP(env->stck);							\
 	ARGUMENT(env);							\
-	GNULLARY(save->op, save->u);					\
+	GNULLARY(save);							\
     }
 #endif

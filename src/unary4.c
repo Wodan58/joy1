@@ -1,7 +1,7 @@
 /*
     module  : unary4.c
-    version : 1.4
-    date    : 03/21/24
+    version : 1.5
+    date    : 06/21/24
 */
 #ifndef UNARY4_C
 #define UNARY4_C
@@ -39,12 +39,9 @@ void unary4_(pEnv env)
     env->stck->next = save;
     exeterm(env, program); /* execute P */
     result[3] = env->stck; /* save P(W) */
-    env->stck = newnode(env, result[0]->op, result[0]->u, save); /*  X'	*/
-    env->stck
-        = newnode(env, result[1]->op, result[1]->u, env->stck); /*  Y'	*/
-    env->stck
-        = newnode(env, result[2]->op, result[2]->u, env->stck); /*  Z'	*/
-    env->stck
-        = newnode(env, result[3]->op, result[3]->u, env->stck); /*  W'	*/
+    env->stck = newnode2(env, result[0], save); /* X' */
+    env->stck = newnode2(env, result[1], env->stck); /* Y' */
+    env->stck = newnode2(env, result[2], env->stck); /* Z' */
+    env->stck = newnode2(env, result[3], env->stck); /* W' */
 }
 #endif

@@ -1,7 +1,7 @@
 /*
     module  : uncons.c
-    version : 1.7
-    date    : 03/21/24
+    version : 1.8
+    date    : 06/21/24
 */
 #ifndef UNCONS_C
 #define UNCONS_C
@@ -20,27 +20,27 @@ void uncons_(pEnv env)
     ONEPARAM("uncons");
     switch (env->stck->op) {
     case SET_:
-        set = env->stck->u.set;
-        CHECKEMPTYSET(set, "uncons");
-        while (!(set & ((int64_t)1 << i)))
-            i++;
-        UNARY(INTEGER_NEWNODE, i);
-        NULLARY(SET_NEWNODE, set & ~((int64_t)1 << i));
-        break;
+	set = env->stck->u.set;
+	CHECKEMPTYSET(set, "uncons");
+	while (!(set & ((int64_t)1 << i)))
+	    i++;
+	UNARY(INTEGER_NEWNODE, i);
+	NULLARY(SET_NEWNODE, set & ~((int64_t)1 << i));
+	break;
     case STRING_:
-        str = env->stck->u.str;
-        CHECKEMPTYSTRING(str, "uncons");
-        UNARY(CHAR_NEWNODE, *str);
-        NULLARY(STRING_NEWNODE, GC_strdup(++str));
-        break;
+	str = env->stck->u.str;
+	CHECKEMPTYSTRING(str, "uncons");
+	UNARY(CHAR_NEWNODE, *str);
+	NULLARY(STRING_NEWNODE, GC_strdup(++str));
+	break;
     case LIST_:
-        save = env->stck;
-        CHECKEMPTYLIST(env->stck->u.lis, "uncons");
-        GUNARY(env->stck->u.lis->op, env->stck->u.lis->u);
-        NULLARY(LIST_NEWNODE, save->u.lis->next);
-        break;
+	save = env->stck;
+	CHECKEMPTYLIST(env->stck->u.lis, "uncons");
+	GUNARY(env->stck->u.lis);
+	NULLARY(LIST_NEWNODE, save->u.lis->next);
+	break;
     default:
-        BADAGGREGATE("uncons");
+	BADAGGREGATE("uncons");
     }
 }
 #endif

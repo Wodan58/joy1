@@ -1,7 +1,7 @@
 /*
     module  : treestep.c
-    version : 1.5
-    date    : 03/21/24
+    version : 1.6
+    date    : 06/21/24
 */
 #ifndef TREESTEP_C
 #define TREESTEP_C
@@ -15,15 +15,11 @@ void treestepaux(pEnv env, Node *item, Node *program)
     Node *my_dump;
 
     if (item->op != LIST_) {
-        GNULLARY(item->op, item->u);
-        exeterm(env, program);
-    } else {
-        my_dump = item->u.lis;
-        while (my_dump != NULL) {
-            treestepaux(env, my_dump, program);
-            my_dump = my_dump->next;
-        }
-    }
+	GNULLARY(item);
+	exeterm(env, program);
+    } else
+	for (my_dump = item->u.lis; my_dump; my_dump = my_dump->next)
+	    treestepaux(env, my_dump, program);
 }
 
 void treestep_(pEnv env)

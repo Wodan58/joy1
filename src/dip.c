@@ -1,7 +1,7 @@
 /*
     module  : dip.c
-    version : 1.4
-    date    : 03/21/24
+    version : 1.5
+    date    : 06/21/24
 */
 #ifndef DIP_C
 #define DIP_C
@@ -20,6 +20,6 @@ void dip_(pEnv env)
     POP(env->stck);
     POP(env->stck);
     exeterm(env, save->u.lis);
-    GNULLARY(save->next->op, save->next->u);
+    GNULLARY(save->next);
 }
 #endif

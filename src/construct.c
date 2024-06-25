@@ -1,7 +1,7 @@
 /*
     module  : construct.c
-    version : 1.5
-    date    : 03/21/24
+    version : 1.6
+    date    : 06/21/24
 */
 #ifndef CONSTRUCT_C
 #define CONSTRUCT_C
@@ -25,11 +25,10 @@ void construct_(pEnv env)
     exeterm(env, first); /* [P]			*/
     save3 = env->stck; /* save current stack	*/
     while (second) {
-        env->stck = save3; /* restore new stack	*/
-        exeterm(env, second->u.lis);
-        save2 = newnode(
-            env, env->stck->op, env->stck->u, save2); /* result	*/
-        second = second->next;
+	env->stck = save3; /* restore new stack	*/
+	exeterm(env, second->u.lis);
+	save2 = newnode2(env, env->stck, save2); /* result */
+	second = second->next;
     }
     env->stck = save2;
 }

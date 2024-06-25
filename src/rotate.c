@@ -1,7 +1,7 @@
 /*
     module  : rotate.c
-    version : 1.3
-    date    : 03/21/24
+    version : 1.4
+    date    : 06/21/24
 */
 #ifndef ROTATE_C
 #define ROTATE_C
@@ -20,8 +20,8 @@ void rotate_(pEnv env)
     second = env->stck;
     POP(env->stck);
     third = env->stck;
-    GUNARY(first->op, first->u);
-    GNULLARY(second->op, second->u);
-    GNULLARY(third->op, third->u);
+    GUNARY(first);
+    GNULLARY(second);
+    GNULLARY(third);
 }
 #endif

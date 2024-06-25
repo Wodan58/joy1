@@ -1,7 +1,7 @@
 /*
     module  : binrec.c
-    version : 1.4
-    date    : 03/21/24
+    version : 1.5
+    date    : 06/21/24
 */
 #ifndef BINREC_C
 #define BINREC_C
@@ -22,15 +22,15 @@ void binrecaux(pEnv env, Node *first, Node *second, Node *third, Node *fourth)
     result = env->stck->u.num;
     env->stck = save;
     if (result)
-        exeterm(env, second);
+	exeterm(env, second);
     else {
-        exeterm(env, third); /* split */
-        save = env->stck;
-        POP(env->stck);
-        binrecaux(env, first, second, third, fourth); /* first */
-        GNULLARY(save->op, save->u);
-        binrecaux(env, first, second, third, fourth); /* second */
-        exeterm(env, fourth); /* combine */
+	exeterm(env, third);	/* split */
+	save = env->stck;
+	POP(env->stck);
+	binrecaux(env, first, second, third, fourth);	/* first */
+	GNULLARY(save);
+	binrecaux(env, first, second, third, fourth);	/* second */
+	exeterm(env, fourth);	/* combine */
     }
 }
 

@@ -1,7 +1,7 @@
 /*
     module  : cons_swons.h
-    version : 1.8
-    date    : 03/21/24
+    version : 1.9
+    date    : 06/21/24
 */
 #ifndef CONS_SWONS_H
 #define CONS_SWONS_H
@@ -14,8 +14,7 @@
 	TWOPARAMS(NAME);						\
 	switch (nodetype(AGGR)) {					\
 	case LIST_:							\
-	    temp = newnode(env, nodetype(ELEM), nodevalue(ELEM),	\
-				nodevalue(AGGR).lis);			\
+	    temp = newnode2(env, ELEM, nodevalue(AGGR).lis);		\
 	    BINARY(LIST_NEWNODE, temp);					\
 	    break;							\
 	case SET_:							\

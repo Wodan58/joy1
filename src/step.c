@@ -1,7 +1,7 @@
 /*
     module  : step.c
-    version : 1.8
-    date    : 03/21/24
+    version : 1.9
+    date    : 06/21/24
 */
 #ifndef STEP_C
 #define STEP_C
@@ -13,7 +13,7 @@ executes P for each member of A.
 */
 void step_(pEnv env)
 {
-    int i;
+    int i = 0;
     uint64_t set;
     char *str, *volatile ptr;
     Node *program, *data, *my_dump;
@@ -26,30 +26,26 @@ void step_(pEnv env)
     POP(env->stck);
     switch (data->op) {
     case LIST_:
-        my_dump = data->u.lis;
-        while (my_dump) {
-            GNULLARY(my_dump->op, my_dump->u);
-            exeterm(env, program);
-            my_dump = my_dump->next;
-        }
-        break;
+	for (my_dump = data->u.lis; my_dump; my_dump = my_dump->next) {
+	    GNULLARY(my_dump);
+	    exeterm(env, program);
+	}
+	break;
     case STRING_:
-	ptr = data->u.str; /* remember this */
-        for (str = ptr; *str != '\0'; str++) {
-            env->stck = CHAR_NEWNODE(*str, env->stck);
-            exeterm(env, program);
-        }
-        break;
+	for (str = ptr = data->u.str; *str; str++) {
+	    env->stck = CHAR_NEWNODE(*str, env->stck);
+	    exeterm(env, program);
+	}
+	break;
     case SET_:
-        set = data->u.set;
-        for (i = 0; i < SETSIZE; i++)
-            if (set & ((int64_t)1 << i)) {
-                env->stck = INTEGER_NEWNODE(i, env->stck);
-                exeterm(env, program);
-            }
-        break;
+	for (set = data->u.set; i < SETSIZE; i++)
+	    if (set & ((int64_t)1 << i)) {
+		env->stck = INTEGER_NEWNODE(i, env->stck);
+		exeterm(env, program);
+	    }
+	break;
     default:
-        BADAGGREGATE("step");
+	BADAGGREGATE("step");
     }
 }
 #endif

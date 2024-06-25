@@ -1,7 +1,7 @@
 /*
     module  : unmktime.h
-    version : 1.9
-    date    : 03/22/24
+    version : 1.10
+    date    : 06/24/24
 */
 #ifndef UNMKTIME_H
 #define UNMKTIME_H
@@ -9,8 +9,8 @@
 #define UNMKTIME(PROCEDURE, NAME, FUNC)					\
     void PROCEDURE(pEnv env)						\
     {									\
+	int wday;							\
 	struct tm *t;							\
-	int64_t wday;							\
 	time_t timval;							\
 	Index *my_dump;							\
 	ONEPARAM(NAME);							\

@@ -1,7 +1,7 @@
 /*
     module  : someall.h
-    version : 1.6
-    date    : 03/21/24
+    version : 1.7
+    date    : 06/21/24
 */
 #ifndef SOMEALL_H
 #define SOMEALL_H
@@ -9,7 +9,7 @@
 #define SOMEALL(PROCEDURE, NAME, INITIAL)				\
     void PROCEDURE(pEnv env)						\
     {									\
-	int j, result = INITIAL;					\
+	int i = 0, result = INITIAL;					\
 	uint64_t set;							\
 	char *str, *volatile ptr;					\
 	Node *program, *my_dump, *save;					\
@@ -20,35 +20,38 @@
 	save = env->stck->next;						\
 	switch (env->stck->op) {					\
 	case SET_:							\
-	    set = env->stck->u.set;					\
-	    for (j = 0; j < SETSIZE && result == INITIAL; j++)		\
-		if (set & ((int64_t)1 << j)) {				\
-		    env->stck = INTEGER_NEWNODE(j, save);		\
+	    for (set = env->stck->u.set ; i < SETSIZE; i++)		\
+		if (set & ((int64_t)1 << i)) {				\
+		    env->stck = INTEGER_NEWNODE(i, save);		\
 		    exeterm(env, program);				\
 		    CHECKSTACK(NAME);					\
-		    if (env->stck->u.num != INITIAL)			\
+		    if (env->stck->u.num != INITIAL) {			\
 			result = 1 - INITIAL;				\
+			break;						\
+		    }							\
 		}							\
 	    break;							\
 	case STRING_:							\
-	    ptr = GC_strdup(env->stck->u.str);				\
-	    for (str = ptr; *str != '\0' && result == INITIAL; str++) {	\
+	    for (str = ptr = GC_strdup(env->stck->u.str); *str; str++) {\
 		env->stck = CHAR_NEWNODE(*str, save);			\
 		exeterm(env, program);					\
 		CHECKSTACK(NAME);					\
-		if (env->stck->u.num != INITIAL)			\
+		if (env->stck->u.num != INITIAL) {			\
 		    result = 1 - INITIAL;				\
+		    break;						\
+		}							\
 	    }								\
 	    break;							\
 	case LIST_:							\
 	    my_dump = env->stck->u.lis;					\
-	    while (my_dump && result == INITIAL) {			\
-		env->stck = newnode(env, my_dump->op, my_dump->u, save);\
+	    for (; my_dump; my_dump = my_dump->next) {			\
+		env->stck = newnode2(env, my_dump, save);		\
 		exeterm(env, program);					\
 		CHECKSTACK(NAME);					\
-		if (env->stck->u.num != INITIAL)			\
+		if (env->stck->u.num != INITIAL) {			\
 		    result = 1 - INITIAL;				\
-		my_dump = my_dump->next;				\
+		    break;						\
+		}							\
 	    }								\
 	    break;							\
 	default:							\

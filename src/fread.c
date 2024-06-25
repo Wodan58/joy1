@@ -1,7 +1,7 @@
 /*
     module  : fread.c
-    version : 1.9
-    date    : 03/21/24
+    version : 1.10
+    date    : 06/24/24
 */
 #ifndef FREAD_C
 #define FREAD_C
@@ -14,8 +14,8 @@ and returned as a list of I integers.
 void fread_(pEnv env)
 {
     FILE *fp;
+    int i, count;
     Index list = 0;
-    int64_t i, count;
     unsigned char *volatile buf;
 
     TWOPARAMS("fread");

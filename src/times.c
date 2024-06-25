@@ -1,7 +1,7 @@
 /*
     module  : times.c
-    version : 1.6
-    date    : 04/29/24
+    version : 1.7
+    date    : 06/21/24
 */
 #ifndef TIMES_C
 #define TIMES_C
@@ -23,6 +23,6 @@ void times_(pEnv env)
     n = env->stck->u.num;
     POP(env->stck);
     for (i = 0; i < n; i++)
-        exeterm(env, program);
+	exeterm(env, program);
 }
 #endif

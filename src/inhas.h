@@ -1,7 +1,7 @@
 /*
     module  : inhas.h
-    version : 1.7
-    date    : 03/21/24
+    version : 1.8
+    date    : 06/21/24
 */
 #ifndef INHAS_H
 #define INHAS_H
@@ -21,9 +21,9 @@
 	    break;							\
 	case STRING_:							\
 	    for (str = nodevalue(AGGR).str;				\
-		 *str != '\0' && *str != nodevalue(ELEM).num; str++)	\
+		 *str && *str != nodevalue(ELEM).num; str++)		\
 		;							\
-	    found = *str != '\0';					\
+	    found = *str != 0;						\
 	    break;							\
 	case LIST_:							\
 	    node = nodevalue(AGGR).lis;					\

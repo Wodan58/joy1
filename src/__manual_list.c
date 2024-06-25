@@ -1,7 +1,7 @@
 /*
     module  : __manual_list.c
-    version : 1.8
-    date    : 03/21/24
+    version : 1.9
+    date    : 06/21/24
 */
 #ifndef __MANUAL_LIST_C
 #define __MANUAL_LIST_C
@@ -19,14 +19,14 @@ void __manual_list_(pEnv env)
     my_dump = &nodevalue(env->stck).lis;
     j = sizeof(optable) / sizeof(optable[0]);	/* find end */
     for (i = 0; i < j; i++) {			/* overshot */
-        *my_dump = LIST_NEWNODE(0, 0);
-        my_dump2 = &nodevalue(*my_dump).lis;
+	*my_dump = LIST_NEWNODE(0, 0);
+	my_dump2 = &nodevalue(*my_dump).lis;
 	*my_dump2 = STRING_NEWNODE(optable[i].name, 0);
-        my_dump2 = &nextnode1(*my_dump2);
+	my_dump2 = &nextnode1(*my_dump2);
 	*my_dump2 = STRING_NEWNODE(optable[i].messg1, 0);
-        my_dump2 = &nextnode1(*my_dump2);
+	my_dump2 = &nextnode1(*my_dump2);
 	*my_dump2 = STRING_NEWNODE(optable[i].messg2, 0);
-        my_dump = &nextnode1(*my_dump);
+	my_dump = &nextnode1(*my_dump);
     }
 }
 #endif

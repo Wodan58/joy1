@@ -1,7 +1,7 @@
 /*
     module  : treegenrecaux.c
-    version : 1.5
-    date    : 03/21/24
+    version : 1.6
+    date    : 06/21/24
 */
 #ifndef TREEGENRECAUX_C
 #define TREEGENRECAUX_C
@@ -19,13 +19,13 @@ void treegenrecaux_(pEnv env)
     POP(env->stck);
     CHECKSTACK("treegenrecaux");
     if (env->stck->op == LIST_) {
-	exeterm(env, save->u.lis->next->u.lis); /*	[O2]	*/
-	GNULLARY(save->op, save->u);
+	exeterm(env, save->u.lis->next->u.lis);	/* [O2] */
+	GNULLARY(save);
 	temp = ANON_FUNCT_NEWNODE(treegenrecaux_, 0);
 	NULLARY(LIST_NEWNODE, temp);
 	cons_(env);
-	exeterm(env, env->stck->u.lis->u.lis->next->next); /*	[C]	*/
+	exeterm(env, env->stck->u.lis->u.lis->next->next);	/* [C] */
     } else
-	exeterm(env, save->u.lis->u.lis); /*	[O1]	*/
+	exeterm(env, save->u.lis->u.lis);	/* [O1] */
 }
 #endif

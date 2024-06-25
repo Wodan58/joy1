@@ -1,7 +1,7 @@
 /*
     module  : cleave.c
-    version : 1.4
-    date    : 03/21/24
+    version : 1.5
+    date    : 06/21/24
 */
 #ifndef CLEAVE_C
 #define CLEAVE_C
@@ -26,7 +26,7 @@ void cleave_(pEnv env)
     env->stck = save;
     exeterm(env, program[1]); /* [P2] */
     result[1] = env->stck;
-    env->stck = newnode(env, result[0]->op, result[0]->u, save->next); /* X1 */
-    env->stck = newnode(env, result[1]->op, result[1]->u, env->stck); /* X2 */
+    env->stck = newnode2(env, result[0], save->next); /* X1 */
+    env->stck = newnode2(env, result[1], env->stck); /* X2 */
 }
 #endif

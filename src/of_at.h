@@ -1,7 +1,7 @@
 /*
     module  : of_at.h
-    version : 1.8
-    date    : 03/21/24
+    version : 1.9
+    date    : 06/21/24
 */
 #ifndef OF_AT_H
 #define OF_AT_H
@@ -43,7 +43,7 @@
 		n = nextnode1(n);					\
 		i--;							\
 	    }								\
-	    GBINARY(nodetype(n), nodevalue(n));				\
+	    GBINARY(n);							\
 	    break;							\
 	default:							\
 	    BADAGGREGATE(NAME);						\

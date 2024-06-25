@@ -1,7 +1,7 @@
 /*
     module  : condlinrec.c
-    version : 1.5
-    date    : 03/21/24
+    version : 1.6
+    date    : 06/21/24
 */
 #ifndef CONDLINREC_C
 #define CONDLINREC_C
@@ -23,25 +23,25 @@ void condlinrecaux(pEnv env, Node *list)
     my_dump = list;
     save = env->stck;
     while (!result && my_dump && my_dump->next) {
-        env->stck = save;
-        exeterm(env, my_dump->u.lis->u.lis);
-        result = env->stck->u.num;
-        if (!result)
-            my_dump = my_dump->next;
+	env->stck = save;
+	exeterm(env, my_dump->u.lis->u.lis);
+	result = env->stck->u.num;
+	if (!result)
+	    my_dump = my_dump->next;
     }
     env->stck = save;
     if (result) {
-        exeterm(env, my_dump->u.lis->next->u.lis);
-        if (my_dump->u.lis->next->next) {
-            condlinrecaux(env, list);
-            exeterm(env, my_dump->u.lis->next->next->u.lis);
-        }
+	exeterm(env, my_dump->u.lis->next->u.lis);
+	if (my_dump->u.lis->next->next) {
+	    condlinrecaux(env, list);
+	    exeterm(env, my_dump->u.lis->next->next->u.lis);
+	}
     } else {
-        exeterm(env, my_dump->u.lis->u.lis);
-        if (my_dump->u.lis->next) {
-            condlinrecaux(env, list);
-            exeterm(env, my_dump->u.lis->next->u.lis);
-        }
+	exeterm(env, my_dump->u.lis->u.lis);
+	if (my_dump->u.lis->next) {
+	    condlinrecaux(env, list);
+	    exeterm(env, my_dump->u.lis->next->u.lis);
+	}
     }
 }
 

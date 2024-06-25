@@ -1,7 +1,7 @@
 /*
     module  : concat.c
-    version : 1.7
-    date    : 03/21/24
+    version : 1.8
+    date    : 06/21/24
 */
 #ifndef CONCAT_C
 #define CONCAT_C
@@ -21,36 +21,31 @@ void concat_(pEnv env)
     SAME2TYPES("concat");
     switch (env->stck->op) {
     case SET_:
-        BINARY(SET_NEWNODE, env->stck->next->u.set | env->stck->u.set);
-        break;
+	BINARY(SET_NEWNODE, env->stck->next->u.set | env->stck->u.set);
+	break;
     case STRING_:
-        str = GC_malloc_atomic(strlen(env->stck->next->u.str) +
-			       strlen(env->stck->u.str) + 1);
-        strcpy(str, env->stck->next->u.str);
-        strcat(str, env->stck->u.str);
-        BINARY(STRING_NEWNODE, str);
-        break;
+	str = GC_malloc_atomic(strlen(nodevalue(nextnode1(env->stck)).str) +
+			       strlen(nodevalue(env->stck).str) + 1);
+	sprintf(str, "%s%s", nodevalue(nextnode1(env->stck)).str,
+			     nodevalue(env->stck).str);
+	BINARY(STRING_NEWNODE, str);
+	break;
     case LIST_:
-        if (!env->stck->next->u.lis) {
-            BINARY(LIST_NEWNODE, env->stck->u.lis);
-            return;
-        }
-        my_dump1 = env->stck->next->u.lis; /* old */
-        while (my_dump1) {
-            if (!my_dump2) { /* first */
-                my_dump2 = newnode(env, my_dump1->op, my_dump1->u, 0);
-                my_dump3 = my_dump2;
-            } else { /* further */
-                my_dump3->next = newnode(env, my_dump1->op, my_dump1->u, 0);
-                my_dump3 = my_dump3->next;
-            }
-            my_dump1 = my_dump1->next;
-        }
-        my_dump3->next = env->stck->u.lis;
-        BINARY(LIST_NEWNODE, my_dump2);
-        break;
+	if (!env->stck->next->u.lis) {
+	    BINARY(LIST_NEWNODE, env->stck->u.lis);
+	    return;
+	}
+	my_dump1 = env->stck->next->u.lis;
+	for (; my_dump1; my_dump1 = my_dump1->next)
+	    if (!my_dump2) /* first */
+		my_dump3 = my_dump2 = newnode2(env, my_dump1, 0);
+	    else  /* further */
+		my_dump3 = my_dump3->next = newnode2(env, my_dump1, 0);
+	my_dump3->next = env->stck->u.lis;
+	BINARY(LIST_NEWNODE, my_dump2);
+	break;
     default:
-        BADAGGREGATE("concat");
+	BADAGGREGATE("concat");
     }
 }
 #endif

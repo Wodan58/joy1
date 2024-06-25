@@ -1,7 +1,7 @@
 /*
     module  : tailrec.c
-    version : 1.5
-    date    : 03/21/24
+    version : 1.6
+    date    : 06/21/24
 */
 #ifndef TAILREC_C
 #define TAILREC_C
@@ -23,10 +23,10 @@ tailrec:
     result = env->stck->u.num;
     env->stck = save;
     if (result)
-        exeterm(env, second);
+	exeterm(env, second);
     else {
-        exeterm(env, third);
-        goto tailrec;
+	exeterm(env, third);
+	goto tailrec;
     }
 }
 

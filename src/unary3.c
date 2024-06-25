@@ -1,7 +1,7 @@
 /*
     module  : unary3.c
-    version : 1.4
-    date    : 03/21/24
+    version : 1.5
+    date    : 06/21/24
 */
 #ifndef UNARY3_C
 #define UNARY3_C
@@ -33,10 +33,8 @@ void unary3_(pEnv env)
     env->stck->next = save; /* just Z on top */
     exeterm(env, program); /* execute P */
     result[2] = env->stck; /* save P(Z) */
-    env->stck = newnode(env, result[0]->op, result[0]->u, save); /*  X'	*/
-    env->stck
-        = newnode(env, result[1]->op, result[1]->u, env->stck); /*  Y'	*/
-    env->stck
-        = newnode(env, result[2]->op, result[2]->u, env->stck); /*  Z'	*/
+    env->stck = newnode2(env, result[0], save); /* X' */
+    env->stck = newnode2(env, result[1], env->stck); /* Y' */
+    env->stck = newnode2(env, result[2], env->stck); /* Z' */
 }
 #endif

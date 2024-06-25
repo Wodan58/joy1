@@ -1,7 +1,7 @@
 /*
     module  : primrec.c
-    version : 1.8
-    date    : 03/21/24
+    version : 1.9
+    date    : 06/21/24
 */
 #ifndef PRIMREC_C
 #define PRIMREC_C
@@ -28,39 +28,39 @@ void primrec_(pEnv env)
     POP(env->stck);
     switch (data->op) {
     case LIST_:
-        current = data->u.lis;
-        while (current) {
-            env->stck = newnode(env, current->op, current->u, env->stck);
-            current = current->next;
-            n++;
-        }
-        break;
+	current = data->u.lis;
+	while (current) {
+	    env->stck = newnode2(env, current, env->stck);
+	    current = current->next;
+	    n++;
+	}
+	break;
     case STRING_:
-        ptr = data->u.str; /* remember this */
-        for (i = 0; ptr[i]; i++) {
-            env->stck = CHAR_NEWNODE(ptr[i], env->stck);
-            n++;
-        }
-        break;
+	ptr = data->u.str; /* remember this */
+	for (i = 0; ptr[i]; i++) {
+	    env->stck = CHAR_NEWNODE(ptr[i], env->stck);
+	    n++;
+	}
+	break;
     case SET_:
-        set = data->u.set;
-        for (i = 0; i < SETSIZE; i++)
-            if (set & ((int64_t)1 << i)) {
-                env->stck = INTEGER_NEWNODE(i, env->stck);
-                n++;
-            }
-        break;
+	set = data->u.set;
+	for (i = 0; i < SETSIZE; i++)
+	    if (set & ((int64_t)1 << i)) {
+		env->stck = INTEGER_NEWNODE(i, env->stck);
+		n++;
+	    }
+	break;
     case INTEGER_:
-        for (i = data->u.num; i > 0; i--) {
-            env->stck = INTEGER_NEWNODE(i, env->stck);
-            n++;
-        }
-        break;
+	for (i = data->u.num; i > 0; i--) {
+	    env->stck = INTEGER_NEWNODE(i, env->stck);
+	    n++;
+	}
+	break;
     default:
-        BADDATA("primrec");
+	BADDATA("primrec");
     }
     exeterm(env, second);
     for (i = 1; i <= n; i++)
-        exeterm(env, third);
+	exeterm(env, third);
 }
 #endif

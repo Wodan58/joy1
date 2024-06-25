@@ -1,7 +1,7 @@
 /*
     module  : rollup.c
-    version : 1.3
-    date    : 03/21/24
+    version : 1.4
+    date    : 06/21/24
 */
 #ifndef ROLLUP_C
 #define ROLLUP_C
@@ -20,8 +20,8 @@ void rollup_(pEnv env)
     second = env->stck;
     POP(env->stck);
     third = env->stck;
-    GUNARY(first->op, first->u);
-    GNULLARY(third->op, third->u);
-    GNULLARY(second->op, second->u);
+    GUNARY(first);
+    GNULLARY(third);
+    GNULLARY(second);
 }
 #endif

@@ -1,7 +1,7 @@
 /*
     module  : unary2.c
-    version : 1.4
-    date    : 03/21/24
+    version : 1.5
+    date    : 06/21/24
 */
 #ifndef UNARY2_C
 #define UNARY2_C
@@ -28,8 +28,7 @@ void unary2_(pEnv env)
     env->stck->next = save; /* just Z on top */
     exeterm(env, program); /* execute P */
     result[1] = env->stck; /* save P(Z) */
-    env->stck = newnode(env, result[0]->op, result[0]->u, save); /*  Y'	*/
-    env->stck
-        = newnode(env, result[1]->op, result[1]->u, env->stck); /*  Z'	*/
+    env->stck = newnode2(env, result[0], save); /* Y' */
+    env->stck = newnode2(env, result[1], env->stck); /* Z' */
 }
 #endif

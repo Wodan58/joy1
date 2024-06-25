@@ -1,7 +1,7 @@
 /*
     module  : while.c
-    version : 1.5
-    date    : 03/21/24
+    version : 1.6
+    date    : 06/21/24
 */
 #ifndef WHILE_C
 #define WHILE_C
@@ -22,14 +22,14 @@ void while_(pEnv env)
     test = env->stck->u.lis;
     POP(env->stck);
     while (1) {
-        save = env->stck;
-        exeterm(env, test);
-        CHECKSTACK("while");
-        num = env->stck->u.num;
-        env->stck = save;
-        if (!num)
-            return;
-        exeterm(env, body);
+	save = env->stck;
+	exeterm(env, test);
+	CHECKSTACK("while");
+	num = env->stck->u.num;
+	env->stck = save;
+	if (!num)
+	    return;
+	exeterm(env, body);
     }
 }
 #endif
