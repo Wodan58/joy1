@@ -1,7 +1,7 @@
 #
 #   module  : makefile
-#   version : 1.11
-#   date    : 03/26/24
+#   version : 1.12
+#   date    : 08/28/24
 #
 .POSIX:
 .SUFFIXES:
@@ -12,7 +12,7 @@ LF = -lm -lgc
 CFLAGS = $(CF) -DCOMP="\"$(CF)\"" -DLINK="\"$(LF)\"" -DVERS="\"BDW Release 1.0\""
 HDRS = globals.h
 OBJS = main.o interp.o scan.o utils.o factor.o module.o optable.o symbol.o \
-       undefs.o
+       undefs.o setraw.o
 
 joy:	prep $(OBJS)
 	$(CC) -o$@ $(OBJS) $(LF)
