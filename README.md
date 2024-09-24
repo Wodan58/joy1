@@ -1,5 +1,5 @@
 Joy1
-----
+====
 
 Build|Linux|Windows|Coverity
 ---|---|---|---

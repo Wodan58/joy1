@@ -1,13 +1,13 @@
 /*
     module  : fread.c
-    version : 1.10
-    date    : 06/24/24
+    version : 1.11
+    date    : 09/17/24
 */
 #ifndef FREAD_C
 #define FREAD_C
 
 /**
-OK 1900  fread  :  S I  ->  S L
+Q0  OK  1900  fread  :  S I  ->  S L
 [FOREIGN] I bytes are read from the current position of stream S
 and returned as a list of I integers.
 */
@@ -22,7 +22,7 @@ void fread_(pEnv env)
     INTEGER("fread");
     count = nodevalue(env->stck).num;	// number of characters to read
     POP(env->stck);
-    FILE("fread");
+    ISFILE("fread");
     fp = nodevalue(env->stck).fil;	// file descriptor
     buf = GC_malloc_atomic(count);	// buffer for characters to read
     count = fread(buf, 1, count, fp);	// number of characters read

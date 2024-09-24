@@ -1,18 +1,19 @@
 /*
     module  : concat.c
-    version : 1.8
-    date    : 06/21/24
+    version : 1.9
+    date    : 09/17/24
 */
 #ifndef CONCAT_C
 #define CONCAT_C
 
 /**
-OK 2150  concat  :  S T  ->  U
+Q0  OK  2150  concat  :  S T  ->  U
 Sequence U is the concatenation of sequences S and T.
 */
 void concat_(pEnv env)
 {
     char *str;
+    size_t leng;
     Node *my_dump1 = 0; /* old  */
     Node *my_dump2 = 0; /* head */
     Node *my_dump3 = 0; /* last */
@@ -24,10 +25,11 @@ void concat_(pEnv env)
 	BINARY(SET_NEWNODE, env->stck->next->u.set | env->stck->u.set);
 	break;
     case STRING_:
-	str = GC_malloc_atomic(strlen(nodevalue(nextnode1(env->stck)).str) +
-			       strlen(nodevalue(env->stck).str) + 1);
-	sprintf(str, "%s%s", nodevalue(nextnode1(env->stck)).str,
-			     nodevalue(env->stck).str);
+	leng = strlen(nodevalue(nextnode1(env->stck)).str) +
+	       strlen(nodevalue(env->stck).str) + 1;
+	str = GC_malloc_atomic(leng);
+	snprintf(str, leng, "%s%s", nodevalue(nextnode1(env->stck)).str,
+				    nodevalue(env->stck).str);
 	BINARY(STRING_NEWNODE, str);
 	break;
     case LIST_:

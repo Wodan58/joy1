@@ -1,13 +1,13 @@
 /*
     module  : treerecaux.c
-    version : 1.5
-    date    : 03/21/24
+    version : 1.6
+    date    : 09/17/24
 */
 #ifndef TREERECAUX_C
 #define TREERECAUX_C
 
 /**
-OK 3260  #treerec  :  T [[O] C]  ->  ...
+Q1  OK  3260  #treerec  :  T [[O] C]  ->  ...
 T is a tree. If T is a leaf, executes O. Else executes [[[O] C] treerec] C.
 */
 void treerecaux_(pEnv env)
@@ -16,8 +16,8 @@ void treerecaux_(pEnv env)
 
     if (env->stck->next->op == LIST_) {
 	temp = ANON_FUNCT_NEWNODE(treerecaux_, 0);
-	NULLARY(LIST_NEWNODE, temp);
-	cons_(env); /*  D  [[[O] C] ANON_FUNCT_]	*/
+	NULLARY(LIST_NEWNODE, temp);	/* D [[[O] C] ANON_FUNCT_] */
+	cons_(env);
 	exeterm(env, env->stck->u.lis->u.lis->next);
     } else {
 	temp = env->stck;

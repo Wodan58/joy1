@@ -1,8 +1,8 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.48
- *  date    : 08/12/24
+ *  version : 1.49
+ *  date    : 09/16/24
  */
 #include "globals.h"
 
@@ -25,6 +25,9 @@ Index newnode(pEnv env, Operator o, Types u, Index r)
     return p;
 }
 
+/*
+ * newnode2 - allocate a node as copy of an existing node.
+ */
 Index newnode2(pEnv env, Index n, Index r)
 {
     return newnode(env, n->op, n->u, r);
@@ -44,14 +47,4 @@ void my_memoryindex(pEnv env)
 void my_memorymax(pEnv env)
 {
     NULLARY(INTEGER_NEWNODE, GC_get_memory_use() + GC_get_free_bytes());
-}
-
-void *check_malloc(size_t leng)
-{
-    return GC_malloc(leng);
-}
-
-void *check_strdup(char *ptr)
-{
-    return GC_strdup(ptr);
 }

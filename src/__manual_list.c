@@ -1,13 +1,13 @@
 /*
     module  : __manual_list.c
-    version : 1.9
-    date    : 06/21/24
+    version : 1.10
+    date    : 09/17/24
 */
 #ifndef __MANUAL_LIST_C
 #define __MANUAL_LIST_C
 
 /**
-OK 2960  __manual_list  :  ->  L
+Q0  OK  2960  __manual_list  :  ->  L
 Pushes a list L of lists (one per operator) of three documentation strings.
 */
 void __manual_list_(pEnv env)

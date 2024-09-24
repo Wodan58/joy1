@@ -1,7 +1,7 @@
 #
 #   module  : makefile
-#   version : 1.12
-#   date    : 08/28/24
+#   version : 1.13
+#   date    : 09/17/24
 #
 .POSIX:
 .SUFFIXES:
@@ -12,7 +12,7 @@ LF = -lm -lgc
 CFLAGS = $(CF) -DCOMP="\"$(CF)\"" -DLINK="\"$(LF)\"" -DVERS="\"BDW Release 1.0\""
 HDRS = globals.h
 OBJS = main.o interp.o scan.o utils.o factor.o module.o optable.o symbol.o \
-       undefs.o setraw.o
+       undefs.o setraw.o repl.o write.o error.o print.o
 
 joy:	prep $(OBJS)
 	$(CC) -o$@ $(OBJS) $(LF)
@@ -24,7 +24,7 @@ prep:
 	sh table.sh .
 
 clean:
-	rm -f $(OBJS) builtin.* table.c
+	rm -f $(OBJS)
 
 .SUFFIXES: .c .o
 

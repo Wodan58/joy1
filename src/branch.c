@@ -1,13 +1,13 @@
 /*
     module  : branch.c
-    version : 1.4
-    date    : 03/21/24
+    version : 1.5
+    date    : 09/17/24
 */
 #ifndef BRANCH_C
 #define BRANCH_C
 
 /**
-OK 2590  branch  :  B [T] [F]  ->  ...
+Q2  OK  2590  branch  :  B [T] [F]  ->  ...
 If B is true, then executes T else executes F.
 */
 void branch_(pEnv env)
