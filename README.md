@@ -19,11 +19,8 @@ Build instructions
 Build with MSVC
 ---------------
 
-Install bdwgc in a bdwgc-subdirectory.
+Install BDW in subdirectory gc-8.2.8
 
-    mkdir build
-    cd build
-    cmake ..
     cmake --build . --config Release
     copy Release\joy.exe
 

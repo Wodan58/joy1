@@ -1,7 +1,7 @@
 /*
     module  : primrec.c
-    version : 1.10
-    date    : 09/17/24
+    version : 1.11
+    date    : 10/11/24
 */
 #ifndef PRIMREC_C
 #define PRIMREC_C
@@ -16,27 +16,27 @@ void primrec_(pEnv env)
 {
     char *volatile ptr;
     uint64_t i, n = 0, set;
-    Node *data, *second, *third, *current;
+    Node *data, *prog[2], *cur;
 
     THREEPARAMS("primrec");
     TWOQUOTES("primrec");
-    third = env->stck->u.lis;
+    prog[1] = env->stck->u.lis;
     POP(env->stck);
-    second = env->stck->u.lis;
+    prog[0] = env->stck->u.lis;
     POP(env->stck);
     data = env->stck;
     POP(env->stck);
     switch (data->op) {
     case LIST_:
-	current = data->u.lis;
-	while (current) {
-	    env->stck = newnode2(env, current, env->stck);
-	    current = current->next;
+	cur = data->u.lis;
+	while (cur) {
+	    env->stck = newnode2(env, cur, env->stck);
+	    cur = cur->next;
 	    n++;
 	}
 	break;
     case STRING_:
-	ptr = data->u.str; /* remember this */
+	ptr = data->u.str;	/* remember this */
 	for (i = 0; ptr[i]; i++) {
 	    env->stck = CHAR_NEWNODE(ptr[i], env->stck);
 	    n++;
@@ -59,8 +59,8 @@ void primrec_(pEnv env)
     default:
 	BADDATA("primrec");
     }
-    exeterm(env, second);
-    for (i = 1; i <= n; i++)
-	exeterm(env, third);
+    exeterm(env, prog[0]);
+    for (i = 0; i < n; i++)
+	exeterm(env, prog[1]);
 }
 #endif

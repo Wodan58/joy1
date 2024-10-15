@@ -16,25 +16,49 @@ this version: JOY  -  compiled at 16:57:51 on Mar 17 2003.
 - A build system has been added, allowing easy addition or removal of new
   builtins.
 
+- Some builtins have been added, positioned after `quit`. If they are not used
+  and CONST is also not used, the language is the same as it was in 2003.
+
 - CONST and its synonym INLINE have been added. They allow compile time
   evaluation.
-
-- Some builtins have been added, positioned after quit. If they are not used
-  and CONST is also not used, the language is the same as it was in 2003.
 
 - The user manual has been updated with annotations, documenting some of the
   above.
 
+Stating that this repository differs slightly from the legacy version is a bit
+of an understatement. All source files have been modified. The statement is
+true w.r.t. the language. The aim of this repository is to not change the
+language.
+
+Roadmap
+=======
+
+If the programming language is changed, it might use one of the following:
+
+Extensions
+----------
+
+There are new builtings `assign` and `unassign` and some others in between.
+The first one is mentioned in chapter 18 of the book
+[Symbolic Processing in Pascal](https://github.com/nickelsworth/sympas/blob/master/text/18-minijoy.org),
+and Joy with assignment is called `extended Joy`. These extensions need not
+be used and in that case the language is still the same as it was in 2003.
+
 Compiler
-========
+--------
 
-There is some conditional compilation, activated by -DBYTECODE that adds an
-option to compile Joy source code.
+There is some conditional compilation, activated by -DBYTECODE or -DCOMPILER
+that adds the option to compile Joy source code to bytecode or C.
 
-At this moment there is no repository with Joy source code that could benefit
-from such compilation and because of that, the -DBYTECODE is not activated.
+At this moment there are no repositories with Joy source code that could
+benefit from such compilation and because of that, these options are not
+activated.
 
-If it is activated, it will only be available for joy1, not Joy, due to the
-incompatible Node type of Joy.
+When activated, they will only be available for joy1 and Moy, not Joy, due to
+the incompatible Node type of Joy.
 
-Also, the compiler is not very good at this moment.
+Bignum
+------
+
+There is also a bignum type, but no big numbers. There is no application yet
+that would need them.

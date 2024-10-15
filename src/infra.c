@@ -1,7 +1,7 @@
 /*
     module  : infra.c
-    version : 1.5
-    date    : 09/17/24
+    version : 1.6
+    date    : 10/11/24
 */
 #ifndef INFRA_C
 #define INFRA_C
@@ -14,15 +14,15 @@ and after execution of P the top of stack becomes the first element of L2.
 */
 void infra_(pEnv env)
 {
-    Node *program, *save;
+    Node *prog, *save;
 
     TWOPARAMS("infra");
     ONEQUOTE("infra");
     LIST2("infra");
-    program = env->stck->u.lis;
+    prog = env->stck->u.lis;
     save = env->stck->next->next;
     env->stck = env->stck->next->u.lis;
-    exeterm(env, program);
+    exeterm(env, prog);
     env->stck = LIST_NEWNODE(env->stck, save);
 }
 #endif

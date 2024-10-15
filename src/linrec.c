@@ -1,7 +1,7 @@
 /*
     module  : linrec.c
-    version : 1.7
-    date    : 09/17/24
+    version : 1.8
+    date    : 10/11/24
 */
 #ifndef LINREC_C
 #define LINREC_C
@@ -11,40 +11,39 @@ Q4  OK  2710  linrec  :  [P] [T] [R1] [R2]  ->  ...
 Executes P. If that yields true, executes T.
 Else executes R1, recurses, executes R2.
 */
-static void linrecaux(pEnv env, Node *first, Node *second, Node *third,
-		      Node *fourth)
+static void linrecaux(pEnv env, Node *prog[])
 {
     Node *save;
     int result;
 
     save = env->stck;
-    exeterm(env, first);
+    exeterm(env, prog[0]);
     CHECKSTACK("linrec");
     result = env->stck->u.num;
     env->stck = save;
     if (result)
-	exeterm(env, second);
+	exeterm(env, prog[1]);
     else {
-	exeterm(env, third);
-	linrecaux(env, first, second, third, fourth);
-	exeterm(env, fourth);
+	exeterm(env, prog[2]);
+	linrecaux(env, prog);
+	exeterm(env, prog[3]);
     }
 }
 
 void linrec_(pEnv env)
 {
-    Node *first, *second, *third, *fourth;
+    Node *prog[4];
 
     FOURPARAMS("linrec");
     FOURQUOTES("linrec");
-    fourth = env->stck->u.lis;
+    prog[3] = env->stck->u.lis;
     POP(env->stck);
-    third = env->stck->u.lis;
+    prog[2] = env->stck->u.lis;
     POP(env->stck);
-    second = env->stck->u.lis;
+    prog[1] = env->stck->u.lis;
     POP(env->stck);
-    first = env->stck->u.lis;
+    prog[0] = env->stck->u.lis;
     POP(env->stck);
-    linrecaux(env, first, second, third, fourth);
+    linrecaux(env, prog);
 }
 #endif

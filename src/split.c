@@ -1,7 +1,7 @@
 /*
     module  : split.c
-    version : 1.10
-    date    : 09/17/24
+    version : 1.11
+    date    : 10/11/24
 */
 #ifndef SPLIT_C
 #define SPLIT_C
@@ -12,11 +12,11 @@ Uses test B to split aggregate A into sametype aggregates A1 and A2.
 */
 void split_(pEnv env)
 {
-    Node *program, *my_dump1 = 0, /* step */
-		   *my_dump2 = 0, /* head */
-	    *save, *my_dump3 = 0, /* last */
-		   *my_dump4 = 0,
-		   *my_dump5 = 0;
+    Node *prog, *my_dump1 = 0, /* step */
+		*my_dump2 = 0, /* head */
+	 *save, *my_dump3 = 0, /* last */
+		*my_dump4 = 0,
+		*my_dump5 = 0;
     int i;
     size_t leng;
     char *volatile ptr;
@@ -26,7 +26,7 @@ void split_(pEnv env)
 
     TWOPARAMS("split");
     ONEQUOTE("split");
-    program = env->stck->u.lis;
+    prog = env->stck->u.lis;
     POP(env->stck);
     save = env->stck->next;
     switch (env->stck->op) {
@@ -35,7 +35,7 @@ void split_(pEnv env)
 	for (i = 0; i < SETSIZE; i++)
 	    if (set & ((int64_t)1 << i)) {
 		env->stck = INTEGER_NEWNODE(i, save);
-		exeterm(env, program);
+		exeterm(env, prog);
 		CHECKSTACK("split");
 		if (env->stck->u.num)
 		    yes_set |= ((int64_t)1 << i);
@@ -46,13 +46,13 @@ void split_(pEnv env)
 	NULLARY(SET_NEWNODE, no_set);
 	break;
     case STRING_:
-	ptr = env->stck->u.str; /* remember this */
+	ptr = env->stck->u.str;		/* remember this */
 	leng = strlen(ptr) + 1;
 	yesstring = GC_malloc_atomic(leng);
 	nostring = GC_malloc_atomic(leng);
 	for (str = ptr; *str; str++) {
 	    env->stck = CHAR_NEWNODE(*str, save);
-	    exeterm(env, program);
+	    exeterm(env, prog);
 	    CHECKSTACK("split");
 	    if (env->stck->u.num)
 		yesstring[yesptr++] = *str;
@@ -67,17 +67,17 @@ void split_(pEnv env)
     case LIST_:
 	for (my_dump1 = env->stck->u.lis; my_dump1; my_dump1 = my_dump1->next) {
 	    env->stck = newnode2(env, my_dump1, save);
-	    exeterm(env, program);
+	    exeterm(env, prog);
 	    CHECKSTACK("split");
-	    if (env->stck->u.num) { /* pass */
-		if (!my_dump2) /* first */
+	    if (env->stck->u.num) {	/* pass */
+		if (!my_dump2)		/* first */
 		    my_dump3 = my_dump2 = newnode2(env, my_dump1, 0);
-		else /* further */
+		else			/* further */
 		    my_dump3 = my_dump3->next = newnode2(env, my_dump1, 0);
-	    } else { /* fail */
-		if (!my_dump4) /* first */
+	    } else {			/* fail */
+		if (!my_dump4)		/* first */
 		    my_dump5 = my_dump4 = newnode2(env, my_dump1, 0);
-		else /* further */
+		else			/* further */
 		    my_dump5 = my_dump5->next = newnode2(env, my_dump1, 0);
 	    }
 	}

@@ -1,7 +1,7 @@
 /*
     module  : binrec.c
-    version : 1.6
-    date    : 09/17/24
+    version : 1.7
+    date    : 10/11/24
 */
 #ifndef BINREC_C
 #define BINREC_C
@@ -12,43 +12,42 @@ Executes P. If that yields true, executes T.
 Else uses R1 to produce two intermediates, recurses on both,
 then executes R2 to combine their results.
 */
-static void binrecaux(pEnv env, Node *first, Node *second, Node *third,
-		      Node *fourth)
+static void binrecaux(pEnv env, Node *prog[])
 {
     Node *save;
     int result;
 
     save = env->stck;
-    exeterm(env, first);
+    exeterm(env, prog[0]);
     result = env->stck->u.num;
     env->stck = save;
     if (result)
-	exeterm(env, second);
+	exeterm(env, prog[1]);
     else {
-	exeterm(env, third);	/* split */
+	exeterm(env, prog[2]);	/* split */
 	save = env->stck;
 	POP(env->stck);
-	binrecaux(env, first, second, third, fourth);	/* first */
+	binrecaux(env, prog);	/* first */
 	GNULLARY(save);
-	binrecaux(env, first, second, third, fourth);	/* second */
-	exeterm(env, fourth);	/* combine */
+	binrecaux(env, prog);	/* second */
+	exeterm(env, prog[3]);	/* combine */
     }
 }
 
 void binrec_(pEnv env)
 {
-    Node *first, *second, *third, *fourth;
+    Node *prog[4];
 
     FOURPARAMS("binrec");
     FOURQUOTES("binrec");
-    fourth = env->stck->u.lis;
+    prog[3] = env->stck->u.lis;
     POP(env->stck);
-    third = env->stck->u.lis;
+    prog[2] = env->stck->u.lis;
     POP(env->stck);
-    second = env->stck->u.lis;
+    prog[1] = env->stck->u.lis;
     POP(env->stck);
-    first = env->stck->u.lis;
+    prog[0] = env->stck->u.lis;
     POP(env->stck);
-    binrecaux(env, first, second, third, fourth);
+    binrecaux(env, prog);
 }
 #endif

@@ -1,7 +1,7 @@
 /*
     module  : while.c
-    version : 1.7
-    date    : 09/17/24
+    version : 1.8
+    date    : 10/11/24
 */
 #ifndef WHILE_C
 #define WHILE_C
@@ -12,24 +12,24 @@ While executing B yields true executes D.
 */
 void while_(pEnv env)
 {
-    int num;
-    Node *body, *test, *save;
+    int result;
+    Node *prog[2], *save;
 
     TWOPARAMS("while");
     TWOQUOTES("while");
-    body = env->stck->u.lis;
+    prog[1] = env->stck->u.lis;
     POP(env->stck);
-    test = env->stck->u.lis;
+    prog[0] = env->stck->u.lis;
     POP(env->stck);
     while (1) {
 	save = env->stck;
-	exeterm(env, test);
+	exeterm(env, prog[0]);
 	CHECKSTACK("while");
-	num = env->stck->u.num;
+	result = env->stck->u.num;
 	env->stck = save;
-	if (!num)
-	    return;
-	exeterm(env, body);
+	if (!result)
+	    break;
+	exeterm(env, prog[1]);
     }
 }
 #endif

@@ -1,7 +1,7 @@
 /*
     module  : ifte.c
-    version : 1.5
-    date    : 09/17/24
+    version : 1.6
+    date    : 10/11/24
 */
 #ifndef IFTE_C
 #define IFTE_C
@@ -12,21 +12,21 @@ Executes B. If that yields true, then executes T else executes F.
 */
 void ifte_(pEnv env)
 {
-    int num;
-    Node *second, *first, *test, *save;
+    int result;
+    Node *prog[3], *save;
 
     THREEPARAMS("ifte");
     THREEQUOTES("ifte");
-    second = env->stck->u.lis;
+    prog[2] = env->stck->u.lis;
     POP(env->stck);
-    first = env->stck->u.lis;
+    prog[1] = env->stck->u.lis;
     POP(env->stck);
-    test = env->stck->u.lis;
+    prog[0] = env->stck->u.lis;
     POP(env->stck);
     save = env->stck;
-    exeterm(env, test);
-    num = env->stck->u.num;
+    exeterm(env, prog[0]);
+    result = env->stck->u.num;
     env->stck = save;
-    exeterm(env, num ? first : second);
+    exeterm(env, result ? prog[1] : prog[2]);
 }
 #endif

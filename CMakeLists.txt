@@ -1,7 +1,7 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.40
-#   date    : 09/24/24
+#   version : 1.43
+#   date    : 10/11/24
 #
 cmake_minimum_required(VERSION 3.5)
 project(Joy VERSION 1.0)
@@ -14,7 +14,8 @@ else()
   option(RUN_TEST "Run standard tests" OFF)
 endif()
 add_executable(joy main.c interp.c scan.c utils.c factor.c module.c optable.c
-	       symbol.c undefs.c setraw.c repl.c write.c error.c print.c)
+	       symbol.c undefs.c setraw.c repl.c write.c error.c print.c
+	      )
 add_definitions(-DLINK="\\"${CMAKE_EXE_LINKER_FLAGS}\\"")
 add_definitions(-DVERS="BDW ${CMAKE_BUILD_TYPE} ${CMAKE_PROJECT_VERSION}")
 #
