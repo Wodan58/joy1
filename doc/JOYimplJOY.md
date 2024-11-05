@@ -25,10 +25,10 @@ this version: JOY  -  compiled at 16:57:51 on Mar 17 2003.
 - The user manual has been updated with annotations, documenting some of the
   above.
 
-Stating that this repository differs slightly from the legacy version is a bit
-of an understatement. All source files have been modified. The statement is
-true w.r.t. the language. The aim of this repository is to not change the
-language.
+Stating that this repository differs slightly from the legacy version is
+somewhat of an understatement. All source files have been modified. The
+statement is true w.r.t. the language. The aim of this repository is to
+not change the language, while still allowing some development.
 
 Roadmap
 =======
@@ -47,8 +47,8 @@ be used and in that case the language is still the same as it was in 2003.
 Compiler
 --------
 
-There is some conditional compilation, activated by -DBYTECODE or -DCOMPILER
-that adds the option to compile Joy source code to bytecode or C.
+There is some conditional compilation, activated with -DBYTECODE or -DCOMPILER
+that adds the option to compile Joy source code to bytecode or to C.
 
 At this moment there are no repositories with Joy source code that could
 benefit from such compilation and because of that, these options are not
@@ -57,8 +57,8 @@ activated.
 When activated, they will only be available for joy1 and Moy, not Joy, due to
 the incompatible Node type of Joy.
 
-Bignum
-------
+Bignums
+-------
 
 There is also a bignum type, but no big numbers. There is no application yet
 that would need them.
