@@ -11,9 +11,10 @@ This is the [BDW](https://github.com/ivmai/bdwgc) version of
 Build instructions
 ------------------
 
+    rm -rf build
     mkdir build
     cd build
-    cmake ..
+    cmake -G "Unix Makefiles" ..
     cmake --build .
 
 Build with MSVC

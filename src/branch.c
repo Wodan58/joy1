@@ -1,10 +1,12 @@
 /*
     module  : branch.c
-    version : 1.6
-    date    : 10/11/24
+    version : 1.8
+    date    : 11/11/24
 */
 #ifndef BRANCH_C
 #define BRANCH_C
+
+#include "boolean.h"
 
 /**
 Q2  OK  2590  branch  :  B [T] [F]  ->  ...
@@ -21,7 +23,7 @@ void branch_(pEnv env)
     POP(env->stck);
     prog[0] = env->stck->u.lis;
     POP(env->stck);
-    result = env->stck->u.num;
+    result = get_boolean(env, env->stck);
     POP(env->stck);
     exeterm(env, result ? prog[0] : prog[1]);
 }

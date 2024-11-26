@@ -1,10 +1,12 @@
 /*
     module  : cond.c
-    version : 1.7
-    date    : 09/17/24
+    version : 1.9
+    date    : 11/11/24
 */
 #ifndef COND_C
 #define COND_C
+
+#include "boolean.h"
 
 /**
 Q1  OK  2690  cond  :  [..[[Bi] Ti]..[D]]  ->  ...
@@ -27,7 +29,7 @@ void cond_(pEnv env)
     while (!result && my_dump && my_dump->next) {
 	env->stck = save;
 	exeterm(env, my_dump->u.lis->u.lis);
-	result = env->stck->u.num;
+	result = get_boolean(env, env->stck);
 	if (!result)
 	    my_dump = my_dump->next;
     }
@@ -35,6 +37,6 @@ void cond_(pEnv env)
     if (result)
 	exeterm(env, my_dump->u.lis->next);
     else
-	exeterm(env, my_dump->u.lis); /* default */
+	exeterm(env, my_dump->u.lis);	/* default */
 }
 #endif

@@ -1,10 +1,12 @@
 /*
     module  : linrec.c
-    version : 1.8
-    date    : 10/11/24
+    version : 1.10
+    date    : 11/11/24
 */
 #ifndef LINREC_C
 #define LINREC_C
+
+#include "boolean.h"
 
 /**
 Q4  OK  2710  linrec  :  [P] [T] [R1] [R2]  ->  ...
@@ -19,7 +21,7 @@ static void linrecaux(pEnv env, Node *prog[])
     save = env->stck;
     exeterm(env, prog[0]);
     CHECKSTACK("linrec");
-    result = env->stck->u.num;
+    result = get_boolean(env, env->stck);
     env->stck = save;
     if (result)
 	exeterm(env, prog[1]);

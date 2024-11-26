@@ -1,10 +1,12 @@
 /*
     module  : split.c
-    version : 1.11
-    date    : 10/11/24
+    version : 1.13
+    date    : 11/11/24
 */
 #ifndef SPLIT_C
 #define SPLIT_C
+
+#include "boolean.h"
 
 /**
 Q1  OK  2840  split  :  A [B]  ->  A1 A2
@@ -17,9 +19,9 @@ void split_(pEnv env)
 	 *save, *my_dump3 = 0, /* last */
 		*my_dump4 = 0,
 		*my_dump5 = 0;
-    int i;
     size_t leng;
     char *volatile ptr;
+    int i = 0, result = 0;
     int yesptr = 0, noptr = 0;
     uint64_t set, yes_set = 0, no_set = 0;
     char *str, *yesstring = 0, *nostring = 0;
@@ -37,7 +39,8 @@ void split_(pEnv env)
 		env->stck = INTEGER_NEWNODE(i, save);
 		exeterm(env, prog);
 		CHECKSTACK("split");
-		if (env->stck->u.num)
+		result = get_boolean(env, env->stck);
+		if (result)
 		    yes_set |= ((int64_t)1 << i);
 		else
 		    no_set |= ((int64_t)1 << i);
@@ -54,7 +57,8 @@ void split_(pEnv env)
 	    env->stck = CHAR_NEWNODE(*str, save);
 	    exeterm(env, prog);
 	    CHECKSTACK("split");
-	    if (env->stck->u.num)
+	    result = get_boolean(env, env->stck);
+	    if (result)
 		yesstring[yesptr++] = *str;
 	    else
 		nostring[noptr++] = *str;
@@ -69,7 +73,8 @@ void split_(pEnv env)
 	    env->stck = newnode2(env, my_dump1, save);
 	    exeterm(env, prog);
 	    CHECKSTACK("split");
-	    if (env->stck->u.num) {	/* pass */
+	    result = get_boolean(env, env->stck);
+	    if (result) {		/* pass */
 		if (!my_dump2)		/* first */
 		    my_dump3 = my_dump2 = newnode2(env, my_dump1, 0);
 		else			/* further */

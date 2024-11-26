@@ -1,10 +1,12 @@
 /*
     module  : tailrec.c
-    version : 1.8
-    date    : 10/11/24
+    version : 1.10
+    date    : 11/11/24
 */
 #ifndef TAILREC_C
 #define TAILREC_C
+
+#include "boolean.h"
 
 /**
 Q3  OK  2720  tailrec  :  [P] [T] [R1]  ->  ...
@@ -20,7 +22,7 @@ tailrec:
     save = env->stck;
     exeterm(env, prog[0]);
     CHECKSTACK("tailrec");
-    result = env->stck->u.num;
+    result = get_boolean(env, env->stck);
     env->stck = save;
     if (result)
 	exeterm(env, prog[1]);

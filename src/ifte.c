@@ -1,10 +1,12 @@
 /*
     module  : ifte.c
-    version : 1.6
-    date    : 10/11/24
+    version : 1.8
+    date    : 11/11/24
 */
 #ifndef IFTE_C
 #define IFTE_C
+
+#include "boolean.h"
 
 /**
 Q3  OK  2600  ifte  :  [B] [T] [F]  ->  ...
@@ -25,7 +27,7 @@ void ifte_(pEnv env)
     POP(env->stck);
     save = env->stck;
     exeterm(env, prog[0]);
-    result = env->stck->u.num;
+    result = get_boolean(env, env->stck);
     env->stck = save;
     exeterm(env, result ? prog[1] : prog[2]);
 }

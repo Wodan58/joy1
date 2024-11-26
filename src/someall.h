@@ -1,7 +1,7 @@
 /*
     module  : someall.h
-    version : 1.8
-    date    : 10/11/24
+    version : 1.10
+    date    : 11/11/24
 */
 #ifndef SOMEALL_H
 #define SOMEALL_H
@@ -9,7 +9,7 @@
 #define SOMEALL(PROCEDURE, NAME, INITIAL)				\
     void PROCEDURE(pEnv env)						\
     {									\
-	int i = 0, result = INITIAL;					\
+	int i = 0, result = 0, end_result = INITIAL;			\
 	uint64_t set;							\
 	char *str, *volatile ptr;					\
 	Node *prog, *my_dump, *save;					\
@@ -25,8 +25,9 @@
 		    env->stck = INTEGER_NEWNODE(i, save);		\
 		    exeterm(env, prog);					\
 		    CHECKSTACK(NAME);					\
-		    if (env->stck->u.num != INITIAL) {			\
-			result = 1 - INITIAL;				\
+		    result = get_boolean(env, env->stck);		\
+		    if (result != INITIAL) {				\
+			end_result = 1 - INITIAL;			\
 			break;						\
 		    }							\
 		}							\
@@ -36,8 +37,9 @@
 		env->stck = CHAR_NEWNODE(*str, save);			\
 		exeterm(env, prog);					\
 		CHECKSTACK(NAME);					\
-		if (env->stck->u.num != INITIAL) {			\
-		    result = 1 - INITIAL;				\
+		result = get_boolean(env, env->stck);			\
+		if (result != INITIAL) {				\
+		    end_result = 1 - INITIAL;				\
 		    break;						\
 		}							\
 	    }								\
@@ -48,8 +50,9 @@
 		env->stck = newnode2(env, my_dump, save);		\
 		exeterm(env, prog);					\
 		CHECKSTACK(NAME);					\
-		if (env->stck->u.num != INITIAL) {			\
-		    result = 1 - INITIAL;				\
+		result = get_boolean(env, env->stck);			\
+		if (result != INITIAL) {				\
+		    end_result = 1 - INITIAL;				\
 		    break;						\
 		}							\
 	    }								\
@@ -57,6 +60,6 @@
 	default:							\
 	    BADAGGREGATE(NAME);						\
 	}								\
-	env->stck = BOOLEAN_NEWNODE(result, save);			\
+	env->stck = BOOLEAN_NEWNODE(end_result, save);			\
     }
 #endif

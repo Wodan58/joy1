@@ -1,11 +1,12 @@
 /*
     module  : genrecaux.c
-    version : 1.7
-    date    : 10/11/24
+    version : 1.9
+    date    : 11/11/24
 */
 #ifndef GENRECAUX_C
 #define GENRECAUX_C
 
+#include "boolean.h"
 #include "cons.c"
 
 /**
@@ -23,7 +24,7 @@ void genrecaux_(pEnv env)
     save = env->stck;
     exeterm(env, prog->u.lis->u.lis);			/*	[B]	*/
     CHECKSTACK("genrecaux");
-    result = env->stck->u.num;
+    result = get_boolean(env, env->stck);
     env->stck = save;
     if (result)
 	exeterm(env, prog->u.lis->next->u.lis);		/*	[T]	*/

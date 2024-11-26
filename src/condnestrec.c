@@ -1,10 +1,12 @@
 /*
     module  : condnestrec.c
-    version : 1.7
-    date    : 09/17/24
+    version : 1.9
+    date    : 11/11/24
 */
 #ifndef CONDNESTREC_C
 #define CONDNESTREC_C
+
+#include "boolean.h"
 
 /**
 Q1  OK  2750  condnestrec  :  [ [C1] [C2] .. [D] ]  ->  ...
@@ -24,7 +26,7 @@ static void condnestrecaux(pEnv env, Node *list)
     while (!result && my_dump && my_dump->next) {
 	env->stck = save;
 	exeterm(env, my_dump->u.lis->u.lis);
-	result = env->stck->u.num;
+	result = get_boolean(env, env->stck);
 	if (!result)
 	    my_dump = my_dump->next;
     }

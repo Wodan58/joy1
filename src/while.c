@@ -1,10 +1,12 @@
 /*
     module  : while.c
-    version : 1.8
-    date    : 10/11/24
+    version : 1.10
+    date    : 11/11/24
 */
 #ifndef WHILE_C
 #define WHILE_C
+
+#include "boolean.h"
 
 /**
 Q2  OK  2700  while  :  [B] [D]  ->  ...
@@ -25,7 +27,7 @@ void while_(pEnv env)
 	save = env->stck;
 	exeterm(env, prog[0]);
 	CHECKSTACK("while");
-	result = env->stck->u.num;
+	result = get_boolean(env, env->stck);
 	env->stck = save;
 	if (!result)
 	    break;
