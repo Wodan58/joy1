@@ -1,7 +1,7 @@
 #
 #   module  : CMakeLists.txt
-#   version : 1.46
-#   date    : 12/16/24
+#   version : 1.47
+#   date    : 12/17/24
 #
 cmake_minimum_required(VERSION 3.31)
 project(Joy VERSION 1.0)
@@ -45,11 +45,7 @@ else()
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
     add_definitions(-DCOMP="\\"${CMAKE_C_FLAGS_DEBUG}\\"")
   endif()
-  if (CMAKE_C_COMPILER_ID MATCHES "gcc")
-    target_link_libraries(joy m gc)
-  else()
-    target_link_libraries(joy gc)
-  endif()	  
+  target_link_libraries(joy m gc)
   if(RUN_TEST)
     add_subdirectory(lib)
     add_subdirectory(test2)
