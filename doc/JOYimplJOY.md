@@ -4,8 +4,8 @@
 Changes
 =======
 
-This updated version of Joy is slightly different from the legacy version,
-this version: JOY  -  compiled at 16:57:51 on Mar 17 2003.
+This updated version of Joy is slightly different from the legacy version, this
+version: JOY  -  compiled at 16:57:51 on Mar 17 2003.
 
 - Some bugs have been removed. No guarantee can be given that none are left:
   the code base is simply too large to allow such a guarantee.
@@ -27,8 +27,8 @@ this version: JOY  -  compiled at 16:57:51 on Mar 17 2003.
 
 Stating that this repository differs slightly from the legacy version is
 somewhat of an understatement. All source files have been modified. The
-statement is true w.r.t. the language. The aim of this repository is to
-not change the language, while still allowing some development.
+statement is true w.r.t. the language. The aim of this repository is to not
+change the language, while still allowing some development.
 
 Roadmap
 =======
@@ -38,11 +38,11 @@ If the programming language is changed, it might use one of the following:
 Extensions
 ----------
 
-There are new builtings `assign` and `unassign` and some others in between.
-The first one is mentioned in chapter 18 of the book
+There are new builtings `assign` and `unassign` and some others in between. The
+first one is mentioned in chapter 18 of the book
 [Symbolic Processing in Pascal](https://github.com/nickelsworth/sympas/blob/master/text/18-minijoy.org),
-and Joy with assignment is called `extended Joy`. These extensions need not
-be used and in that case the language is still the same as it was in 2003.
+and Joy with assignment is called `extended Joy`. These extensions need not be
+used and in that case the language is still the same as it was in 2003.
 
 Compiler
 --------
