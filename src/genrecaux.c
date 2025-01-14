@@ -1,7 +1,7 @@
 /*
     module  : genrecaux.c
-    version : 1.9
-    date    : 11/11/24
+    version : 1.10
+    date    : 01/14/25
 */
 #ifndef GENRECAUX_C
 #define GENRECAUX_C
@@ -19,22 +19,22 @@ void genrecaux_(pEnv env)
     int result;
     Node *prog, *save;
 
-    prog = env->stck;
+    prog = env->stck->u.lis;
     POP(env->stck);
     save = env->stck;
-    exeterm(env, prog->u.lis->u.lis);			/*	[B]	*/
+    exeterm(env, prog->u.lis);			/* [B] */
     CHECKSTACK("genrecaux");
     result = get_boolean(env, env->stck);
     env->stck = save;
     if (result)
-	exeterm(env, prog->u.lis->next->u.lis);		/*	[T]	*/
+	exeterm(env, prog->next->u.lis);	/* [T] */
     else {
-	exeterm(env, prog->u.lis->next->next->u.lis);	/*	[R1]	*/
-	NULLARY(LIST_NEWNODE, prog->u.lis);
+	exeterm(env, prog->next->next->u.lis);	/* [R1] */
+	NULLARY(LIST_NEWNODE, prog);
 	save = ANON_FUNCT_NEWNODE(genrecaux_, 0);
 	NULLARY(LIST_NEWNODE, save);
 	cons_(env);
-	exeterm(env, prog->u.lis->next->next->next);	/*	[R2]	*/
+	exeterm(env, prog->next->next->next);	/* [R2] */
     }
 }
 #endif
