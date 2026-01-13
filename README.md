@@ -1,9 +1,9 @@
 Joy1
 ====
 
-Build|Linux|Coverity
----|---|---
-status|[![GitHub CI build status](https://github.com/Wodan58/joy1/actions/workflows/cmake.yml/badge.svg)](https://github.com/Wodan58/joy1/actions/workflows/cmake.yml)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/14633.svg)](https://scan.coverity.com/projects/wodan58-joy1)
+Build|Linux
+---|---
+status|[![GitHub CI build status](https://github.com/Wodan58/joy1/actions/workflows/cmake.yml/badge.svg)](https://github.com/Wodan58/joy1/actions/workflows/cmake.yml)
 
 This is the [BDW](https://github.com/ivmai/bdwgc) version of
 [Joy](https://github.com/Wodan58/Joy).
@@ -11,8 +11,6 @@ This is the [BDW](https://github.com/ivmai/bdwgc) version of
 Build instructions
 ------------------
 
-    rm -rf build
-    mkdir build
     cd build
     cmake -G "Unix Makefiles" ..
     cmake --build .
@@ -20,10 +18,9 @@ Build instructions
 Build with MSVC
 ---------------
 
-Install BDW in subdirectory gc-8.2.8
+Install BDW in (sub)directory gc-8.2.10
 
     cmake --build . --config Release
-    copy Release\joy.exe
 
 Running
 -------

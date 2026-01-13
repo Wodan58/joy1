@@ -1,8 +1,8 @@
 /* FILE: utils.c */
 /*
  *  module  : utils.c
- *  version : 1.50
- *  date    : 10/11/24
+ *  version : 1.51
+ *  date    : 01/08/26
  */
 #include "globals.h"
 
@@ -14,9 +14,9 @@ Index newnode(pEnv env, Operator o, Types u, Index r)
     Index p;
 
     p = GC_malloc(sizeof(Node));
-#ifdef _MSC_VER
+#ifdef TEST_MALLOC_RETURN
     if (!p)
-	execerror(env, "memory", "allocator");
+	execerror(env, "memory", "allocator");	/* LCOV_EXCL_LINE */
 #endif
     p->op = o;
     p->u = u;

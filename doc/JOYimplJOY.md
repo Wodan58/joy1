@@ -38,7 +38,7 @@ If the programming language is changed, it might use one of the following:
 Extensions
 ----------
 
-There are new builtings `assign` and `unassign` and some others in between. The
+There are new builtins `assign` and `unassign` and some others in between. The
 first one is mentioned in chapter 18 of the book
 [Symbolic Processing in Pascal](https://github.com/nickelsworth/sympas/blob/master/text/18-minijoy.org),
 and Joy with assignment is called `extended Joy`. These extensions need not be
