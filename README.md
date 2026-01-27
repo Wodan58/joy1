@@ -18,9 +18,11 @@ Build instructions
 Build with MSVC
 ---------------
 
-Install BDW in (sub)directory gc-8.2.10
+Install BDW in (sibling)directory gc-8.2.10
 
-    cmake --build . --config Release
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Release ..
+    cmake --build .
 
 Running
 -------
@@ -34,15 +36,15 @@ See also
 
 Implementation|Dependencies
 --------------|------------
-[42minjoy](https://github.com/Wodan58/42minjoy)|
-[joy0](https://github.com/Wodan58/joy0)|
-[Joy](https://github.com/Wodan58/Joy)|
+[42minjoy](https://github.com/Wodan58/42minjoy)|Minimal Joy
+[joy0](https://github.com/Wodan58/joy0)|Original Joy
+[Joy](https://github.com/Wodan58/Joy)|NOBDW Joy
 [Foy](https://github.com/Wodan58/Foy)|[BDW garbage collector](https://github.com/ivmai/bdwgc)
 [Moy](https://github.com/Wodan58/Moy)|[BDW garbage collector](https://github.com/ivmai/bdwgc) and [Lex & Yacc](https://sourceforge.net/projects/winflexbison/files/win_flex_bison-latest.zip)
 
-Documentation|
--------------|
-[Legacy Docs](https://wodan58.github.io)
-[User Manual](https://wodan58.github.io/j09imp.html)
-[Comparison (PDF)](https://github.com/Wodan58/HET/blob/master/doc/FIB.pdf)
-[Maintenance Manual (PDF)](https://github.com/Wodan58/G3/blob/master/JOP.pdf)
+Documentation|Notes
+-------------|-----
+[Legacy Docs](https://wodan58.github.io)|Original Joy documentation
+[User Manual](https://wodan58.github.io/j09imp.html)|Joy language reference
+[Comparison](https://github.com/Wodan58/HET/blob/master/doc/FIB.pdf)|Fibonacci
+[Main Manual](https://github.com/Wodan58/G3/blob/master/JOP.pdf)|Comprehensive Joy manual
