@@ -24,7 +24,7 @@ Build with MSVC
 Running
 -------
 
-    joy -h
+    ./joy -h
 
 gives an overview of available options.
 
